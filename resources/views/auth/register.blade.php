@@ -19,33 +19,35 @@
     <form method="POST" action="{{ route('register') }}" role="form" class="text-start">
         @csrf
 
-        <div class="input-group input-group-outline my-3" id="nameGroup">
-            <label class="form-label">Nombre completo</label>
-            <input type="text" class="form-control" name="name" id="name" required>
+        {{-- NOMBRE COMPLETO --}}
+        <div class="input-group input-group-outline mb-3 @error('name') is-invalid @enderror">
+            <input type="text" class="form-control" name="name" id="name" placeholder="Nombre completo" value="{{ old('name') }}" required>
         </div>
 
-        <div class="input-group input-group-outline my-3" id="emailGroup">
-            <label class="form-label">Correo electrónico</label>
-            <input type="email" class="form-control" name="email" id="email" required>
+        {{-- CORREO ELECTRONICO --}}
+        <div class="input-group input-group-outline mb-3 @error('email') is-invalid @enderror">
+            <input type="email" class="form-control" name="email" id="email" placeholder="Correo electrónico" value="{{ old('email') }}" required>
         </div>
 
-        <div class="input-group input-group-outline my-3" id="passwordGroup">
-            <label class="form-label">Contraseña</label>
-            <input type="password" class="form-control" name="password" id="password" required minlength="8">
+        {{-- CONTRASEÑA --}}
+        <div class="input-group input-group-outline mb-3 @error('password') is-invalid @enderror">
+            <input type="password" class="form-control" name="password" id="password" placeholder="Contraseña" required minlength="8">
         </div>
 
-        <div class="input-group input-group-outline my-3" id="passwordConfirmationGroup">
-            <label class="form-label">Confirmar Contraseña</label>
-            <input type="password" class="form-control" name="password_confirmation" id="password_confirmation" required minlength="8">
+        {{-- CONFIRMAR CONTRASEÑA --}}
+        <div class="input-group input-group-outline mb-3">
+            <input type="password" class="form-control" name="password_confirmation" id="password-confirmation" placeholder="Confirmar Contraseña" required minlength="8">
         </div>
 
+        {{-- BOTON DE ENVIAR --}}
         <div class="text-center">
-            <button type="submit" class="btn bg-gradient-dark w-100 my-4 mb-2">Registrarse</button>
+            <button type="submit" class="btn bg-gradient-dark w-100 mb-4">Registrarse</button>
         </div>
 
+        {{-- YA TIENE CUENTA --}}
         <p class="mt-4 text-sm text-center">
             ¿Ya tiene una cuenta?
-            <a href="{{ route('login') }}" class="sign-up-link text-decoration-none">Iniciar sesión</a>
+            <a href="{{ route('login') }}" class="sign-up-link">Iniciar sesión</a>
         </p>
     </form>
 @endsection

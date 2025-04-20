@@ -20,23 +20,14 @@
     <form method="POST" action="{{ route('login') }}" role="form" class="text-start" novalidate>
         @csrf
 
-        <div class="row">
-            {{-- CORREO ELECTRONICO --}}
-            <div class="col-12">
-                <div class="input-group input-group-outline my-3" id="emailGroup">
-                    <label class="form-label">Correo electrónico</label>
-                    <input type="email" class="form-control" id="email" name="email" required autocomplete="email">
-                </div>
-            </div>
+        {{-- CORREO ELECTRONICO --}}
+        <div class="input-group input-group-outline mb-3 @error('email') is-invalid @enderror">
+            <input type="email" class="form-control" id="email" name="email" placeholder="Correo electrónico" value="{{ old('email') }}" required autocomplete="email">
+        </div>
 
-            {{-- CONTRASEÑA --}}
-            <div class="col-12">
-                <div class="input-group input-group-outline my-3" id="passwordGroup">
-                    <label class="form-label">Contraseña</label>
-                    <input type="password" class="form-control" id="password" name="password" required
-                        autocomplete="current-password">
-                </div>
-            </div>
+        {{-- CONTRASEÑA --}}
+        <div class="input-group input-group-outline mb-3 @error('password') is-invalid @enderror">
+            <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña" required autocomplete="current-password">
         </div>
 
         {{-- OLVIDE CONTRASEÑA --}}

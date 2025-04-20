@@ -1,47 +1,48 @@
 @extends('layouts.form')
 
+@section('tittle', 'Restablecer Contraseña')
+@section('description', 'Ingrese su correo electrónico para recibir un enlace de restablecimiento')
+
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Reset Password') }}</div>
 
-                <div class="card-body">
-                    @if (session('status'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('status') }}
-                        </div>
-                    @endif
-
-                    <form method="POST" action="{{ route('password.email') }}">
-                        @csrf
-
-                        <div class="row mb-3">
-                            <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
-
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row mb-0">
-                            <div class="col-md-6 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Send Password Reset Link') }}
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
+    {{-- ALERTA DE ERRORES GENERALES --}}
+    @if (session('status'))
+        <div class="alert alert-success text-white" role="alert">
+            {{ session('status') }}
         </div>
-    </div>
-</div>
+    @endif
+
+    @if ($errors->any())
+        <div class="alert alert-danger text-white" role="alert">
+            <strong>¡Ups! Ha ocurrido un problema:</strong>
+            <ul class="mb-0 mt-2">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('password.email') }}" role="form" class="text-start">
+        @csrf
+
+        {{-- CORREO ELECTRONICO --}}
+        <div class="input-group input-group-outline mb-3">
+            <input id="email" type="email" class="form-control" name="email" value="{{ old('email') }}" placeholder="Correo electrónico" required autocomplete="email" autofocus>
+        </div>
+
+        {{-- BOTON DE ENVIAR --}}
+        <div class="text-center">
+            <button type="submit" class="btn bg-gradient-dark w-100 mb-4">
+                Enviar enlace de restablecimiento
+            </button>
+        </div>
+
+        {{-- VOLVER A LOGIN --}}
+        <p class="mt-4 text-sm text-center">
+            <a href="{{ route('login') }}" class="sign-up-link">
+                Volver a iniciar sesión
+            </a>
+        </p>
+    </form>
 @endsection
