@@ -2,7 +2,7 @@
     <div id="loginCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
         <div class="carousel-inner">
             <div class="carousel-item active"
-                style="background-image: url('{{ asset('img/carrusel/bk1.jpg') }}')">
+                style="background-image: url('{{ asset('img/carrusel/bk1.webp') }}')">
                 <div class="carousel-overlay">
                     <div class="carousel-content">
                         <div class="subtitle">DEDICACIÓN Y SERVICIO</div>
@@ -14,7 +14,7 @@
                 </div>
             </div>
             <div class="carousel-item"
-                style="background-image: url('{{ asset('img/carrusel/bk2.jpeg') }}')">
+                style="background-image: url('{{ asset('img/carrusel/bk2.webp') }}')">
                 <div class="carousel-overlay">
                     <div class="carousel-content">
                         <div class="subtitle">COMPROMISO Y EXCELENCIA</div>
@@ -26,7 +26,7 @@
                 </div>
             </div>
             <div class="carousel-item"
-                style="background-image: url('{{ asset('img/carrusel/bk3.jpg') }}')">
+                style="background-image: url('{{ asset('img/carrusel/bk3.webp') }}')">
                 <div class="carousel-overlay">
                     <div class="carousel-content">
                         <div class="subtitle">HUMANIDAD Y EMPATÍA</div>
