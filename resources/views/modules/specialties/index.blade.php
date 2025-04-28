@@ -5,6 +5,15 @@
 
 @section('content')
     <div class="container-fluid py-4">
+
+        @if (session('notification'))
+            <div class="alert alert-{{ session('notification')['alert-type'] == 'Eliminación Éxitosa' ? 'danger' : (session('notification')['alert-type'] == 'Actualización Éxitosa' ? 'info' : 'success') }} text-white"
+                role="alert" id="notification-alert">
+                <strong>{{ ucfirst(session('notification')['alert-type']) }}!</strong>
+                {{ session('notification')['message'] }}
+            </div>
+        @endif
+
         <div class="row">
             <div class="col-12">
                 <div class="card mb-4">

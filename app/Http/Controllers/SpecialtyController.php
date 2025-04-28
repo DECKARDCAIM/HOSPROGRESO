@@ -52,8 +52,12 @@ class SpecialtyController extends Controller
         $specialty->name = $request->input('name');
         $specialty->description = $request->input('description');
         $specialty->save();
+        $notification = [
+            'message' => 'La especialidad ' . $specialty->name . ' se ha creado correctamente.',
+            'alert-type' => 'Creación Éxitosa'
+        ];
 
-        return redirect()->route('especialidades.index')->with('success', 'Especialidad creada con éxito.');
+        return redirect()->route('especialidades.index')->with(compact('notification'));
     }
 
     /**
@@ -94,8 +98,11 @@ class SpecialtyController extends Controller
         $specialty->name = $request->input('name');
         $specialty->description = $request->input('description');
         $specialty->save();
-
-        return redirect()->route('especialidades.index')->with('success', 'Especialidad modificada con éxito.');
+        $notification = [
+            'message' => 'La especialidad ' . $specialty->name . ' se ha actualizado correctamente.',
+            'alert-type' => 'Actualización Éxitosa'
+        ];
+        return redirect()->route('especialidades.index')->with(compact('notification'));
     }
 
     /**
@@ -104,6 +111,11 @@ class SpecialtyController extends Controller
     public function destroy(Specialty $specialty)
     {
         $specialty->delete();
-        return redirect()->route('especialidades.index')->with('success', 'Especialidad eliminada con éxito.');
+        $notification = [
+            'message' => 'La especialidad ' . $specialty->name . ' se ha eliminado correctamente.',
+            'alert-type' => 'Eliminación Éxitosa'
+        ];
+
+        return redirect()->route('especialidades.index')->with(compact('notification'));
     }
 }

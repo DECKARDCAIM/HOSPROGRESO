@@ -67,33 +67,34 @@
         </a>
         <div class="collapse" id="menuMantenimiento">
             <ul class="nav">
-            <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ url('/especialidades') }}">
-                    <span class="sidenav-normal ms-1 ps-1">Especialidades</span>
-                </a>
-            </li>
-            <!--
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ url('/especialidades') }}">
+                        <span class="sidenav-normal ms-1 ps-1">Especialidades</span>
+                    </a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="../../pages/dashboards/analytics.html">
                         <span class="sidenav-normal ms-1 ps-1">Doctores</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="../../pages/dashboards/discover.html">
-                        <span class="sidenav-normal ms-1 ps-1">Enfermeros</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="../../pages/dashboards/automotive.html">
-                        <span class="sidenav-normal ms-1 ps-1">Medicamentos</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="../../pages/dashboards/smart-home.html">
-                        <span class="sidenav-normal ms-1 ps-1">Exámenes</span>
-                    </a>
-                </li>
-             -->
+                <!--
+                    
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" href="../../pages/dashboards/discover.html">
+                            <span class="sidenav-normal ms-1 ps-1">Enfermeros</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" href="../../pages/dashboards/automotive.html">
+                            <span class="sidenav-normal ms-1 ps-1">Medicamentos</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" href="../../pages/dashboards/smart-home.html">
+                            <span class="sidenav-normal ms-1 ps-1">Exámenes</span>
+                        </a>
+                    </li>
+                -->
             </ul>
         </div>
     </li>
