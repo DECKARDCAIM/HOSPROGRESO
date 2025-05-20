@@ -1,7 +1,7 @@
 @extends('layouts.panel')
 
-@section('tittle', 'Editar Especialidad')
-@section('breadcrumb', 'Especialidades / Editar')
+@section('tittle', 'Crear Pais')
+@section('breadcrumb', 'Paises / Crear')
 
 @section('content')
 <div class="container-fluid py-4">
@@ -11,10 +11,10 @@
                 <div class="card-header pb-0 bg-gradient-info">
                     <div class="row align-items-center">
                         <div class="col-md-8">
-                            <h6 class="text-white mb-0">Editar Especialidad</h6>
+                            <h6 class="text-white mb-0">Nuevo pais</h6>
                         </div>
                         <div class="col-md-4 text-end">
-                            <a href="{{ url('/especialidades') }}" class="btn btn-sm btn-white">
+                            <a href="{{ url('/paises') }}" class="btn btn-sm btn-white">
                                 <i class="fas fa-chevron-left me-2"></i>Regresar
                             </a>
                         </div>
@@ -36,20 +36,20 @@
                     </div>
                     @endif
                     
-                    <form action="{{ url('/especialidades/'.$specialty->id) }}" method="POST" class="form-horizontal">
+                    <form action="{{ url('/paises') }}" method="POST" class="form-horizontal">
                         @csrf
-                        @method('PUT')
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group mb-4">
                                     <label for="name" class="form-control-label mb-2">
-                                        <i class="fas fa-tag text-info me-2"></i>Nombre de la especialidad
+                                        <i class="fas fa-tag text-info me-2"></i>Nombre del pais
                                     </label>
                                     <input type="text" name="name" id="name" 
                                         class="form-control form-control-lg border border-2 border-info shadow-sm" 
-                                        value="{{ old('name', $specialty->name) }}" 
+                                        placeholder="Nombre del pais" 
+                                        value="{{ old('name')}}" 
                                         required>
-                                    <div class="form-text text-muted">Ingrese el nombre completo de la especialidad médica</div>
+                                    <div class="form-text text-muted">Ingrese el nombre completo del pais</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -59,18 +59,19 @@
                                     </label>
                                     <textarea name="description" id="description" 
                                         class="form-control form-control-lg border border-2 border-info shadow-sm" 
+                                        placeholder="Descripción del pais" 
                                         rows="3" 
-                                        required>{{ old('description', $specialty->description) }}</textarea>
-                                    <div class="form-text text-muted">Describa brevemente en qué consiste esta especialidad</div>
+                                        required>{{ old('description')}}</textarea>
+                                    <div class="form-text text-muted">Describa brevemente en qué consiste este pais</div>
                                 </div>
                             </div>
                         </div>
                         <div class="d-flex justify-content-end mt-4">
-                            <button type="button" class="btn btn-secondary btn-lg me-2" onclick="window.location.href='{{ url('/especialidades') }}'">
+                            <button type="button" class="btn btn-secondary btn-lg me-2" onclick="window.location.href='{{ url('/paises') }}'">
                                 <i class="fas fa-times me-2"></i>Cancelar
                             </button>
                             <button type="submit" class="btn bg-gradient-info btn-lg text-white">
-                                <i class="fas fa-save me-2"></i>Guardar cambios
+                                <i class="fas fa-save me-2"></i>Crear pais
                             </button>
                         </div>
                     </form>

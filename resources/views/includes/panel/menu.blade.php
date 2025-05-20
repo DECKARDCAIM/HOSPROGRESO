@@ -72,11 +72,6 @@
                         <span class="sidenav-normal ms-1 ps-1">Especialidades</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="../../pages/dashboards/analytics.html">
-                        <span class="sidenav-normal ms-1 ps-1">Doctores</span>
-                    </a>
-                </li>
                 <!--
                     
                     <li class="nav-item">
@@ -95,6 +90,44 @@
                         </a>
                     </li>
                 -->
+
+
+
+
+
+                <li class="nav-item">
+                    <a data-bs-toggle="collapse" href="#menuUbicaciones" class="nav-link text-dark"
+                        aria-controls="menuMantenimiento" role="button" aria-expanded="false">
+                        <i class="material-symbols-rounded opacity-5">space_dashboard</i>
+                        <span class="nav-link-text ms-1 ps-1">Ubicaciones</span>
+                    </a>
+                    <div class="collapse" id="menuUbicaciones">
+                        <ul class="nav">
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="{{ url('/paises') }}">
+                                    <span class="sidenav-normal ms-1 ps-1">Paises</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="{{ url('/departamentos') }}">
+                                    <span class="sidenav-normal ms-1 ps-1">Departamentos</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="{{ url('/municipios') }}">
+                                    <span class="sidenav-normal ms-1 ps-1">Municipios</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="{{ url('/direcciones') }}">
+                                    <span class="sidenav-normal ms-1 ps-1">Direcciones</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+                
             </ul>
         </div>
     </li>

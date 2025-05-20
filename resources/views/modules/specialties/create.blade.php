@@ -1,6 +1,7 @@
 @extends('layouts.panel')
 
-@section('tittle', 'Especialidad')
+@section('tittle', 'Crear Especialidad')
+@section('breadcrumb', 'Especialidades / Crear')
 
 @section('content')
 <div class="container-fluid py-4">

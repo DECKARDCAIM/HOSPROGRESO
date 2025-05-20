@@ -18,3 +18,18 @@ Route::get('/panel', [App\Http\Controllers\HomeController::class, 'index'])->nam
 Route::resource('especialidades', App\Http\Controllers\SpecialtyController::class)
     ->middleware('auth')
     ->parameters(['especialidades' => 'specialty']);
+
+// Ruta Resource para Country
+Route::resource('paises', App\Http\Controllers\CountryController::class)
+    ->middleware('auth')
+    ->parameters(['paises' => 'country']);
+
+// Ruta Resource para Department
+Route::resource('departamentos', App\Http\Controllers\DepartmentController::class)
+    ->middleware('auth')
+    ->parameters(['departamentos' => 'department']);
+
+// Ruta Resource para Municipality
+Route::resource('municipios', App\Http\Controllers\MunicipalityController::class)
+    ->middleware('auth')
+    ->parameters(['municipios' => 'municipality']);
