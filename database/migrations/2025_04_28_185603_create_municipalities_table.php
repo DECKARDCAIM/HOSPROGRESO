@@ -12,10 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('municipalities', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->id();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->foreignId('department_id')->constrained()->onDelete('cascade');
+            $table->boolean('is_active')->default(true);
+            $table->foreignId('department_id')->constrained('departments')->onDelete('cascade');
             $table->timestamps();
         });
     }

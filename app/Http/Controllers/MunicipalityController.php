@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\municipality;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use App\Models\Department;
 use App\Models\Country;
@@ -62,40 +63,34 @@ class MunicipalityController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-{
-    $rules = [
-        'name' => 'required|string|min:5',
-        'department_id' => 'required|exists:departments,id',
-        'description' => 'nullable|string|max:320',
-    ];
+    {
+        $rules = [
+            'name' => 'required|min:3',
+            'description' => 'nullable|string|max:255',
+            'department_id' => 'required|exists:departments,id'
+        ];
+        $messages = [
+            'name.required' => 'El nombre del municipio es obligatorio.',
+            'name.min' => 'El nombre del municipio debe tener más de 3 caracteres.',
+            'department_id.required' => 'Debe seleccionar un departamento.',
+            'department_id.exists' => 'El departamento seleccionado no es válido.'
+        ];
+        $this->validate($request, $rules, $messages);
 
-    $messages = [
-        'name.required' => 'El campo nombre es obligatorio.',
-        'name.string' => 'El campo nombre debe ser una cadena de texto.',
-        'name.min' => 'El campo nombre debe tener al menos 5 caracteres.',
+        $municipality = new Municipality();
+        $municipality->name = $request->input('name');
+        $municipality->description = $request->input('description');
+        $municipality->department_id = $request->input('department_id');
+        $municipality->save();
 
-        'department_id.required' => 'El campo departamento es obligatorio.',
-        'department_id.exists' => 'El departamento seleccionado no es válido.',
+        NotificationService::notifyCreate('Municipio', $municipality->name);
 
-        'description.string' => 'El campo descripción debe ser una cadena de texto.',
-        'description.max' => 'El campo descripción no puede tener más de 320 caracteres.',
-    ];
-
-    $this->validate($request, $rules, $messages);
-
-    $municipality = new Municipality();
-    $municipality->department_id = $request->department_id;
-    $municipality->name = $request->name;
-    $municipality->description = $request->description;
-    $municipality->save();
-
-    $notification = [
-        'message' => 'El municipio ' . $municipality->name . ' se ha creado correctamente.',
-        'alert-type' => 'Creación Éxitosa'
-    ];
-
-    return redirect()->route('municipios.index')->with(compact('notification'));
-}
+        return redirect()->route('municipios.index')->with('toast', [
+            'type' => 'success',
+            'title' => 'Creación Éxitosa',
+            'message' => 'El municipio ' . $municipality->name . ' se ha creado correctamente.'
+        ]);
+    }
 
 
     /**
@@ -119,30 +114,49 @@ class MunicipalityController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, municipality $municipality)
+    public function update(Request $request, Municipality $municipality)
     {
         $rules = [
-            'name' => 'required|string|min:5',
-            'description' => 'nullable|string|max:320',
+            'name' => 'required|min:3',
+            'description' => 'nullable|string|max:255',
+            'department_id' => 'required|exists:departments,id'
         ];
         $messages = [
-            'name.required' => 'El campo nombre es obligatorio.',
-            'name.string' => 'El campo nombre debe ser una cadena de texto.',
-            'name.min' => 'El campo nombre debe tener al menos 5 caracteres.',
-            'description.string' => 'El campo descripción debe ser una cadena de texto.',
-            'description.max' => 'El campo descripción no puede tener más de 320 caracteres.',
+            'name.required' => 'El nombre del municipio es obligatorio.',
+            'name.min' => 'El nombre del municipio debe tener más de 3 caracteres.',
+            'department_id.required' => 'Debe seleccionar un departamento.',
+            'department_id.exists' => 'El departamento seleccionado no es válido.'
         ];
-        
         $this->validate($request, $rules, $messages);
 
         $municipality->name = $request->input('name');
-        $municipality->department_id = $request->input('department_id');
         $municipality->description = $request->input('description');
+        $municipality->department_id = $request->input('department_id');
         $municipality->save();
-        $notification = [
-            'message' => 'El Municipio ' . $municipality->name . ' se ha actualizado correctamente.',
-            'alert-type' => 'Actualización Éxitosa'
-        ];
-        return redirect()->route('municipios.index')->with(compact('notification'));
+
+        NotificationService::notifyUpdate('Municipio', $municipality->name);
+
+        return redirect()->route('municipios.index')->with('toast', [
+            'type' => 'info',
+            'title' => 'Actualización Éxitosa',
+            'message' => 'El municipio ' . $municipality->name . ' se ha actualizado correctamente.'
+        ]);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Municipality $municipality)
+    {
+        $municipalityName = $municipality->name;
+        $municipality->delete();
+
+        NotificationService::notifyDelete('Municipio', $municipalityName);
+
+        return redirect()->route('municipios.index')->with('toast', [
+            'type' => 'warning',
+            'title' => 'Eliminación Éxitosa',
+            'message' => 'El municipio ' . $municipalityName . ' se ha eliminado correctamente.'
+        ]);
     }
 }

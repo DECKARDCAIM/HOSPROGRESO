@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Country;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use App\Models\Country as ModelsCountry;
 
@@ -35,28 +36,27 @@ class CountryController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'name' => 'required|string|min:5',
-            'description' => 'nullable|string|max:320',
+            'name' => 'required|min:3',
+            'description' => 'nullable|string|max:255'
         ];
         $messages = [
-            'name.required' => 'El campo nombre es obligatorio.',
-            'name.string' => 'El campo nombre debe ser una cadena de texto.',
-            'name.min' => 'El campo nombre debe tener al menos 5 caracteres.',
-            'description.string' => 'El campo descripción debe ser una cadena de texto.',
-            'description.max' => 'El campo descripción no puede tener más de 320 caracteres.',
+            'name.required' => 'El nombre del pais es obligatorio.',
+            'name.min' => 'El nombre del pais debe tener más de 3 caracteres.'
         ];
-        
         $this->validate($request, $rules, $messages);
 
         $countries = new Country();
         $countries->name = $request->input('name');
         $countries->description = $request->input('description');
         $countries->save();
-        $notification = [
-            'message' => 'El pais ' . $countries->name . ' se ha creado correctamente.',
-            'alert-type' => 'Creación Éxitosa'
-        ];
-        return redirect()->route('paises.index')->with(compact('notification'));
+
+        NotificationService::notifyCreate('País', $countries->name);
+
+        return redirect()->route('paises.index')->with('toast', [
+            'type' => 'success',
+            'title' => 'Creación Éxitosa',
+            'message' => 'El país ' . $countries->name . ' se ha creado correctamente.'
+        ]);
     }
 
     /**
@@ -81,27 +81,26 @@ class CountryController extends Controller
     public function update(Request $request, Country $country)
     {
         $rules = [
-            'name' => 'required|string|min:5',
-            'description' => 'nullable|string|max:320',
+            'name' => 'required|min:3',
+            'description' => 'nullable|string|max:255'
         ];
         $messages = [
-            'name.required' => 'El campo nombre es obligatorio.',
-            'name.string' => 'El campo nombre debe ser una cadena de texto.',
-            'name.min' => 'El campo nombre debe tener al menos 5 caracteres.',
-            'description.string' => 'El campo descripción debe ser una cadena de texto.',
-            'description.max' => 'El campo descripción no puede tener más de 320 caracteres.',
+            'name.required' => 'El nombre del pais es obligatorio.',
+            'name.min' => 'El nombre del pais debe tener más de 3 caracteres.'
         ];
-        
         $this->validate($request, $rules, $messages);
 
         $country->name = $request->input('name');
         $country->description = $request->input('description');
         $country->save();
-        $notification = [
-            'message' => 'El pais ' . $country->name . ' se ha actualizado correctamente.',
-            'alert-type' => 'Actualización Éxitosa'
-        ];
-        return redirect()->route('paises.index')->with(compact('notification'));
+
+        NotificationService::notifyUpdate('País', $country->name);
+
+        return redirect()->route('paises.index')->with('toast', [
+            'type' => 'info',
+            'title' => 'Actualización Éxitosa',
+            'message' => 'El país ' . $country->name . ' se ha actualizado correctamente.'
+        ]);
     }
 
     /**
@@ -109,12 +108,15 @@ class CountryController extends Controller
      */
     public function destroy(Country $country)
     {
+        $countryName = $country->name;
         $country->delete();
-        $notification = [
-            'message' => 'El pais ' . $country->name . ' se ha eliminado correctamente.',
-            'alert-type' => 'Eliminación Éxitosa'
-        ];
 
-        return redirect()->route('paises.index')->with(compact('notification'));
+        NotificationService::notifyDelete('País', $countryName);
+
+        return redirect()->route('paises.index')->with('toast', [
+            'type' => 'warning',
+            'title' => 'Eliminación Éxitosa',
+            'message' => 'El país ' . $countryName . ' se ha eliminado correctamente.'
+        ]);
     }
 }

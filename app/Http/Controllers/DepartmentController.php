@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Department;
 use App\Models\Country; 
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 class DepartmentController extends Controller
@@ -44,31 +45,31 @@ class DepartmentController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'name' => 'required|string|min:5',
-            'country_id' => 'required|exists:countries,id', // Asegúrate de que el país existe
-            'description' => 'nullable|string|max:320',
+            'name' => 'required|min:3',
+            'description' => 'nullable|string|max:255',
+            'country_id' => 'required|exists:countries,id'
         ];
         $messages = [
-            'name.required' => 'El campo nombre es obligatorio.',
-            'name.string' => 'El campo nombre debe ser una cadena de texto.',
-            'country_id.required' => 'El campo país es obligatorio.',
-            'name.min' => 'El campo nombre debe tener al menos 5 caracteres.',
-            'description.string' => 'El campo descripción debe ser una cadena de texto.',
-            'description.max' => 'El campo descripción no puede tener más de 320 caracteres.',
+            'name.required' => 'El nombre del departamento es obligatorio.',
+            'name.min' => 'El nombre del departamento debe tener más de 3 caracteres.',
+            'country_id.required' => 'Debe seleccionar un país.',
+            'country_id.exists' => 'El país seleccionado no es válido.'
         ];
-        
         $this->validate($request, $rules, $messages);
 
-        $departments = new department();
-        $departments->country_id = $request->input('country_id'); // Asigna el ID del país seleccionado
+        $departments = new Department();
         $departments->name = $request->input('name');
         $departments->description = $request->input('description');
+        $departments->country_id = $request->input('country_id');
         $departments->save();
-        $notification = [
-            'message' => 'El departamento ' . $departments->name . ' se ha creado correctamente.',
-            'alert-type' => 'Creación Éxitosa'
-        ];
-        return redirect()->route('departamentos.index')->with(compact('notification'));
+
+        NotificationService::notifyCreate('Departamento', $departments->name);
+
+        return redirect()->route('departamentos.index')->with('toast', [
+            'type' => 'success',
+            'title' => 'Creación Éxitosa',
+            'message' => 'El departamento ' . $departments->name . ' se ha creado correctamente.'
+        ]);
     }
 
     /**
@@ -94,30 +95,30 @@ class DepartmentController extends Controller
     public function update(Request $request, Department $department)
     {
         $rules = [
-            'name' => 'required|string|min:5',
-            'country_id' => 'required|exists:countries,id', // Asegúrate de que el país existe
-            'description' => 'nullable|string|max:320',
+            'name' => 'required|min:3',
+            'description' => 'nullable|string|max:255',
+            'country_id' => 'required|exists:countries,id'
         ];
         $messages = [
-            'name.required' => 'El campo nombre es obligatorio.',
-            'name.string' => 'El campo nombre debe ser una cadena de texto.',
-            'country_id.required' => 'El campo país es obligatorio.',
-            'name.min' => 'El campo nombre debe tener al menos 5 caracteres.',
-            'description.string' => 'El campo descripción debe ser una cadena de texto.',
-            'description.max' => 'El campo descripción no puede tener más de 320 caracteres.',
+            'name.required' => 'El nombre del departamento es obligatorio.',
+            'name.min' => 'El nombre del departamento debe tener más de 3 caracteres.',
+            'country_id.required' => 'Debe seleccionar un país.',
+            'country_id.exists' => 'El país seleccionado no es válido.'
         ];
-        
         $this->validate($request, $rules, $messages);
 
         $department->name = $request->input('name');
-        $department->country_id = $request->input('country_id'); // Asigna el ID del país seleccionado
         $department->description = $request->input('description');
+        $department->country_id = $request->input('country_id');
         $department->save();
-        $notification = [
-            'message' => 'El departamento ' . $department->name . ' se ha actualizado correctamente.',
-            'alert-type' => 'Actualización Éxitosa'
-        ];
-        return redirect()->route('departamentos.index')->with(compact('notification'));
+
+        NotificationService::notifyUpdate('Departamento', $department->name);
+
+        return redirect()->route('departamentos.index')->with('toast', [
+            'type' => 'info',
+            'title' => 'Actualización Éxitosa',
+            'message' => 'El departamento ' . $department->name . ' se ha actualizado correctamente.'
+        ]);
     }
 
     /**
@@ -125,12 +126,15 @@ class DepartmentController extends Controller
      */
     public function destroy(Department $department)
     {
+        $departmentName = $department->name;
         $department->delete();
-        $notification = [
-            'message' => 'El departamento ' . $department->name . ' se ha eliminado correctamente.',
-            'alert-type' => 'Eliminación Éxitosa'
-        ];
 
-        return redirect()->route('departamentos.index')->with(compact('notification'));
+        NotificationService::notifyDelete('Departamento', $departmentName);
+
+        return redirect()->route('departamentos.index')->with('toast', [
+            'type' => 'warning',
+            'title' => 'Eliminación Éxitosa',
+            'message' => 'El departamento ' . $departmentName . ' se ha eliminado correctamente.'
+        ]);
     }
 }

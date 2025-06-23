@@ -21,6 +21,12 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
+        'address',
+        'birth_date',
+        'gender',
+        'profile_photo_path',
+        'banner_photo_path',
     ];
 
     /**
@@ -34,6 +40,15 @@ class User extends Authenticatable
     ];
 
     /**
+     * The attributes that should be appended.
+     *
+     * @var list<string>
+     */
+    protected $appends = [
+        'profile_photo_url',
+    ];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -43,6 +58,49 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'birth_date' => 'date',
         ];
+    }
+
+    /**
+     * Get the URL to the user's profile photo.
+     *
+     * @return string
+     */
+    public function getProfilePhotoUrlAttribute()
+    {
+        if ($this->profile_photo_path) {
+            return asset('storage/' . $this->profile_photo_path);
+        }
+
+        return $this->defaultProfilePhotoUrl();
+    }
+
+    /**
+     * Get the default profile photo URL if no profile photo has been uploaded.
+     *
+     * @return string
+     */
+    protected function defaultProfilePhotoUrl()
+    {
+        $name = trim(collect(explode(' ', $this->name))->map(function ($segment) {
+            return mb_substr($segment, 0, 1);
+        })->join(' '));
+
+        return 'https://ui-avatars.com/api/?name='.urlencode($name).'&color=7F9CF5&background=EBF4FF';
+    }
+
+    /**
+     * Get the URL to the user's banner photo.
+     *
+     * @return string
+     */
+    public function getBannerPhotoUrlAttribute()
+    {
+        if ($this->banner_photo_path) {
+            return asset('storage/' . $this->banner_photo_path);
+        }
+        // Retornar un banner por defecto
+        return asset('img/carrusel/bk1.webp');
     }
 }

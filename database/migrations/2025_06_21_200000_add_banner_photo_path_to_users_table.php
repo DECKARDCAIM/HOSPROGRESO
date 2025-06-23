@@ -11,12 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('specialties', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('description')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('banner_photo_path', 2048)->nullable()->after('profile_photo_path');
         });
     }
 
@@ -25,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('specialties');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('banner_photo_path');
+        });
     }
-};
+}; 

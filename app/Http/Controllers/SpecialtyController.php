@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Specialty;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use App\Models\Specialty as ModelsSpecialty;
 
@@ -35,29 +36,27 @@ class SpecialtyController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'name' => 'required|string|min:5',
-            'description' => 'nullable|string|max:320',
+            'name' => 'required|min:3',
+            'description' => 'nullable|string|max:255'
         ];
         $messages = [
-            'name.required' => 'El campo nombre es obligatorio.',
-            'name.string' => 'El campo nombre debe ser una cadena de texto.',
-            'name.min' => 'El campo nombre debe tener al menos 5 caracteres.',
-            'description.string' => 'El campo descripción debe ser una cadena de texto.',
-            'description.max' => 'El campo descripción no puede tener más de 320 caracteres.',
+            'name.required' => 'El nombre de la especialidad es obligatorio.',
+            'name.min' => 'El nombre de la especialidad debe tener más de 3 caracteres.'
         ];
-        
         $this->validate($request, $rules, $messages);
 
         $specialty = new Specialty();
         $specialty->name = $request->input('name');
         $specialty->description = $request->input('description');
         $specialty->save();
-        $notification = [
-            'message' => 'La especialidad ' . $specialty->name . ' se ha creado correctamente.',
-            'alert-type' => 'Creación Éxitosa'
-        ];
 
-        return redirect()->route('especialidades.index')->with(compact('notification'));
+        NotificationService::notifyCreate('Especialidad', $specialty->name);
+
+        return redirect()->route('especialidades.index')->with('toast', [
+            'type' => 'success',
+            'title' => 'Creación Éxitosa',
+            'message' => 'La especialidad ' . $specialty->name . ' se ha creado correctamente.'
+        ]);
     }
 
     /**
@@ -82,27 +81,26 @@ class SpecialtyController extends Controller
     public function update(Request $request, Specialty $specialty)
     {
         $rules = [
-            'name' => 'required|string|min:5',
-            'description' => 'nullable|string|max:320',
+            'name' => 'required|min:3',
+            'description' => 'nullable|string|max:255'
         ];
         $messages = [
-            'name.required' => 'El campo nombre es obligatorio.',
-            'name.string' => 'El campo nombre debe ser una cadena de texto.',
-            'name.min' => 'El campo nombre debe tener al menos 5 caracteres.',
-            'description.string' => 'El campo descripción debe ser una cadena de texto.',
-            'description.max' => 'El campo descripción no puede tener más de 320 caracteres.',
+            'name.required' => 'El nombre de la especialidad es obligatorio.',
+            'name.min' => 'El nombre de la especialidad debe tener más de 3 caracteres.'
         ];
-        
         $this->validate($request, $rules, $messages);
 
         $specialty->name = $request->input('name');
         $specialty->description = $request->input('description');
         $specialty->save();
-        $notification = [
-            'message' => 'La especialidad ' . $specialty->name . ' se ha actualizado correctamente.',
-            'alert-type' => 'Actualización Éxitosa'
-        ];
-        return redirect()->route('especialidades.index')->with(compact('notification'));
+
+        NotificationService::notifyUpdate('Especialidad', $specialty->name);
+
+        return redirect()->route('especialidades.index')->with('toast', [
+            'type' => 'info',
+            'title' => 'Actualización Éxitosa',
+            'message' => 'La especialidad ' . $specialty->name . ' se ha actualizado correctamente.'
+        ]);
     }
 
     /**
@@ -110,12 +108,15 @@ class SpecialtyController extends Controller
      */
     public function destroy(Specialty $specialty)
     {
+        $specialtyName = $specialty->name;
         $specialty->delete();
-        $notification = [
-            'message' => 'La especialidad ' . $specialty->name . ' se ha eliminado correctamente.',
-            'alert-type' => 'Eliminación Éxitosa'
-        ];
 
-        return redirect()->route('especialidades.index')->with(compact('notification'));
+        NotificationService::notifyDelete('Especialidad', $specialtyName);
+
+        return redirect()->route('especialidades.index')->with('toast', [
+            'type' => 'warning',
+            'title' => 'Eliminación Éxitosa',
+            'message' => 'La especialidad ' . $specialtyName . ' se ha eliminado correctamente.'
+        ]);
     }
 }
