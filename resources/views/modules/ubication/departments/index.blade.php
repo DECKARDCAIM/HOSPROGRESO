@@ -1,23 +1,10 @@
 @extends('layouts.panel')
 
-@section('tittle', 'Departamentos')
+@section('title', 'Departamentos')
 @section('breadcrumb', 'Departamentos')
 
 @section('content')
     <div class="container-fluid py-4">
-
-        @if (session('notification'))
-            <div class="alert alert-{{ session('notification')['alert-type'] == 'Eliminación Éxitosa' ? 'danger' : (session('notification')['alert-type'] == 'Actualización Éxitosa' ? 'info' : 'success') }} text-white alert-dismissible fade show"
-                role="alert" id="notification-alert">
-                <span class="alert-icon"><i class="fas fa-bell"></i></span>
-                <span class="alert-text">
-                    <strong>{{ ucfirst(session('notification')['alert-type']) }}!</strong>
-                    {{ session('notification')['message'] }}
-                </span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-
         <div class="row">
             <div class="col-12">
                 <div class="card mb-4">
@@ -152,29 +139,4 @@
         </div>
     </div>
 
-    <!-- Script para inicializar tooltips de Bootstrap -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        });
-        
-        // Auto-cerrar alertas después de 5 segundos
-        setTimeout(function() {
-            var alertElement = document.getElementById('notification-alert');
-            if (alertElement) {
-                var alert = bootstrap.Alert.getInstance(alertElement);
-                if (alert) {
-                    alert.close();
-                } else {
-                    alertElement.classList.remove('show');
-                    setTimeout(function() {
-                        alertElement.remove();
-                    }, 150);
-                }
-            }
-        }, 5000);
-    });
-    </script>
 @endsection

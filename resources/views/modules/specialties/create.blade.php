@@ -1,6 +1,6 @@
 @extends('layouts.panel')
 
-@section('tittle', 'Crear Especialidad')
+@section('title', 'Crear Especialidad')
 @section('breadcrumb', 'Especialidades / Crear')
 
 @section('content')

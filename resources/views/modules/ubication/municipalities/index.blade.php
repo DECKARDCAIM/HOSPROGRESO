@@ -1,23 +1,10 @@
 @extends('layouts.panel')
 
-@section('tittle', 'Municipios')
+@section('title', 'Municipios')
 @section('breadcrumb', 'Municipios')
 
 @section('content')
     <div class="container-fluid py-4">
-
-        @if (session('notification'))
-            <div class="alert alert-{{ session('notification')['alert-type'] == 'Eliminación Éxitosa' ? 'danger' : (session('notification')['alert-type'] == 'Actualización Éxitosa' ? 'info' : 'success') }} text-white alert-dismissible fade show"
-                role="alert" id="notification-alert">
-                <span class="alert-icon"><i class="fas fa-bell"></i></span>
-                <span class="alert-text">
-                    <strong>{{ ucfirst(session('notification')['alert-type']) }}!</strong>
-                    {{ session('notification')['message'] }}
-                </span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-
         <div class="row">
             <div class="col-12">
                 <div class="card mb-4">
