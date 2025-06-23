@@ -23959,7 +23959,7 @@ label,
 }
 
 .form-control {
-  border: none;
+  border: 1px solid #d2d6da;
 }
 
 .form-control.is-invalid {

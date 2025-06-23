@@ -1,6 +1,6 @@
 @extends('layouts.form')
 
-@section('tittle', 'Iniciar Sesión')
+@section('title', 'Iniciar Sesión')
 @section('description', 'Ingrese su correo y contraseña para acceder')
 
 @section('content')
@@ -22,12 +22,18 @@
 
         {{-- CORREO ELECTRONICO --}}
         <div class="input-group input-group-outline mb-3 @error('email') is-invalid @enderror">
-            <input type="email" class="form-control" id="email" name="email" placeholder="Correo electrónico" value="{{ old('email') }}" required autocomplete="email">
+            <input type="email" class="form-control" id="email" name="email" placeholder="Correo electrónico" value="{{ old('email') }}" required autocomplete="email" aria-describedby="email-error">
+            @error('email')
+                <div id="email-error" class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
         {{-- CONTRASEÑA --}}
         <div class="input-group input-group-outline mb-3 @error('password') is-invalid @enderror">
-            <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña" required autocomplete="current-password">
+            <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña" required autocomplete="current-password" aria-describedby="password-error">
+            @error('password')
+                <div id="password-error" class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
         {{-- OLVIDE CONTRASEÑA --}}

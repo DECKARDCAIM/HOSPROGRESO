@@ -1,6 +1,6 @@
 @extends('layouts.form')
 
-@section('tittle', 'Verificar Correo Electrónico')
+@section('title', 'Verificar Correo Electrónico')
 @section('description', 'Verifique su correo electrónico para continuar')
 
 @section('content')

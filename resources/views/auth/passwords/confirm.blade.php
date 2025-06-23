@@ -1,6 +1,6 @@
 @extends('layouts.form')
 
-@section('tittle', 'Confirmar Contraseña')
+@section('title', 'Confirmar Contraseña')
 @section('description', 'Por favor, confirme su contraseña antes de continuar')
 
 @section('content')
@@ -21,8 +21,11 @@
         @csrf
 
         {{-- CONTRASEÑA --}}
-        <div class="input-group input-group-outline mb-3">
-            <input id="password" type="password" class="form-control" name="password" placeholder="Contraseña" required autocomplete="current-password">
+        <div class="input-group input-group-outline mb-3 @error('password') is-invalid @enderror">
+            <input id="password" type="password" class="form-control" name="password" placeholder="Contraseña" required autocomplete="current-password" aria-describedby="password-error">
+            @error('password')
+                <div id="password-error" class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
         {{-- BOTON DE ENVIAR --}}
