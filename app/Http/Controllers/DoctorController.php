@@ -5,16 +5,37 @@ namespace App\Http\Controllers;
 use App\Models\Doctor;
 use App\Models\Specialty;
 use Illuminate\Http\Request;
+use App\Services\NotificationService;
 
 class DoctorController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $status = $request->query('status', 'active');
+        $search = $request->query('search', '');
+
         $doctors = Doctor::with('specialty')
-            ->where('is_active', true)
+            ->where('is_active', $status === 'active' ? 1 : 0)
+            ->when($search, function ($query, $search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('first_name', 'like', "%$search%")
+                      ->orWhere('second_name', 'like', "%$search%")
+                      ->orWhere('third_name', 'like', "%$search%")
+                      ->orWhere('first_lastname', 'like', "%$search%")
+                      ->orWhere('second_lastname', 'like', "%$search%")
+                      ->orWhere('married_lastname', 'like', "%$search%")
+                      ->orWhere('cui', 'like', "%$search%")
+                      ->orWhere('license_number', 'like', "%$search%")
+                      ->orWhereHas('specialty', function($q2) use ($search) {
+                          $q2->where('name', 'like', "%$search%") ;
+                      });
+                });
+            })
             ->orderBy('first_name')
-            ->paginate(10);
-        return view('modules.doctors.index', compact('doctors'));
+            ->paginate(25)
+            ->appends(['status' => $status, 'search' => $search]);
+
+        return view('modules.doctors.index', compact('doctors', 'status', 'search'));
     }
 
     public function create()
@@ -37,10 +58,15 @@ class DoctorController extends Controller
             'specialty_id' => 'required|exists:specialties,id',
         ]);
 
-        Doctor::create($request->all());
+        $doctor = Doctor::create($request->all());
+        NotificationService::notifyCreate('Doctor', $doctor->first_name . ' ' . $doctor->first_lastname);
 
         return redirect()->route('doctors.index')
-            ->with('success', 'Doctor creado exitosamente.');
+            ->with('toast', [
+                'type' => 'success',
+                'title' => 'Creación Éxitosa',
+                'message' => 'El doctor ' . $doctor->first_name . ' ' . $doctor->first_lastname . ' se ha creado correctamente.'
+            ]);
     }
 
     public function edit(Doctor $doctor)
@@ -64,16 +90,40 @@ class DoctorController extends Controller
         ]);
 
         $doctor->update($request->all());
+        NotificationService::notifyUpdate('Doctor', $doctor->first_name . ' ' . $doctor->first_lastname);
 
         return redirect()->route('doctors.index')
-            ->with('success', 'Doctor actualizado exitosamente.');
+            ->with('toast', [
+                'type' => 'info',
+                'title' => 'Actualización Éxitosa',
+                'message' => 'El doctor ' . $doctor->first_name . ' ' . $doctor->first_lastname . ' se ha actualizado correctamente.'
+            ]);
     }
 
     public function destroy(Doctor $doctor)
     {
         $doctor->update(['is_active' => false]);
+        NotificationService::notifyDelete('Doctor', $doctor->first_name . ' ' . $doctor->first_lastname);
 
         return redirect()->route('doctors.index')
-            ->with('success', 'Doctor eliminado exitosamente.');
+            ->with('toast', [
+                'type' => 'warning',
+                'title' => 'Eliminación Éxitosa',
+                'message' => 'El doctor ' . $doctor->first_name . ' ' . $doctor->first_lastname . ' se ha eliminado correctamente.'
+            ]);
+    }
+
+    public function reactivate($id)
+    {
+        $doctor = Doctor::findOrFail($id);
+        $doctor->is_active = true;
+        $doctor->save();
+        NotificationService::notifyUpdate('Doctor', $doctor->first_name . ' ' . $doctor->first_lastname);
+        return redirect()->route('doctors.index', ['status' => 'inactive'])
+            ->with('toast', [
+                'type' => 'success',
+                'title' => 'Reactivación Éxitosa',
+                'message' => 'El doctor ' . $doctor->first_name . ' ' . $doctor->first_lastname . ' ha sido reactivado correctamente.'
+            ]);
     }
 } 
