@@ -10,13 +10,13 @@ class LinguisticCommunitySeeder extends Seeder
     public function run()
     {
         $communities = [
-            ['name' => 'Español', 'code' => 'ESP'],
-            ['name' => 'Q\'eqchi\'', 'code' => 'QEQ'],
-            ['name' => 'K\'iche\'', 'code' => 'KIC'],
-            ['name' => 'Kaqchikel', 'code' => 'KAQ'],
-            ['name' => 'Mam', 'code' => 'MAM'],
-            ['name' => 'Inglés', 'code' => 'ING'],
-            ['name' => 'Otro', 'code' => 'OTR'],
+            ['name' => 'Español', 'description' => 'Comunidad hispanohablante', 'is_active' => true],
+            ['name' => 'Q\'eqchi\'', 'description' => 'Comunidad Q\'eqchi\'', 'is_active' => true],
+            ['name' => 'K\'iche\'', 'description' => 'Comunidad K\'iche\'', 'is_active' => true],
+            ['name' => 'Kaqchikel', 'description' => 'Comunidad Kaqchikel', 'is_active' => true],
+            ['name' => 'Mam', 'description' => 'Comunidad Mam', 'is_active' => true],
+            ['name' => 'Inglés', 'description' => 'Comunidad angloparlante', 'is_active' => true],
+            ['name' => 'Otro', 'description' => 'Otra comunidad lingüística', 'is_active' => true],
         ];
 
         foreach ($communities as $community) {
