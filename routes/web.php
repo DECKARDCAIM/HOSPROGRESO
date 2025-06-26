@@ -104,10 +104,21 @@ Route::resource('clinical-records', App\Http\Controllers\ClinicalRecordControlle
     ->middleware('auth')
     ->parameters(['clinical-records' => 'clinicalRecord']);
 
-Route::resource('patients', App\Http\Controllers\PatientController::class)
-    ->middleware('auth')
-    ->parameters(['patients' => 'patient']);
-
 Route::resource('medical-consultations', App\Http\Controllers\MedicalConsultationController::class)
     ->middleware('auth')
     ->parameters(['medical-consultations' => 'medicalConsultation']);
+
+Route::post('paises/{id}/reactivate', [App\Http\Controllers\CountryController::class, 'reactivate'])->name('paises.reactivate');
+Route::post('departamentos/{id}/reactivate', [App\Http\Controllers\DepartmentController::class, 'reactivate'])->name('departamentos.reactivate');
+Route::post('municipios/{id}/reactivate', [App\Http\Controllers\MunicipalityController::class, 'reactivate'])->name('municipios.reactivate');
+Route::post('/especialidades/{id}/reactivate', [App\Http\Controllers\SpecialtyController::class, 'reactivate'])->name('especialidades.reactivate');
+Route::post('doctors/{id}/reactivate', [App\Http\Controllers\DoctorController::class, 'reactivate'])->name('doctors.reactivate');
+Route::post('sexes/{id}/reactivate', [App\Http\Controllers\SexController::class, 'reactivate'])->name('sexes.reactivate');
+Route::post('civil-statuses/{id}/reactivate', [App\Http\Controllers\CivilStatusController::class, 'reactivate'])->name('civil-statuses.reactivate');
+Route::post('linguistic-communities/{id}/reactivate', [App\Http\Controllers\LinguisticCommunityController::class, 'reactivate'])->name('linguistic-communities.reactivate');
+Route::post('ethnicities/{id}/reactivate', [App\Http\Controllers\EthnicityController::class, 'reactivate'])->name('ethnicities.reactivate');
+Route::post('disabilities/{id}/reactivate', [App\Http\Controllers\DisabilityController::class, 'reactivate'])->name('disabilities.reactivate');
+Route::post('allergies/{id}/reactivate', [App\Http\Controllers\AllergyController::class, 'reactivate'])->name('allergies.reactivate');
+Route::post('laboratory-tests/{id}/reactivate', [App\Http\Controllers\LaboratoryTestController::class, 'reactivate'])->name('laboratory-tests.reactivate');
+Route::post('exams/{id}/reactivate', [App\Http\Controllers\ExamController::class, 'reactivate'])->name('exams.reactivate');
+Route::post('medications/{id}/reactivate', [App\Http\Controllers\MedicationController::class, 'reactivate'])->name('medications.reactivate');

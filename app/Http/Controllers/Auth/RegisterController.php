@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use App\Services\NotificationService;
 
 class RegisterController extends Controller
 {
@@ -67,6 +68,22 @@ class RegisterController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+        ]);
+    }
+
+    protected function registered($request, $user)
+    {
+        NotificationService::create(
+            'Registro Exitoso',
+            '¡Bienvenido, ' . $user->name . '! Tu cuenta ha sido creada correctamente.',
+            'success',
+            $user->id
+        );
+
+        session()->flash('toast', [
+            'type' => 'success',
+            'title' => '¡Bienvenido, ' . $user->name . '!',
+            'message' => 'Has creado tu cuenta y has iniciado sesión correctamente.'
         ]);
     }
 }

@@ -24,7 +24,7 @@
             <a class="nav-link text-dark position-relative" href="javascript:;" id="notificationDropdown" role="button"
                 data-bs-toggle="dropdown" data-bs-strategy="fixed" aria-expanded="false">
                 <i class="material-symbols-rounded">notifications</i>
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notification-count">
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notification-count" style="display: none;">
                     0
                 </span>
             </a>
