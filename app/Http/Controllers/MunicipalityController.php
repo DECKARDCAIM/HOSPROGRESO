@@ -19,28 +19,35 @@ class MunicipalityController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-{
-    $countries = Country::all();
-    $departments = collect();
-    $municipalities = Municipality::query();
+    {
+        $status = $request->query('status', 'active');
+        $search = $request->query('search', '');
+        $country_id = $request->country_id;
+        $department_id = $request->department_id;
 
-    // Si hay país seleccionado, filtra los departamentos
-    if ($request->filled('country_id')) {
-        $departments = Department::where('country_id', $request->country_id)->get();
+        $countries = Country::all();
+        $departments = collect();
 
-        // Si además hay departamento, filtra por él
-        if ($request->filled('department_id')) {
-            $municipalities->where('department_id', $request->department_id);
-        } else {
-            // Filtra por todos los departamentos de ese país
-            $municipalities->whereIn('department_id', $departments->pluck('id'));
+        $municipalities = Municipality::where('is_active', $status === 'active' ? 1 : 0);
+
+        if ($country_id) {
+            $departments = Department::where('country_id', $country_id)->get();
+            if ($department_id) {
+                $municipalities->where('department_id', $department_id);
+            } else {
+                $municipalities->whereIn('department_id', $departments->pluck('id'));
+            }
         }
+
+        if ($search) {
+            $municipalities->where('name', 'like', '%' . $search . '%');
+        }
+
+        $municipalities = $municipalities->paginate(25)
+            ->appends(['status' => $status, 'search' => $search, 'country_id' => $country_id, 'department_id' => $department_id]);
+
+        return view('modules.ubication.municipalities.index', compact('countries', 'departments', 'municipalities', 'status', 'search', 'country_id', 'department_id'));
     }
-
-    $municipalities = $municipalities->get();
-
-    return view('modules.ubication.municipalities.index', compact('countries', 'departments', 'municipalities'));
-}
 
 
     /**
@@ -119,7 +126,8 @@ class MunicipalityController extends Controller
         $rules = [
             'name' => 'required|min:3',
             'description' => 'nullable|string|max:255',
-            'department_id' => 'required|exists:departments,id'
+            'department_id' => 'required|exists:departments,id',
+            'is_active' => 'nullable|boolean'
         ];
         $messages = [
             'name.required' => 'El nombre del municipio es obligatorio.',
@@ -132,6 +140,8 @@ class MunicipalityController extends Controller
         $municipality->name = $request->input('name');
         $municipality->description = $request->input('description');
         $municipality->department_id = $request->input('department_id');
+        $wasInactive = !$municipality->is_active;
+        $municipality->is_active = $request->has('is_active') ? (bool)$request->input('is_active') : $municipality->is_active;
         $municipality->save();
 
         NotificationService::notifyUpdate('Municipio', $municipality->name);
@@ -149,7 +159,8 @@ class MunicipalityController extends Controller
     public function destroy(Municipality $municipality)
     {
         $municipalityName = $municipality->name;
-        $municipality->delete();
+        $municipality->is_active = false;
+        $municipality->save();
 
         NotificationService::notifyDelete('Municipio', $municipalityName);
 
@@ -158,5 +169,19 @@ class MunicipalityController extends Controller
             'title' => 'Eliminación Éxitosa',
             'message' => 'El municipio ' . $municipalityName . ' se ha eliminado correctamente.'
         ]);
+    }
+
+    public function reactivate($id)
+    {
+        $municipality = Municipality::findOrFail($id);
+        $municipality->is_active = true;
+        $municipality->save();
+        \App\Services\NotificationService::notifyUpdate('Municipio', $municipality->name);
+        return redirect()->route('municipios.index', ['status' => 'inactive'])
+            ->with('toast', [
+                'type' => 'success',
+                'title' => 'Reactivación Éxitosa',
+                'message' => 'El municipio ' . $municipality->name . ' ha sido reactivado correctamente.'
+            ]);
     }
 }

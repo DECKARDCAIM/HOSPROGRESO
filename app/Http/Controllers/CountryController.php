@@ -6,6 +6,8 @@ use App\Models\Country;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use App\Models\Country as ModelsCountry;
+use App\Models\Department;
+use App\Models\Municipality;
 
 class CountryController extends Controller
 {
@@ -16,10 +18,19 @@ class CountryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $countries = Country::all();
-        return view('modules.ubication.countries.index', compact('countries'));
+        $status = $request->query('status', 'active');
+        $search = $request->query('search', '');
+
+        $countries = Country::where('is_active', $status === 'active' ? 1 : 0)
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', '%' . $search . '%');
+            })
+            ->paginate(25)
+            ->appends(['status' => $status, 'search' => $search]);
+
+        return view('modules.ubication.countries.index', compact('countries', 'status', 'search'));
     }
 
     /**
@@ -82,7 +93,8 @@ class CountryController extends Controller
     {
         $rules = [
             'name' => 'required|min:3',
-            'description' => 'nullable|string|max:255'
+            'description' => 'nullable|string|max:255',
+            'is_active' => 'nullable|boolean'
         ];
         $messages = [
             'name.required' => 'El nombre del pais es obligatorio.',
@@ -92,7 +104,23 @@ class CountryController extends Controller
 
         $country->name = $request->input('name');
         $country->description = $request->input('description');
+        $wasInactive = !$country->is_active;
+        $country->is_active = $request->has('is_active') ? (bool)$request->input('is_active') : $country->is_active;
         $country->save();
+
+        // Reactivar en cascada si se activa
+        if ($country->is_active && $wasInactive) {
+            $departments = Department::where('country_id', $country->id)->get();
+            foreach ($departments as $department) {
+                $department->is_active = true;
+                $department->save();
+                $municipalities = Municipality::where('department_id', $department->id)->get();
+                foreach ($municipalities as $municipality) {
+                    $municipality->is_active = true;
+                    $municipality->save();
+                }
+            }
+        }
 
         NotificationService::notifyUpdate('País', $country->name);
 
@@ -109,7 +137,20 @@ class CountryController extends Controller
     public function destroy(Country $country)
     {
         $countryName = $country->name;
-        $country->delete();
+        $country->is_active = false;
+        $country->save();
+
+        // Eliminar lógicamente en cascada
+        $departments = Department::where('country_id', $country->id)->get();
+        foreach ($departments as $department) {
+            $department->is_active = false;
+            $department->save();
+            $municipalities = Municipality::where('department_id', $department->id)->get();
+            foreach ($municipalities as $municipality) {
+                $municipality->is_active = false;
+                $municipality->save();
+            }
+        }
 
         NotificationService::notifyDelete('País', $countryName);
 
@@ -118,5 +159,30 @@ class CountryController extends Controller
             'title' => 'Eliminación Éxitosa',
             'message' => 'El país ' . $countryName . ' se ha eliminado correctamente.'
         ]);
+    }
+
+    public function reactivate($id)
+    {
+        $country = Country::findOrFail($id);
+        $country->is_active = true;
+        $country->save();
+        // Reactivar departamentos y municipios en cascada
+        $departments = \App\Models\Department::where('country_id', $country->id)->get();
+        foreach ($departments as $department) {
+            $department->is_active = true;
+            $department->save();
+            $municipalities = \App\Models\Municipality::where('department_id', $department->id)->get();
+            foreach ($municipalities as $municipality) {
+                $municipality->is_active = true;
+                $municipality->save();
+            }
+        }
+        \App\Services\NotificationService::notifyUpdate('País', $country->name);
+        return redirect()->route('paises.index', ['status' => 'inactive'])
+            ->with('toast', [
+                'type' => 'success',
+                'title' => 'Reactivación Éxitosa',
+                'message' => 'El país ' . $country->name . ' y sus dependientes han sido reactivados correctamente.'
+            ]);
     }
 }

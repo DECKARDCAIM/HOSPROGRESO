@@ -16,10 +16,18 @@ class SpecialtyController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $specialties = Specialty::all();
-        return view('modules.specialties.index', compact('specialties'));
+        $status = $request->query('status', 'active');
+        $search = $request->query('search');
+        $specialties = Specialty::where('is_active', $status === 'active' ? 1 : 0)
+            ->when($search, function ($query) use ($search) {
+                return $query->where('name', 'like', "%$search%");
+            })
+            ->orderBy('name')
+            ->paginate(25)
+            ->appends($request->all());
+        return view('modules.specialties.index', compact('specialties', 'status', 'search'));
     }
 
     /**
@@ -104,19 +112,35 @@ class SpecialtyController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource from storage (soft delete).
      */
     public function destroy(Specialty $specialty)
     {
         $specialtyName = $specialty->name;
-        $specialty->delete();
-
+        $specialty->is_active = false;
+        $specialty->save();
         NotificationService::notifyDelete('Especialidad', $specialtyName);
-
         return redirect()->route('especialidades.index')->with('toast', [
             'type' => 'warning',
             'title' => 'Eliminación Éxitosa',
             'message' => 'La especialidad ' . $specialtyName . ' se ha eliminado correctamente.'
         ]);
+    }
+
+    /**
+     * Reactivar especialidad inactiva.
+     */
+    public function reactivate($id)
+    {
+        $specialty = Specialty::findOrFail($id);
+        $specialty->is_active = true;
+        $specialty->save();
+        NotificationService::notifyUpdate('Especialidad', $specialty->name);
+        return redirect()->route('especialidades.index', ['status' => 'inactive'])
+            ->with('toast', [
+                'type' => 'success',
+                'title' => 'Reactivación Éxitosa',
+                'message' => 'La especialidad ha sido reactivada correctamente.'
+            ]);
     }
 }
