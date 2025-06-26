@@ -10,16 +10,16 @@ class MedicationSeeder extends Seeder
     public function run()
     {
         $medications = [
-            ['name' => 'Paracetamol', 'description' => 'Analgésico y antipirético', 'code' => 'PAR'],
-            ['name' => 'Ibuprofeno', 'description' => 'Antiinflamatorio no esteroideo', 'code' => 'IBU'],
-            ['name' => 'Amoxicilina', 'description' => 'Antibiótico', 'code' => 'AMO'],
-            ['name' => 'Omeprazol', 'description' => 'Protector gástrico', 'code' => 'OME'],
-            ['name' => 'Loratadina', 'description' => 'Antihistamínico', 'code' => 'LOR'],
-            ['name' => 'Metformina', 'description' => 'Antidiabético', 'code' => 'MET'],
-            ['name' => 'Losartán', 'description' => 'Antihipertensivo', 'code' => 'LOS'],
-            ['name' => 'Atorvastatina', 'description' => 'Hipolipemiante', 'code' => 'ATO'],
-            ['name' => 'Amlodipino', 'description' => 'Antihipertensivo', 'code' => 'AML'],
-            ['name' => 'Furosemida', 'description' => 'Diurético', 'code' => 'FUR'],
+            ['name' => 'Paracetamol', 'description' => 'Analgésico y antipirético', 'is_active' => true],
+            ['name' => 'Ibuprofeno', 'description' => 'Antiinflamatorio no esteroideo', 'is_active' => true],
+            ['name' => 'Amoxicilina', 'description' => 'Antibiótico', 'is_active' => true],
+            ['name' => 'Omeprazol', 'description' => 'Protector gástrico', 'is_active' => true],
+            ['name' => 'Loratadina', 'description' => 'Antihistamínico', 'is_active' => true],
+            ['name' => 'Metformina', 'description' => 'Antidiabético', 'is_active' => true],
+            ['name' => 'Losartán', 'description' => 'Antihipertensivo', 'is_active' => true],
+            ['name' => 'Atorvastatina', 'description' => 'Hipolipemiante', 'is_active' => true],
+            ['name' => 'Amlodipino', 'description' => 'Antihipertensivo', 'is_active' => true],
+            ['name' => 'Furosemida', 'description' => 'Diurético', 'is_active' => true],
         ];
 
         foreach ($medications as $medication) {

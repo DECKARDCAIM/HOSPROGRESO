@@ -3,14 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Medication;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 class MedicationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $medications = Medication::where('is_active', true)->orderBy('name')->paginate(10);
-        return view('modules.medications.index', compact('medications'));
+        $status = $request->query('status', 'active');
+        $search = $request->query('search', '');
+        $medications = Medication::where('is_active', $status === 'active' ? 1 : 0)
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', "%$search%");
+            })
+            ->orderBy('name')
+            ->paginate(25)
+            ->appends(['status' => $status, 'search' => $search]);
+        return view('modules.medications.index', compact('medications', 'status', 'search'));
     }
 
     public function create()
@@ -22,14 +31,20 @@ class MedicationController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'code' => 'required|string|max:20|unique:medications,code',
+            'description' => 'nullable|string|max:255',
         ]);
-
-        Medication::create($request->all());
-
+        $medication = Medication::create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'is_active' => true
+        ]);
+        NotificationService::notifyCreate('Medicamento', $medication->name);
         return redirect()->route('medications.index')
-            ->with('success', 'Medicamento creado exitosamente.');
+            ->with('toast', [
+                'type' => 'success',
+                'title' => 'Creación Éxitosa',
+                'message' => 'El medicamento ' . $medication->name . ' se ha creado correctamente.'
+            ]);
     }
 
     public function edit(Medication $medication)
@@ -41,21 +56,47 @@ class MedicationController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'code' => 'required|string|max:20|unique:medications,code,' . $medication->id,
+            'description' => 'nullable|string|max:255',
         ]);
-
-        $medication->update($request->all());
-
+        $medication->update([
+            'name' => $request->name,
+            'description' => $request->description,
+        ]);
+        NotificationService::notifyUpdate('Medicamento', $medication->name);
         return redirect()->route('medications.index')
-            ->with('success', 'Medicamento actualizado exitosamente.');
+            ->with('toast', [
+                'type' => 'info',
+                'title' => 'Actualización Éxitosa',
+                'message' => 'El medicamento ' . $medication->name . ' se ha actualizado correctamente.'
+            ]);
     }
 
     public function destroy(Medication $medication)
     {
+        $medicationName = $medication->name;
         $medication->update(['is_active' => false]);
 
+        NotificationService::notifyDelete('Medicamento', $medicationName);
+
         return redirect()->route('medications.index')
-            ->with('success', 'Medicamento eliminado exitosamente.');
+            ->with('toast', [
+                'type' => 'warning',
+                'title' => 'Eliminación Éxitosa',
+                'message' => 'El medicamento ' . $medicationName . ' se ha eliminado correctamente.'
+            ]);
+    }
+
+    public function reactivate($id)
+    {
+        $medication = Medication::findOrFail($id);
+        $medication->is_active = true;
+        $medication->save();
+        NotificationService::notifyUpdate('Medicamento', $medication->name);
+        return redirect()->route('medications.index', ['status' => 'inactive'])
+            ->with('toast', [
+                'type' => 'success',
+                'title' => 'Reactivación Éxitosa',
+                'message' => 'El medicamento ' . $medication->name . ' ha sido reactivado correctamente.'
+            ]);
     }
 } 
