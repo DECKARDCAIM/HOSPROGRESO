@@ -49,12 +49,6 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('patients.index') }}">
-                        <i class="material-symbols-rounded opacity-5 me-2">personal_injury</i>
-                        <span class="sidenav-normal">Historias Clínicas</span>
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('medical-consultations.index') }}">
                         <i class="material-symbols-rounded opacity-5 me-2">medical_services</i>
                         <span class="sidenav-normal">Consultas Médicas</span>
@@ -203,12 +197,6 @@
                                 <a class="nav-link text-dark" href="{{ url('/municipios') }}">
                                     <i class="material-symbols-rounded opacity-5 me-2">location_city</i>
                                     <span class="sidenav-normal">Municipios</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="#">
-                                    <i class="material-symbols-rounded opacity-5 me-2">pin_drop</i>
-                                    <span class="sidenav-normal">Direcciones</span>
                                 </a>
                             </li>
                         </ul>

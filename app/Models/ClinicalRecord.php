@@ -83,9 +83,9 @@ class ClinicalRecord extends Model
         return $this->belongsTo(Municipality::class);
     }
 
-    public function patients()
+    public function medicalConsultations()
     {
-        return $this->hasMany(Patient::class);
+        return $this->hasMany(MedicalConsultation::class);
     }
 
     public function getFullNameAttribute()
@@ -108,5 +108,23 @@ class ClinicalRecord extends Model
     public function getAgeAttribute()
     {
         return Carbon::parse($this->birth_date)->age;
+    }
+
+    // Método para obtener la última consulta médica
+    public function getLastConsultationAttribute()
+    {
+        return $this->medicalConsultations()->latest('consultation_date')->first();
+    }
+
+    // Método para obtener consultas por estado
+    public function getConsultationsByStatus($status)
+    {
+        return $this->medicalConsultations()->where('status', $status)->get();
+    }
+
+    // Método para obtener el total de consultas
+    public function getTotalConsultationsAttribute()
+    {
+        return $this->medicalConsultations()->count();
     }
 } 

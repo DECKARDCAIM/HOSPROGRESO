@@ -21,7 +21,7 @@ class ClinicalRecordController extends Controller
     {
         $clinicalRecords = ClinicalRecord::with(['sex', 'civilStatus', 'country', 'department', 'municipality'])
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(25);
         return view('modules.clinical_records.index', compact('clinicalRecords'));
     }
 
@@ -74,10 +74,14 @@ class ClinicalRecordController extends Controller
         $data = $request->all();
         $data['record_number'] = $recordNumber;
 
-        ClinicalRecord::create($data);
+        $clinicalRecord = ClinicalRecord::create($data);
 
         return redirect()->route('clinical-records.index')
-            ->with('success', 'Expediente clínico creado exitosamente.');
+            ->with('toast', [
+                'type' => 'success',
+                'title' => 'Creación Éxitosa',
+                'message' => 'El expediente clínico ' . $clinicalRecord->record_number . ' se ha creado correctamente.'
+            ]);
     }
 
     public function edit(ClinicalRecord $clinicalRecord)
@@ -126,7 +130,11 @@ class ClinicalRecordController extends Controller
         $clinicalRecord->update($request->all());
 
         return redirect()->route('clinical-records.index')
-            ->with('success', 'Expediente clínico actualizado exitosamente.');
+            ->with('toast', [
+                'type' => 'info',
+                'title' => 'Actualización Éxitosa',
+                'message' => 'El expediente clínico ' . $clinicalRecord->record_number . ' se ha actualizado correctamente.'
+            ]);
     }
 
     public function destroy(ClinicalRecord $clinicalRecord)
@@ -140,6 +148,10 @@ class ClinicalRecordController extends Controller
         $clinicalRecord->delete();
 
         return redirect()->route('clinical-records.index')
-            ->with('success', 'Expediente clínico eliminado exitosamente.');
+            ->with('toast', [
+                'type' => 'warning',
+                'title' => 'Eliminación Éxitosa',
+                'message' => 'El expediente clínico se ha eliminado correctamente.'
+            ]);
     }
 } 

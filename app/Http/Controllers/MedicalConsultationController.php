@@ -9,36 +9,39 @@ use App\Models\Specialty;
 use App\Models\LaboratoryTest;
 use App\Models\Exam;
 use App\Models\Medication;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use App\Models\ClinicalRecord;
 
 class MedicalConsultationController extends Controller
 {
     public function index()
     {
-        $medicalConsultations = MedicalConsultation::with(['patient.clinicalRecord', 'doctor', 'specialty'])
-            ->orderBy('consultation_date', 'desc')
-            ->paginate(10);
+        $medicalConsultations = MedicalConsultation::with(['clinicalRecord', 'doctor', 'specialty'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(25);
+
         return view('modules.medical_consultations.index', compact('medicalConsultations'));
     }
 
     public function create()
     {
-        $patients = Patient::with('clinicalRecord')->orderBy('created_at', 'desc')->get();
-        $doctors = Doctor::with('specialty')->where('is_active', true)->orderBy('first_name')->get();
+        $clinicalRecords = ClinicalRecord::orderBy('created_at', 'desc')->get();
+        $doctors = Doctor::where('is_active', true)->orderBy('full_name')->get();
         $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
         $laboratoryTests = LaboratoryTest::where('is_active', true)->orderBy('name')->get();
         $exams = Exam::where('is_active', true)->orderBy('name')->get();
         $medications = Medication::where('is_active', true)->orderBy('name')->get();
 
         return view('modules.medical_consultations.create', compact(
-            'patients', 'doctors', 'specialties', 'laboratoryTests', 'exams', 'medications'
+            'clinicalRecords', 'doctors', 'specialties', 'laboratoryTests', 'exams', 'medications'
         ));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'patient_id' => 'required|exists:patients,id',
+            'clinical_record_id' => 'required|exists:clinical_records,id',
             'doctor_id' => 'required|exists:doctors,id',
             'specialty_id' => 'required|exists:specialties,id',
             'consultation_date' => 'required|date',
@@ -57,7 +60,7 @@ class MedicalConsultationController extends Controller
         ]);
 
         $data = $request->except(['laboratory_test_ids', 'exam_ids', 'medication_ids']);
-        $data['consultation_date'] = now(); // Fecha y hora automática
+        $data['consultation_date'] = \Carbon\Carbon::parse($request->consultation_date);
 
         $medicalConsultation = MedicalConsultation::create($data);
 
@@ -76,29 +79,33 @@ class MedicalConsultationController extends Controller
             $medicalConsultation->medications()->attach($request->medication_ids);
         }
 
+        NotificationService::notifyCreate('Consulta Médica', 'Consulta #' . $medicalConsultation->id);
+
         return redirect()->route('medical-consultations.index')
-            ->with('success', 'Consulta médica creada exitosamente.');
+            ->with('success', [
+                'title' => 'Consulta Creada',
+                'message' => 'La consulta médica se ha creado correctamente.'
+            ]);
     }
 
     public function edit(MedicalConsultation $medicalConsultation)
     {
-        $patients = Patient::with('clinicalRecord')->orderBy('created_at', 'desc')->get();
-        $doctors = Doctor::with('specialty')->where('is_active', true)->orderBy('first_name')->get();
+        $clinicalRecords = ClinicalRecord::orderBy('created_at', 'desc')->get();
+        $doctors = Doctor::where('is_active', true)->orderBy('full_name')->get();
         $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
         $laboratoryTests = LaboratoryTest::where('is_active', true)->orderBy('name')->get();
         $exams = Exam::where('is_active', true)->orderBy('name')->get();
         $medications = Medication::where('is_active', true)->orderBy('name')->get();
 
         return view('modules.medical_consultations.edit', compact(
-            'medicalConsultation', 'patients', 'doctors', 'specialties', 
-            'laboratoryTests', 'exams', 'medications'
+            'medicalConsultation', 'clinicalRecords', 'doctors', 'specialties', 'laboratoryTests', 'exams', 'medications'
         ));
     }
 
     public function update(Request $request, MedicalConsultation $medicalConsultation)
     {
         $request->validate([
-            'patient_id' => 'required|exists:patients,id',
+            'clinical_record_id' => 'required|exists:clinical_records,id',
             'doctor_id' => 'required|exists:doctors,id',
             'specialty_id' => 'required|exists:specialties,id',
             'consultation_date' => 'required|date',
@@ -117,6 +124,7 @@ class MedicalConsultationController extends Controller
         ]);
 
         $data = $request->except(['laboratory_test_ids', 'exam_ids', 'medication_ids']);
+        $data['consultation_date'] = \Carbon\Carbon::parse($request->consultation_date);
 
         $medicalConsultation->update($data);
 
@@ -129,15 +137,27 @@ class MedicalConsultationController extends Controller
         // Sincronizar medicamentos
         $medicalConsultation->medications()->sync($request->medication_ids ?? []);
 
+        NotificationService::notifyUpdate('Consulta Médica', 'Consulta #' . $medicalConsultation->id);
+
         return redirect()->route('medical-consultations.index')
-            ->with('success', 'Consulta médica actualizada exitosamente.');
+            ->with('success', [
+                'title' => 'Consulta Actualizada',
+                'message' => 'La consulta médica se ha actualizado correctamente.'
+            ]);
     }
 
     public function destroy(MedicalConsultation $medicalConsultation)
     {
+        $consultationId = $medicalConsultation->id;
         $medicalConsultation->delete();
 
+        NotificationService::notifyDelete('Consulta Médica', 'Consulta #' . $consultationId);
+
         return redirect()->route('medical-consultations.index')
-            ->with('success', 'Consulta médica eliminada exitosamente.');
+            ->with('toast', [
+                'type' => 'warning',
+                'title' => 'Eliminación Éxitosa',
+                'message' => 'La consulta médica #' . $consultationId . ' se ha eliminado correctamente.'
+            ]);
     }
 } 

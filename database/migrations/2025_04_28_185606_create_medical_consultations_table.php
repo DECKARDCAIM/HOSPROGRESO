@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('medical_consultations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('patient_id')->constrained('patients');
+            $table->foreignId('clinical_record_id')->constrained('clinical_records');
             $table->foreignId('doctor_id')->constrained('doctors');
             $table->foreignId('specialty_id')->constrained('specialties');
             $table->datetime('consultation_date');

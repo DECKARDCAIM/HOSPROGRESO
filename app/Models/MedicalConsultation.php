@@ -10,7 +10,7 @@ class MedicalConsultation extends Model
     use HasFactory;
 
     protected $fillable = [
-        'patient_id',
+        'clinical_record_id',
         'doctor_id',
         'specialty_id',
         'consultation_date',
@@ -19,16 +19,24 @@ class MedicalConsultation extends Model
         'nursing_note',
         'admission_note',
         'prescribed_medications',
-        'reference_contrareference'
+        'reference_contrareference',
+        'status',
+        'additional_notes'
     ];
 
     protected $casts = [
         'consultation_date' => 'datetime',
     ];
 
-    public function patient()
+    // Estados de consulta
+    const STATUS_ABIERTA = 'abierta';
+    const STATUS_EN_PROCESO = 'en_proceso';
+    const STATUS_FINALIZADA = 'finalizada';
+    const STATUS_CANCELADA = 'cancelada';
+
+    public function clinicalRecord()
     {
-        return $this->belongsTo(Patient::class);
+        return $this->belongsTo(ClinicalRecord::class);
     }
 
     public function doctor()
