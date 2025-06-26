@@ -10,11 +10,11 @@ class CivilStatusSeeder extends Seeder
     public function run()
     {
         $civilStatuses = [
-            ['name' => 'Soltero', 'code' => 'SOL'],
-            ['name' => 'Casado', 'code' => 'CAS'],
-            ['name' => 'Divorciado', 'code' => 'DIV'],
-            ['name' => 'Viudo', 'code' => 'VIU'],
-            ['name' => 'Unión Libre', 'code' => 'UNL'],
+            ['name' => 'Soltero', 'description' => 'Persona soltera', 'is_active' => true],
+            ['name' => 'Casado', 'description' => 'Persona casada', 'is_active' => true],
+            ['name' => 'Divorciado', 'description' => 'Persona divorciada', 'is_active' => true],
+            ['name' => 'Viudo', 'description' => 'Persona viuda', 'is_active' => true],
+            ['name' => 'Unión Libre', 'description' => 'Persona en unión libre', 'is_active' => true],
         ];
 
         foreach ($civilStatuses as $status) {

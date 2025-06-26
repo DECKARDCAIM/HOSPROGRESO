@@ -11,7 +11,7 @@ class CivilStatus extends Model
 
     protected $fillable = [
         'name',
-        'code',
+        'description',
         'is_active'
     ];
 
