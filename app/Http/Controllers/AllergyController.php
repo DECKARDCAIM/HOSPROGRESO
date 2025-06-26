@@ -3,14 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Allergy;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 class AllergyController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $allergies = Allergy::where('is_active', true)->orderBy('name')->paginate(10);
-        return view('modules.allergies.index', compact('allergies'));
+        $status = $request->query('status', 'active');
+        $search = $request->query('search', '');
+        $allergies = Allergy::where('is_active', $status === 'active' ? 1 : 0)
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', "%$search%");
+            })
+            ->orderBy('name')
+            ->paginate(25)
+            ->appends(['status' => $status, 'search' => $search]);
+        return view('modules.allergies.index', compact('allergies', 'status', 'search'));
     }
 
     public function create()
@@ -22,14 +31,20 @@ class AllergyController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'code' => 'required|string|max:20|unique:allergies,code',
+            'description' => 'nullable|string|max:255',
         ]);
-
-        Allergy::create($request->all());
-
+        $allergy = Allergy::create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'is_active' => true
+        ]);
+        NotificationService::notifyCreate('Alergia', $allergy->name);
         return redirect()->route('allergies.index')
-            ->with('success', 'Alergia creada exitosamente.');
+            ->with('toast', [
+                'type' => 'success',
+                'title' => 'Creación Éxitosa',
+                'message' => 'La alergia ' . $allergy->name . ' se ha creado correctamente.'
+            ]);
     }
 
     public function edit(Allergy $allergy)
@@ -41,21 +56,47 @@ class AllergyController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'code' => 'required|string|max:20|unique:allergies,code,' . $allergy->id,
+            'description' => 'nullable|string|max:255',
         ]);
-
-        $allergy->update($request->all());
-
+        $allergy->update([
+            'name' => $request->name,
+            'description' => $request->description,
+        ]);
+        NotificationService::notifyUpdate('Alergia', $allergy->name);
         return redirect()->route('allergies.index')
-            ->with('success', 'Alergia actualizada exitosamente.');
+            ->with('toast', [
+                'type' => 'info',
+                'title' => 'Actualización Éxitosa',
+                'message' => 'La alergia ' . $allergy->name . ' se ha actualizado correctamente.'
+            ]);
     }
 
     public function destroy(Allergy $allergy)
     {
+        $allergyName = $allergy->name;
         $allergy->update(['is_active' => false]);
 
+        NotificationService::notifyDelete('Alergia', $allergyName);
+
         return redirect()->route('allergies.index')
-            ->with('success', 'Alergia eliminada exitosamente.');
+            ->with('toast', [
+                'type' => 'warning',
+                'title' => 'Eliminación Éxitosa',
+                'message' => 'La alergia ' . $allergyName . ' se ha eliminado correctamente.'
+            ]);
+    }
+
+    public function reactivate($id)
+    {
+        $allergy = Allergy::findOrFail($id);
+        $allergy->is_active = true;
+        $allergy->save();
+        NotificationService::notifyUpdate('Alergia', $allergy->name);
+        return redirect()->route('allergies.index', ['status' => 'inactive'])
+            ->with('toast', [
+                'type' => 'success',
+                'title' => 'Reactivación Éxitosa',
+                'message' => 'La alergia ' . $allergy->name . ' ha sido reactivada correctamente.'
+            ]);
     }
 } 
