@@ -3,14 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Sex;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 class SexController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $sexes = Sex::where('is_active', true)->orderBy('name')->paginate(10);
-        return view('modules.sexes.index', compact('sexes'));
+        $status = $request->query('status', 'active');
+        $search = $request->query('search', '');
+        $sexes = Sex::where('is_active', $status === 'active' ? 1 : 0)
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', "%$search%");
+            })
+            ->orderBy('name')
+            ->paginate(25)
+            ->appends(['status' => $status, 'search' => $search]);
+        return view('modules.sexes.index', compact('sexes', 'status', 'search'));
     }
 
     public function create()
@@ -22,13 +31,20 @@ class SexController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:10|unique:sexes,code',
+            'description' => 'nullable|string|max:255',
         ]);
-
-        Sex::create($request->all());
-
+        $sex = Sex::create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'is_active' => true
+        ]);
+        NotificationService::notifyCreate('Sexo', $sex->name);
         return redirect()->route('sexes.index')
-            ->with('success', 'Sexo creado exitosamente.');
+            ->with('toast', [
+                'type' => 'success',
+                'title' => 'Creación Éxitosa',
+                'message' => 'El sexo ' . $sex->name . ' se ha creado correctamente.'
+            ]);
     }
 
     public function edit(Sex $sex)
@@ -40,20 +56,47 @@ class SexController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:10|unique:sexes,code,' . $sex->id,
+            'description' => 'nullable|string|max:255',
         ]);
-
-        $sex->update($request->all());
-
+        $sex->update([
+            'name' => $request->name,
+            'description' => $request->description,
+        ]);
+        NotificationService::notifyUpdate('Sexo', $sex->name);
         return redirect()->route('sexes.index')
-            ->with('success', 'Sexo actualizado exitosamente.');
+            ->with('toast', [
+                'type' => 'info',
+                'title' => 'Actualización Éxitosa',
+                'message' => 'El sexo ' . $sex->name . ' se ha actualizado correctamente.'
+            ]);
     }
 
     public function destroy(Sex $sex)
     {
+        $sexName = $sex->name;
         $sex->update(['is_active' => false]);
 
+        NotificationService::notifyDelete('Sexo', $sexName);
+
         return redirect()->route('sexes.index')
-            ->with('success', 'Sexo eliminado exitosamente.');
+            ->with('toast', [
+                'type' => 'warning',
+                'title' => 'Eliminación Éxitosa',
+                'message' => 'El sexo ' . $sexName . ' se ha eliminado correctamente.'
+            ]);
+    }
+
+    public function reactivate($id)
+    {
+        $sex = Sex::findOrFail($id);
+        $sex->is_active = true;
+        $sex->save();
+        NotificationService::notifyUpdate('Sexo', $sex->name);
+        return redirect()->route('sexes.index', ['status' => 'inactive'])
+            ->with('toast', [
+                'type' => 'success',
+                'title' => 'Reactivación Éxitosa',
+                'message' => 'El sexo ' . $sex->name . ' ha sido reactivado correctamente.'
+            ]);
     }
 } 

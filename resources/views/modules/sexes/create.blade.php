@@ -48,10 +48,10 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group mb-4">
-                                    <label for="code" class="form-control-label mb-2">
-                                        <i class="fas fa-barcode text-info me-2"></i>Código
+                                    <label for="description" class="form-control-label mb-2">
+                                        <i class="fas fa-align-left text-info me-2"></i>Descripción
                                     </label>
-                                    <input type="text" name="code" id="code" class="form-control form-control-lg border border-2 border-info shadow-sm" placeholder="Código" value="{{ old('code')}}" required>
+                                    <textarea name="description" id="description" class="form-control form-control-lg border border-2 border-info shadow-sm" placeholder="Descripción (opcional)" rows="2">{{ old('description') }}</textarea>
                                 </div>
                             </div>
                         </div>
