@@ -3,14 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ethnicity;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 class EthnicityController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $ethnicities = Ethnicity::where('is_active', true)->orderBy('name')->paginate(10);
-        return view('modules.ethnicities.index', compact('ethnicities'));
+        $status = $request->query('status', 'active');
+        $search = $request->query('search', '');
+        $ethnicities = Ethnicity::where('is_active', $status === 'active' ? 1 : 0)
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', "%$search%");
+            })
+            ->orderBy('name')
+            ->paginate(25)
+            ->appends(['status' => $status, 'search' => $search]);
+        return view('modules.ethnicities.index', compact('ethnicities', 'status', 'search'));
     }
 
     public function create()
@@ -22,13 +31,20 @@ class EthnicityController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:20|unique:ethnicities,code',
+            'description' => 'nullable|string|max:255',
         ]);
-
-        Ethnicity::create($request->all());
-
+        $ethnicity = Ethnicity::create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'is_active' => true
+        ]);
+        NotificationService::notifyCreate('Etnia', $ethnicity->name);
         return redirect()->route('ethnicities.index')
-            ->with('success', 'Etnia creada exitosamente.');
+            ->with('toast', [
+                'type' => 'success',
+                'title' => 'Creación Éxitosa',
+                'message' => 'La etnia ' . $ethnicity->name . ' se ha creado correctamente.'
+            ]);
     }
 
     public function edit(Ethnicity $ethnicity)
@@ -40,20 +56,47 @@ class EthnicityController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:20|unique:ethnicities,code,' . $ethnicity->id,
+            'description' => 'nullable|string|max:255',
         ]);
-
-        $ethnicity->update($request->all());
-
+        $ethnicity->update([
+            'name' => $request->name,
+            'description' => $request->description,
+        ]);
+        NotificationService::notifyUpdate('Etnia', $ethnicity->name);
         return redirect()->route('ethnicities.index')
-            ->with('success', 'Etnia actualizada exitosamente.');
+            ->with('toast', [
+                'type' => 'info',
+                'title' => 'Actualización Éxitosa',
+                'message' => 'La etnia ' . $ethnicity->name . ' se ha actualizado correctamente.'
+            ]);
     }
 
     public function destroy(Ethnicity $ethnicity)
     {
+        $ethnicityName = $ethnicity->name;
         $ethnicity->update(['is_active' => false]);
 
+        NotificationService::notifyDelete('Etnia', $ethnicityName);
+
         return redirect()->route('ethnicities.index')
-            ->with('success', 'Etnia eliminada exitosamente.');
+            ->with('toast', [
+                'type' => 'warning',
+                'title' => 'Eliminación Éxitosa',
+                'message' => 'La etnia ' . $ethnicityName . ' se ha eliminado correctamente.'
+            ]);
+    }
+
+    public function reactivate($id)
+    {
+        $ethnicity = Ethnicity::findOrFail($id);
+        $ethnicity->is_active = true;
+        $ethnicity->save();
+        NotificationService::notifyUpdate('Etnia', $ethnicity->name);
+        return redirect()->route('ethnicities.index', ['status' => 'inactive'])
+            ->with('toast', [
+                'type' => 'success',
+                'title' => 'Reactivación Éxitosa',
+                'message' => 'La etnia ' . $ethnicity->name . ' ha sido reactivada correctamente.'
+            ]);
     }
 } 
