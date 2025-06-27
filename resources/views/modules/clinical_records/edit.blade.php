@@ -334,20 +334,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const countrySelect = document.getElementById('country_id');
     const departmentSelect = document.getElementById('department_id');
     const municipalitySelect = document.getElementById('municipality_id');
+    const oldDepartment = '{{ old('department_id', $clinicalRecord->department_id) }}';
+    const oldMunicipality = '{{ old('municipality_id', $clinicalRecord->municipality_id) }}';
 
-    function filterDepartmentsByCountry(countryId) {
+    function filterDepartmentsByCountry(countryId, selectedId = null) {
         departmentSelect.innerHTML = '<option value="">Seleccionar...</option>';
         allDepartments.forEach(dep => {
             if (dep.country_id == countryId) {
-                departmentSelect.innerHTML += `<option value="${dep.id}">${dep.name}</option>`;
+                departmentSelect.innerHTML += `<option value="${dep.id}"${selectedId == dep.id ? ' selected' : ''}>${dep.name}</option>`;
             }
         });
     }
-    function filterMunicipalitiesByDepartment(departmentId) {
+    function filterMunicipalitiesByDepartment(departmentId, selectedId = null) {
         municipalitySelect.innerHTML = '<option value="">Seleccionar...</option>';
         allMunicipalities.forEach(mun => {
             if (mun.department_id == departmentId) {
-                municipalitySelect.innerHTML += `<option value="${mun.id}">${mun.name}</option>`;
+                municipalitySelect.innerHTML += `<option value="${mun.id}"${selectedId == mun.id ? ' selected' : ''}>${mun.name}</option>`;
             }
         });
     }
@@ -360,10 +362,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     // Inicialización automática si ya hay valores
     if (countrySelect.value) {
-        filterDepartmentsByCountry(countrySelect.value);
+        filterDepartmentsByCountry(countrySelect.value, oldDepartment);
         if (departmentSelect.value) {
-            filterMunicipalitiesByDepartment(departmentSelect.value);
+            filterMunicipalitiesByDepartment(departmentSelect.value, oldMunicipality);
         }
+    } else {
+        departmentSelect.innerHTML = '<option value="">Seleccionar...</option>';
+        municipalitySelect.innerHTML = '<option value="">Seleccionar...</option>';
     }
 });
 </script>

@@ -59,7 +59,9 @@
                                         <p class="text-sm text-secondary mb-0">{{ $record->age }} años</p>
                                     </td>
                                     <td class="px-3 py-2">
-                                        <p class="text-sm text-secondary mb-0">{{ $record->municipality->name }}, {{ $record->department->name }}</p>
+                                        <p class="text-sm text-secondary mb-0">
+                                            {{ $record->municipality->name ?? '-' }}, {{ $record->department->name ?? '-' }}, {{ $record->country->name ?? '-' }}
+                                        </p>
                                     </td>
                                     <td class="align-middle text-center">
                                         <a href="{{ route('clinical-records.show', $record) }}" class="btn btn-primary rounded-pill px-3 py-2 me-2">
