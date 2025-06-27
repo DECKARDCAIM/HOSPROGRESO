@@ -33,7 +33,7 @@
                                 </select>
                             </div>
                             <div class="col-md-3 mb-2 mb-md-0">
-                                <select name="country_id" class="form-select form-select-lg border border-info" onchange="this.form.submit()">
+                                <select name="country_id" id="country_id" class="form-select form-select-lg border border-info">
                                     <option value="">Todos los países</option>
                                     @foreach($countries as $country)
                                         <option value="{{ $country->id }}" {{ (isset($country_id) && $country_id == $country->id) ? 'selected' : '' }}>{{ $country->name }}</option>
@@ -41,7 +41,7 @@
                                 </select>
                             </div>
                             <div class="col-md-3 mb-2 mb-md-0">
-                                <select name="department_id" class="form-select form-select-lg border border-info" onchange="this.form.submit()">
+                                <select name="department_id" id="department_id" class="form-select form-select-lg border border-info" onchange="this.form.submit()">
                                     <option value="">Todos los departamentos</option>
                                     @foreach($departments as $department)
                                         <option value="{{ $department->id }}" {{ (isset($department_id) && $department_id == $department->id) ? 'selected' : '' }}>{{ $department->name }}</option>
@@ -161,6 +161,16 @@
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
+        // Script para limpiar el filtro de departamento al cambiar país y enviar el formulario
+        const countrySelect = document.getElementById('country_id');
+        const departmentSelect = document.getElementById('department_id');
+        const form = countrySelect.closest('form');
+        if (countrySelect && departmentSelect && form) {
+            countrySelect.addEventListener('change', function() {
+                departmentSelect.selectedIndex = 0;
+                form.submit();
+            });
+        }
     });
     </script>
     <style>
