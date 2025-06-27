@@ -23,8 +23,6 @@ return new class extends Migration
             $table->foreignId('linguistic_community_id')->constrained('linguistic_communities');
             $table->foreignId('ethnicity_id')->constrained('ethnicities');
             $table->date('birth_date');
-            $table->foreignId('disability_id')->nullable()->constrained('disabilities');
-            $table->foreignId('allergy_id')->nullable()->constrained('allergies');
             $table->string('education')->nullable();
             $table->string('occupation')->nullable();
             $table->foreignId('country_id')->constrained('countries');

@@ -58,8 +58,6 @@ class ClinicalRecordController extends Controller
             'linguistic_community_id' => 'required|exists:linguistic_communities,id',
             'ethnicity_id' => 'required|exists:ethnicities,id',
             'birth_date' => 'required|date|before:today',
-            'disability_id' => 'nullable|exists:disabilities,id',
-            'allergy_id' => 'nullable|exists:allergies,id',
             'education' => 'nullable|string|max:255',
             'occupation' => 'nullable|string|max:255',
             'country_id' => 'required|exists:countries,id',
@@ -70,11 +68,12 @@ class ClinicalRecordController extends Controller
 
         // Generar número de expediente único
         $recordNumber = 'EXP-' . date('Y') . '-' . str_pad(ClinicalRecord::count() + 1, 6, '0', STR_PAD_LEFT);
-        
-        $data = $request->all();
+        $data = $request->except(['disability_id', 'allergy_id']);
         $data['record_number'] = $recordNumber;
 
         $clinicalRecord = ClinicalRecord::create($data);
+        $clinicalRecord->disabilities()->sync($request->disability_id ?? []);
+        $clinicalRecord->allergies()->sync($request->allergy_id ?? []);
 
         return redirect()->route('clinical-records.index')
             ->with('toast', [
@@ -117,8 +116,6 @@ class ClinicalRecordController extends Controller
             'linguistic_community_id' => 'required|exists:linguistic_communities,id',
             'ethnicity_id' => 'required|exists:ethnicities,id',
             'birth_date' => 'required|date|before:today',
-            'disability_id' => 'nullable|exists:disabilities,id',
-            'allergy_id' => 'nullable|exists:allergies,id',
             'education' => 'nullable|string|max:255',
             'occupation' => 'nullable|string|max:255',
             'country_id' => 'required|exists:countries,id',
@@ -127,7 +124,10 @@ class ClinicalRecordController extends Controller
             'specific_residence' => 'nullable|string',
         ]);
 
-        $clinicalRecord->update($request->all());
+        $data = $request->except(['disability_id', 'allergy_id']);
+        $clinicalRecord->update($data);
+        $clinicalRecord->disabilities()->sync($request->disability_id ?? []);
+        $clinicalRecord->allergies()->sync($request->allergy_id ?? []);
 
         return redirect()->route('clinical-records.index')
             ->with('toast', [

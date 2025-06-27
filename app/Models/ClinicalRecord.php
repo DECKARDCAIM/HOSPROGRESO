@@ -58,14 +58,14 @@ class ClinicalRecord extends Model
         return $this->belongsTo(Ethnicity::class);
     }
 
-    public function disability()
+    public function disabilities()
     {
-        return $this->belongsTo(Disability::class);
+    return $this->belongsToMany(Disability::class, 'clinical_record_disability');
     }
-
-    public function allergy()
+    
+    public function allergies()
     {
-        return $this->belongsTo(Allergy::class);
+    return $this->belongsToMany(Allergy::class, 'clinical_record_allergy');
     }
 
     public function country()

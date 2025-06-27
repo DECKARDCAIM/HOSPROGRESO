@@ -114,7 +114,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="birth_date" class="form-control-label">Fecha de Nacimiento *</label>
-                                    <input type="date" class="form-control @error('birth_date') is-invalid @enderror" id="birth_date" name="birth_date" value="{{ old('birth_date', $clinicalRecord->birth_date) }}" required>
+                                    <input type="date" class="form-control @error('birth_date') is-invalid @enderror" id="birth_date" name="birth_date" value="{{ old('birth_date', $clinicalRecord->birth_date ? $clinicalRecord->birth_date->format('Y-m-d') : '') }}" required>
                                     @error('birth_date')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -187,10 +187,9 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="disability_id" class="form-control-label">Discapacidad</label>
-                                    <select class="form-control @error('disability_id') is-invalid @enderror" id="disability_id" name="disability_id">
-                                        <option value="">Seleccionar...</option>
+                                    <select class="form-control @error('disability_id') is-invalid @enderror" id="disability_id" name="disability_id[]" multiple>
                                         @foreach($disabilities as $disability)
-                                            <option value="{{ $disability->id }}" {{ old('disability_id', $clinicalRecord->disability_id) == $disability->id ? 'selected' : '' }}>{{ $disability->name }}</option>
+                                            <option value="{{ $disability->id }}" {{ (collect(old('disability_id', isset($clinicalRecord) ? $clinicalRecord->disabilities->pluck('id')->toArray() : []))->contains($disability->id) ? 'selected' : '') }}>{{ $disability->name }}</option>
                                         @endforeach
                                     </select>
                                     @error('disability_id')
@@ -201,10 +200,9 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="allergy_id" class="form-control-label">Alergia</label>
-                                    <select class="form-control @error('allergy_id') is-invalid @enderror" id="allergy_id" name="allergy_id">
-                                        <option value="">Seleccionar...</option>
+                                    <select class="form-control @error('allergy_id') is-invalid @enderror" id="allergy_id" name="allergy_id[]" multiple>
                                         @foreach($allergies as $allergy)
-                                            <option value="{{ $allergy->id }}" {{ old('allergy_id', $clinicalRecord->allergy_id) == $allergy->id ? 'selected' : '' }}>{{ $allergy->name }}</option>
+                                            <option value="{{ $allergy->id }}" {{ (collect(old('allergy_id', isset($clinicalRecord) ? $clinicalRecord->allergies->pluck('id')->toArray() : []))->contains($allergy->id) ? 'selected' : '') }}>{{ $allergy->name }}</option>
                                         @endforeach
                                     </select>
                                     @error('allergy_id')
@@ -310,4 +308,25 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection
+
+@push('scripts')
+<script src="{{ asset('js/plugins/choices.min.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function setupMultiSelect(selectId) {
+        const select = document.getElementById(selectId);
+        new Choices(select, {
+            removeItemButton: true,
+            placeholder: true,
+            placeholderValue: 'Seleccionar...',
+            searchEnabled: true,
+            shouldSort: false,
+            itemSelectText: '',
+        });
+    }
+    setupMultiSelect('disability_id');
+    setupMultiSelect('allergy_id');
+});
+</script>
+@endpush 
