@@ -17,12 +17,53 @@ use Illuminate\Support\Str;
 
 class ClinicalRecordController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $countries = Country::orderBy('name')->get();
+        $departments = Department::orderBy('name')->get();
+        $municipalities = Municipality::orderBy('name')->get();
+        $linguisticCommunities = LinguisticCommunity::orderBy('name')->get();
+        $ethnicities = Ethnicity::orderBy('name')->get();
+        $sexes = Sex::orderBy('name')->get();
+        $civilStatuses = CivilStatus::orderBy('name')->get();
+
         $clinicalRecords = ClinicalRecord::with(['sex', 'civilStatus', 'country', 'department', 'municipality'])
+            ->when($request->q, function ($query, $q) {
+                $query->where(function($q2) use ($q) {
+                    $q2->where('record_number', 'like', "%$q%")
+                        ->orWhere('first_name', 'like', "%$q%")
+                        ->orWhere('second_name', 'like', "%$q%")
+                        ->orWhere('third_name', 'like', "%$q%")
+                        ->orWhere('first_lastname', 'like', "%$q%")
+                        ->orWhere('second_lastname', 'like', "%$q%")
+                        ->orWhere('married_lastname', 'like', "%$q%")
+                        ->orWhere('cui', 'like', "%$q%")
+                    ;
+                });
+            })
+            ->when($request->country_id, fn($q, $id) => $q->where('country_id', $id))
+            ->when($request->department_id, fn($q, $id) => $q->where('department_id', $id))
+            ->when($request->municipality_id, fn($q, $id) => $q->where('municipality_id', $id))
+            ->when($request->linguistic_community_id, fn($q, $id) => $q->where('linguistic_community_id', $id))
+            ->when($request->ethnicity_id, fn($q, $id) => $q->where('ethnicity_id', $id))
+            ->when($request->sex_id, fn($q, $id) => $q->where('sex_id', $id))
+            ->when($request->civil_status_id, fn($q, $id) => $q->where('civil_status_id', $id))
+            ->when($request->birth_date, fn($q, $date) => $q->whereDate('birth_date', $date))
+            ->distinct()
             ->orderBy('created_at', 'desc')
-            ->paginate(25);
-        return view('modules.clinical_records.index', compact('clinicalRecords'));
+            ->paginate(25)
+            ->appends($request->all());
+
+        return view('modules.clinical_records.index', compact(
+            'clinicalRecords',
+            'countries',
+            'departments',
+            'municipalities',
+            'linguisticCommunities',
+            'ethnicities',
+            'sexes',
+            'civilStatuses'
+        ));
     }
 
     public function create()
@@ -134,24 +175,6 @@ class ClinicalRecordController extends Controller
                 'type' => 'info',
                 'title' => 'Actualización Éxitosa',
                 'message' => 'El expediente clínico ' . $clinicalRecord->record_number . ' se ha actualizado correctamente.'
-            ]);
-    }
-
-    public function destroy(ClinicalRecord $clinicalRecord)
-    {
-        // Verificar si tiene historias clínicas asociadas
-        if ($clinicalRecord->patients()->count() > 0) {
-            return redirect()->route('clinical-records.index')
-                ->with('error', 'No se puede eliminar el expediente porque tiene historias clínicas asociadas.');
-        }
-
-        $clinicalRecord->delete();
-
-        return redirect()->route('clinical-records.index')
-            ->with('toast', [
-                'type' => 'warning',
-                'title' => 'Eliminación Éxitosa',
-                'message' => 'El expediente clínico se ha eliminado correctamente.'
             ]);
     }
 } 
