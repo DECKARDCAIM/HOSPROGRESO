@@ -327,6 +327,44 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     setupMultiSelect('disability_id');
     setupMultiSelect('allergy_id');
+
+    // --- UBICACIÓN EN CASCADA ---
+    const allDepartments = @json($departments);
+    const allMunicipalities = @json($municipalities);
+    const countrySelect = document.getElementById('country_id');
+    const departmentSelect = document.getElementById('department_id');
+    const municipalitySelect = document.getElementById('municipality_id');
+
+    function filterDepartmentsByCountry(countryId) {
+        departmentSelect.innerHTML = '<option value="">Seleccionar...</option>';
+        allDepartments.forEach(dep => {
+            if (dep.country_id == countryId) {
+                departmentSelect.innerHTML += `<option value="${dep.id}">${dep.name}</option>`;
+            }
+        });
+    }
+    function filterMunicipalitiesByDepartment(departmentId) {
+        municipalitySelect.innerHTML = '<option value="">Seleccionar...</option>';
+        allMunicipalities.forEach(mun => {
+            if (mun.department_id == departmentId) {
+                municipalitySelect.innerHTML += `<option value="${mun.id}">${mun.name}</option>`;
+            }
+        });
+    }
+    countrySelect.addEventListener('change', function() {
+        filterDepartmentsByCountry(this.value);
+        municipalitySelect.innerHTML = '<option value="">Seleccionar...</option>';
+    });
+    departmentSelect.addEventListener('change', function() {
+        filterMunicipalitiesByDepartment(this.value);
+    });
+    // Inicialización automática si ya hay valores
+    if (countrySelect.value) {
+        filterDepartmentsByCountry(countrySelect.value);
+        if (departmentSelect.value) {
+            filterMunicipalitiesByDepartment(departmentSelect.value);
+        }
+    }
 });
 </script>
 @endpush 
