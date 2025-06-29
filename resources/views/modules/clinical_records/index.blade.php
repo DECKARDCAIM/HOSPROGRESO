@@ -146,6 +146,9 @@
                                         <a href="{{ route('clinical-records.show', $record) }}" class="btn btn-primary rounded-pill px-3 py-2 me-2">
                                             <i class="fas fa-eye me-1"></i> Ver
                                         </a>
+                                        <a href="{{ route('clinical-records.print', $record->id) }}" class="btn btn-secondary rounded-pill px-3 py-2" target="_blank">
+                                            <i class="fas fa-print me-1"></i> Imprimir
+                                        </a>
                                         <a href="{{ route('clinical-records.edit', $record) }}" class="btn btn-info rounded-pill px-3 py-2 me-2">
                                             <i class="fas fa-edit me-1"></i> Editar
                                         </a>

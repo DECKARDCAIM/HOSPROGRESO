@@ -88,6 +88,11 @@ class ClinicalRecord extends Model
         return $this->hasMany(MedicalConsultation::class);
     }
 
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
+    }
+
     public function getFullNameAttribute()
     {
         $names = array_filter([

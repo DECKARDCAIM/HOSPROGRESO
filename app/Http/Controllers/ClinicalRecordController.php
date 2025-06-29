@@ -14,6 +14,7 @@ use App\Models\Department;
 use App\Models\Municipality;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ClinicalRecordController extends Controller
 {
@@ -176,5 +177,26 @@ class ClinicalRecordController extends Controller
                 'title' => 'Actualización Éxitosa',
                 'message' => 'El expediente clínico ' . $clinicalRecord->record_number . ' se ha actualizado correctamente.'
             ]);
+    }
+
+    public function show($id)
+    {
+        $clinicalRecord = ClinicalRecord::with([
+            'medicalConsultations.doctor.specialty',
+            'medicalConsultations.laboratoryTests',
+            'medicalConsultations.exams',
+            'medicalConsultations.medications',
+            'appointments.doctor.specialty',
+            'appointments.scheduleType'
+        ])->findOrFail($id);
+
+        return view('modules.clinical_records.show', compact('clinicalRecord'));
+    }
+
+    public function printPdf(ClinicalRecord $clinicalRecord)
+    {
+        $clinicalRecord->load(['sex', 'civilStatus', 'linguisticCommunity', 'ethnicity', 'medicalConsultations.doctor', 'medicalConsultations.specialty', 'medicalConsultations.laboratoryTests', 'medicalConsultations.exams', 'medicalConsultations.medications']);
+        $pdf = Pdf::loadView('modules.clinical_records.print_pdf', compact('clinicalRecord'));
+        return $pdf->stream('expediente_'.$clinicalRecord->record_number.'.pdf');
     }
 } 

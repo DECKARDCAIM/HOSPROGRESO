@@ -1,7 +1,7 @@
 @extends('layouts.panel')
 
-@section('title', 'Consultas Médicas')
-@section('breadcrumb', 'Consultas Médicas')
+@section('title', 'Historias Clínicas en Proceso')
+@section('breadcrumb', 'Historias Clínicas')
 
 @section('content')
     <div class="container-fluid py-4">
@@ -11,14 +11,14 @@
                     <div class="card-header pb-0 bg-info">
                         <div class="row align-items-center">
                             <div class="col-md-8">
-                                <h6 class="text-white mb-0">Consultas Médicas</h6>
+                                <h6 class="text-white mb-0">Historias Clínicas en Proceso</h6>
                                 <p class="text-sm text-white opacity-8 mb-0">
-                                    Este módulo permite gestionar las consultas médicas de los pacientes.
+                                    Historias clínicas abiertas y en proceso de atención.
                                 </p>
                             </div>
                             <div class="col-md-4 text-end">
-                                <a href="{{ route('medical-consultations.create') }}" class="btn btn-sm btn-white">
-                                    <i class="fas fa-plus me-2"></i>Nueva Consulta
+                                <a href="{{ route('clinical-records.index') }}" class="btn btn-sm btn-white">
+                                    <i class="fas fa-chevron-left me-2"></i>Ver Expedientes
                                 </a>
                             </div>
                         </div>
@@ -30,10 +30,11 @@
                                 <thead>
                                     <tr>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Paciente</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Tipo de Atención</th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Doctor</th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Especialidad</th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Fecha</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Motivo</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Estado</th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3 text-center">Acciones</th>
                                     </tr>
                                 </thead>
@@ -44,43 +45,61 @@
                                                 <div class="d-flex align-items-center">
                                                     <div class="ms-3">
                                                         <h6 class="mb-0">{{ $consultation->clinicalRecord->full_name }}</h6>
-                                                        <small class="text-muted">#{{ $consultation->clinicalRecord->history_number }}</small>
+                                                        <small class="text-muted">CUI: {{ $consultation->clinicalRecord->cui }}</small>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>{{ $consultation->doctor->full_name }}</td>
-                                            <td>{{ $consultation->specialty->name }}</td>
+                                            <td>
+                                                @php
+                                                    $attentionType = strtolower($consultation->attention_type ?? '');
+                                                    $badgeClass = match($attentionType) {
+                                                        'emergencia' => 'bg-danger',
+                                                        'consulta_externa' => 'bg-success',
+                                                        default => 'bg-light text-dark',
+                                                    };
+                                                @endphp
+                                                <span class="badge {{ $badgeClass }}">{{ $consultation->getAttentionTypeLabel() }}</span>
+                                            </td>
+                                            <td>{{ $consultation->doctor->full_name ?? 'Pendiente' }}</td>
+                                            <td>{{ $consultation->specialty->name ?? 'Pendiente' }}</td>
                                             <td>{{ $consultation->consultation_date->format('d/m/Y H:i') }}</td>
                                             <td>
-                                                <span class="text-truncate d-inline-block" style="max-width: 200px;" title="{{ $consultation->consultation_reason }}">
-                                                    {{ $consultation->consultation_reason }}
-                                                </span>
+                                                @php
+                                                    $status = strtolower($consultation->status ?? '');
+                                                    $badgeClass = match($status) {
+                                                        'abierta' => 'bg-primary',
+                                                        'en_proceso' => 'bg-warning',
+                                                        'finalizada' => 'bg-success',
+                                                        'cancelada' => 'bg-dark',
+                                                        default => 'bg-light text-dark',
+                                                    };
+                                                    $statusText = match($status) {
+                                                        'en_proceso' => 'En proceso',
+                                                        default => ucfirst($consultation->status ?? '-')
+                                                    };
+                                                @endphp
+                                                <span class="badge {{ $badgeClass }}">{{ $statusText }}</span>
                                             </td>
-                                            <td>
-                                                <div class="btn-group" role="group">
-                                                    <a href="{{ route('medical-consultations.show', $consultation) }}" 
-                                                       class="btn btn-sm btn-info" title="Ver">
-                                                        <i class="fas fa-eye"></i>
+                                            <td class="align-middle text-center">
+                                                @if($consultation->status === 'abierta')
+                                                    <a href="{{ route('medical-consultations.process', $consultation) }}" class="btn btn-sm btn-info" title="Iniciar Proceso">
+                                                        <i class="fas fa-play me-1"></i> Iniciar Proceso
                                                     </a>
-                                                    <a href="{{ route('medical-consultations.edit', $consultation) }}" 
-                                                       class="btn btn-sm btn-warning" title="Editar">
-                                                        <i class="fas fa-edit"></i>
+                                                @elseif($consultation->status === 'en_proceso')
+                                                    <a href="{{ route('medical-consultations.process', $consultation) }}" class="btn btn-sm btn-info" title="Continuar Proceso">
+                                                        <i class="fas fa-forward me-1"></i> Continuar Proceso
                                                     </a>
-                                                    <form action="{{ route('medical-consultations.destroy', $consultation) }}" 
-                                                          method="POST" class="d-inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-sm btn-danger" 
-                                                                onclick="return confirm('¿Estás seguro de eliminar esta consulta?')" title="Eliminar">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </form>
-                                                </div>
+                                                @endif
+                                                <a href="{{ route('medical-consultations.show', $consultation) }}" class="btn btn-sm btn-secondary ms-1" title="Ver Detalles">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="6" class="text-center">No hay consultas médicas registradas</td>
+                                            <td colspan="7" class="text-center py-4">
+                                                <span class="text-muted">No hay historias clínicas en proceso.</span>
+                                            </td>
                                         </tr>
                                     @endforelse
                                 </tbody>
