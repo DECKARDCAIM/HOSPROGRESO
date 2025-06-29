@@ -27,6 +27,7 @@ class User extends Authenticatable
         'gender',
         'profile_photo_path',
         'banner_photo_path',
+        'role',
     ];
 
     /**
@@ -61,6 +62,11 @@ class User extends Authenticatable
             'birth_date' => 'date',
         ];
     }
+
+    // Constantes para roles
+    const ROLE_EMERGENCY = 'emergencia';
+    const ROLE_CONSULTATION = 'consulta_externa';
+    const ROLE_ADMIN = 'admin';
 
     /**
      * Get the URL to the user's profile photo.
@@ -102,5 +108,31 @@ class User extends Authenticatable
         }
         // Retornar un banner por defecto
         return asset('img/carrusel/bk1.webp');
+    }
+
+    // Métodos de ayuda para roles
+    public function isEmergency()
+    {
+        return $this->role === self::ROLE_EMERGENCY;
+    }
+
+    public function isConsultation()
+    {
+        return $this->role === self::ROLE_CONSULTATION;
+    }
+
+    public function isAdmin()
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function getRoleLabel()
+    {
+        return match($this->role) {
+            self::ROLE_EMERGENCY => 'Emergencia',
+            self::ROLE_CONSULTATION => 'Consulta Externa',
+            self::ROLE_ADMIN => 'Administrador',
+            default => 'No definido'
+        };
     }
 }
