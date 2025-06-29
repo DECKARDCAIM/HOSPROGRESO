@@ -9,6 +9,8 @@ use App\Http\Controllers\MunicipalityController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SpecialtyController;
+use App\Http\Controllers\ScheduleTypeController;
+use App\Http\Controllers\AppointmentController;
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -41,6 +43,7 @@ Route::resource('municipios', App\Http\Controllers\MunicipalityController::class
     ->parameters(['municipios' => 'municipality']);
 
 // Ruta para Perfil
+Route::middleware('auth')->group(function () {
     Route::get('/perfil', [ProfileController::class, 'index'])->name('profile.index');
     Route::get('/perfil/editar', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/perfil', [ProfileController::class, 'update'])->name('profile.update');
@@ -48,9 +51,10 @@ Route::resource('municipios', App\Http\Controllers\MunicipalityController::class
     Route::put('/perfil/photo', [ProfileController::class, 'updatePhoto'])->name('profile.updatePhoto');
     Route::put('/perfil/banner', [ProfileController::class, 'updateBanner'])->name('profile.updateBanner');
     Route::delete('/perfil/sesion/{session_id}', [ProfileController::class, 'logoutSession'])->name('profile.logoutSession');
+});
 
 // Rutas para Notificaciones
-Route::prefix('notifications')->group(function () {
+Route::prefix('notifications')->middleware('auth')->group(function () {
     Route::get('/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unread-count');
     Route::get('/unread', [NotificationController::class, 'getUnreadNotifications'])->name('notifications.unread');
     Route::get('/all', [NotificationController::class, 'getAllNotifications'])->name('notifications.all');
@@ -104,21 +108,58 @@ Route::resource('clinical-records', App\Http\Controllers\ClinicalRecordControlle
     ->middleware('auth')
     ->parameters(['clinical-records' => 'clinicalRecord']);
 
+// Rutas para Medical Consultations con sistema de steps
 Route::resource('medical-consultations', App\Http\Controllers\MedicalConsultationController::class)
     ->middleware('auth')
     ->parameters(['medical-consultations' => 'medicalConsultation']);
 
-Route::post('paises/{id}/reactivate', [App\Http\Controllers\CountryController::class, 'reactivate'])->name('paises.reactivate');
-Route::post('departamentos/{id}/reactivate', [App\Http\Controllers\DepartmentController::class, 'reactivate'])->name('departamentos.reactivate');
-Route::post('municipios/{id}/reactivate', [App\Http\Controllers\MunicipalityController::class, 'reactivate'])->name('municipios.reactivate');
-Route::post('/especialidades/{id}/reactivate', [App\Http\Controllers\SpecialtyController::class, 'reactivate'])->name('especialidades.reactivate');
-Route::post('doctors/{id}/reactivate', [App\Http\Controllers\DoctorController::class, 'reactivate'])->name('doctors.reactivate');
-Route::post('sexes/{id}/reactivate', [App\Http\Controllers\SexController::class, 'reactivate'])->name('sexes.reactivate');
-Route::post('civil-statuses/{id}/reactivate', [App\Http\Controllers\CivilStatusController::class, 'reactivate'])->name('civil-statuses.reactivate');
-Route::post('linguistic-communities/{id}/reactivate', [App\Http\Controllers\LinguisticCommunityController::class, 'reactivate'])->name('linguistic-communities.reactivate');
-Route::post('ethnicities/{id}/reactivate', [App\Http\Controllers\EthnicityController::class, 'reactivate'])->name('ethnicities.reactivate');
-Route::post('disabilities/{id}/reactivate', [App\Http\Controllers\DisabilityController::class, 'reactivate'])->name('disabilities.reactivate');
-Route::post('allergies/{id}/reactivate', [App\Http\Controllers\AllergyController::class, 'reactivate'])->name('allergies.reactivate');
-Route::post('laboratory-tests/{id}/reactivate', [App\Http\Controllers\LaboratoryTestController::class, 'reactivate'])->name('laboratory-tests.reactivate');
-Route::post('exams/{id}/reactivate', [App\Http\Controllers\ExamController::class, 'reactivate'])->name('exams.reactivate');
-Route::post('medications/{id}/reactivate', [App\Http\Controllers\MedicationController::class, 'reactivate'])->name('medications.reactivate');
+// Rutas adicionales para el sistema de steps
+Route::get('medical-consultations/{medicalConsultation}/process', [App\Http\Controllers\MedicalConsultationController::class, 'process'])
+    ->name('medical-consultations.process')
+    ->middleware('auth');
+
+Route::post('medical-consultations/{medicalConsultation}/update-process', [App\Http\Controllers\MedicalConsultationController::class, 'updateProcess'])
+    ->name('medical-consultations.update-process')
+    ->middleware('auth');
+
+Route::post('medical-consultations/{medicalConsultation}/finalize', [App\Http\Controllers\MedicalConsultationController::class, 'finalize'])
+    ->name('medical-consultations.finalize')
+    ->middleware('auth');
+
+Route::get('medical-consultations/{medicalConsultation}/print', [App\Http\Controllers\MedicalConsultationController::class, 'print'])->name('medical-consultations.print')->middleware('auth');
+
+// Rutas de reactivación - Requieren autenticación
+Route::middleware('auth')->group(function () {
+    Route::post('paises/{id}/reactivate', [App\Http\Controllers\CountryController::class, 'reactivate'])->name('paises.reactivate');
+    Route::post('departamentos/{id}/reactivate', [App\Http\Controllers\DepartmentController::class, 'reactivate'])->name('departamentos.reactivate');
+    Route::post('municipios/{id}/reactivate', [App\Http\Controllers\MunicipalityController::class, 'reactivate'])->name('municipios.reactivate');
+    Route::post('/especialidades/{id}/reactivate', [App\Http\Controllers\SpecialtyController::class, 'reactivate'])->name('especialidades.reactivate');
+    Route::post('doctors/{id}/reactivate', [App\Http\Controllers\DoctorController::class, 'reactivate'])->name('doctors.reactivate');
+    Route::post('sexes/{id}/reactivate', [App\Http\Controllers\SexController::class, 'reactivate'])->name('sexes.reactivate');
+    Route::post('civil-statuses/{id}/reactivate', [App\Http\Controllers\CivilStatusController::class, 'reactivate'])->name('civil-statuses.reactivate');
+    Route::post('linguistic-communities/{id}/reactivate', [App\Http\Controllers\LinguisticCommunityController::class, 'reactivate'])->name('linguistic-communities.reactivate');
+    Route::post('ethnicities/{id}/reactivate', [App\Http\Controllers\EthnicityController::class, 'reactivate'])->name('ethnicities.reactivate');
+    Route::post('disabilities/{id}/reactivate', [App\Http\Controllers\DisabilityController::class, 'reactivate'])->name('disabilities.reactivate');
+    Route::post('allergies/{id}/reactivate', [App\Http\Controllers\AllergyController::class, 'reactivate'])->name('allergies.reactivate');
+    Route::post('laboratory-tests/{id}/reactivate', [App\Http\Controllers\LaboratoryTestController::class, 'reactivate'])->name('laboratory-tests.reactivate');
+    Route::post('exams/{id}/reactivate', [App\Http\Controllers\ExamController::class, 'reactivate'])->name('exams.reactivate');
+    Route::post('medications/{id}/reactivate', [App\Http\Controllers\MedicationController::class, 'reactivate'])->name('medications.reactivate');
+});
+
+Route::get('clinical-records/{clinicalRecord}/print', [App\Http\Controllers\ClinicalRecordController::class, 'printPdf'])->name('clinical-records.print')->middleware('auth');
+
+Route::resource('schedule-types', App\Http\Controllers\ScheduleTypeController::class)
+    ->middleware('auth');
+
+Route::resource('appointments', AppointmentController::class)->middleware('auth');
+
+// Rutas AJAX para appointments
+Route::post('appointments/get-doctors', [AppointmentController::class, 'getDoctorsBySpecialty'])->name('appointments.get-doctors')->middleware('auth');
+Route::post('appointments/get-schedule-types', [AppointmentController::class, 'getScheduleTypesByDoctor'])->name('appointments.get-schedule-types')->middleware('auth');
+Route::post('appointments/get-available-dates', [AppointmentController::class, 'getAvailableDates'])->name('appointments.get-available-dates')->middleware('auth');
+Route::post('appointments/get-next-slot', [AppointmentController::class, 'getNextAvailableSlot'])->name('appointments.get-next-slot')->middleware('auth');
+
+// Rutas adicionales para gestión de citas
+Route::put('appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.update-status')->middleware('auth');
+Route::post('appointments/{appointment}/reschedule', [AppointmentController::class, 'reschedule'])->name('appointments.reschedule')->middleware('auth');
+Route::get('appointments/{appointment}/print', [AppointmentController::class, 'printPdf'])->name('appointments.print')->middleware('auth');
