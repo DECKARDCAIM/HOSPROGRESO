@@ -61,9 +61,15 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#">
-                        <i class="material-symbols-rounded opacity-5 me-2">event_available</i>
-                        <span class="sidenav-normal">Citas</span>
+                    <a class="nav-link text-dark" href="{{ route('appointments.index') }}">
+                        <i class="material-symbols-rounded opacity-5 me-2">calendar_month</i>
+                        <span class="sidenav-normal">Gestión de Citas</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('appointments.create') }}">
+                        <i class="material-symbols-rounded opacity-5 me-2">event_note</i>
+                        <span class="sidenav-normal">Agendar Nueva Cita</span>
                     </a>
                 </li>
             </ul>
@@ -79,6 +85,15 @@
         </a>
         <div class="collapse" id="menuMantenimiento">
             <ul class="nav">
+                <!-- Gestión Médica Submenu -->
+                <li class="nav-item">
+                    <a class="nav-link text-dark" data-bs-toggle="collapse" href="#menuGestionMedica" role="button"
+                        aria-expanded="false" aria-controls="menuGestionMedica">
+                        <i class="material-symbols-rounded opacity-5 me-2">local_hospital</i>
+                        <span class="sidenav-normal">Gestión Médica</span>
+                    </a>
+                    <div class="collapse" id="menuGestionMedica">
+                        <ul class="nav nav-sm flex-column">
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ url('/especialidades') }}">
                         <i class="material-symbols-rounded opacity-5 me-2">medical_services</i>
@@ -90,6 +105,15 @@
                         <i class="material-symbols-rounded opacity-5 me-2">group</i>
                         <span class="sidenav-normal">Doctores</span>
                     </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="{{ route('schedule-types.index') }}">
+                                    <i class="material-symbols-rounded opacity-5 me-2">schedule</i>
+                                    <span class="sidenav-normal">Tipos de Horario</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </li>
 
                 <!-- Catálogos Médicos Submenu -->

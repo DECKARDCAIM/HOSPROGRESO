@@ -109,12 +109,11 @@
     
     @stack('scripts')
 
-    @if (session('toast'))
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const toastContainer = document.querySelector('.toast-container');
-        if (toastContainer) {
-            const toastData = @json(session('toast'));
+    <script>
+        // Función global para mostrar toast notifications
+        function showToast(type, title, message, duration = 4000) {
+            const toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) return;
 
             const icons = {
                 success: 'check_circle',
@@ -123,32 +122,69 @@
                 warning: 'warning'
             };
 
+            const colors = {
+                success: 'success',
+                error: 'danger',
+                info: 'info',
+                warning: 'warning'
+            };
+
+            const toastId = 'toast-' + Date.now();
             const toastHTML = `
-                <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
-                    <div class="toast-header bg-${toastData.type ?? 'info'} text-white">
-                        <i class="material-symbols-rounded me-2">${icons[toastData.type] ?? 'info'}</i>
-                        <strong class="me-auto">${toastData.title ?? 'Notificación'}</strong>
+                <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="${duration}">
+                    <div class="toast-header bg-${colors[type] ?? 'info'} text-white">
+                        <i class="material-symbols-rounded me-2">${icons[type] ?? 'info'}</i>
+                        <strong class="me-auto">${title}</strong>
                         <small>Ahora</small>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
                     </div>
                     <div class="toast-body bg-white text-dark">
-                        ${toastData.message ?? ''}
+                        ${message}
                     </div>
                 </div>
             `;
 
             toastContainer.insertAdjacentHTML('beforeend', toastHTML);
-            const toastElement = toastContainer.lastElementChild;
+            const toastElement = document.getElementById(toastId);
             const toast = new bootstrap.Toast(toastElement);
             toast.show();
 
             toastElement.addEventListener('hidden.bs.toast', function () {
                 toastElement.remove();
             });
+
+            return toast;
         }
-    });
-</script>
-@endif
+
+        // Función específica para notificaciones de éxito
+        function showSuccessToast(message, title = 'Éxito') {
+            return showToast('success', title, message);
+        }
+
+        // Función específica para notificaciones de error
+        function showErrorToast(message, title = 'Error') {
+            return showToast('error', title, message);
+        }
+
+        // Función específica para notificaciones de información
+        function showInfoToast(message, title = 'Información') {
+            return showToast('info', title, message);
+        }
+    </script>
+
+    @if (session('toast'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toastData = @json(session('toast'));
+            showToast(
+                toastData.type ?? 'info',
+                toastData.title ?? 'Notificación',
+                toastData.message ?? '',
+                5000
+            );
+        });
+    </script>
+    @endif
 
 
 </body>
