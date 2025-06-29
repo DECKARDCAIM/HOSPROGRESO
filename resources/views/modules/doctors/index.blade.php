@@ -62,6 +62,7 @@
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Especialidad</th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">CUI</th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">No. Colegiado</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">TIPO DE HORARIO</th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Estado</th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3 text-center">Acciones</th>
                                     </tr>
@@ -87,6 +88,13 @@
                                             </td>
                                             <td class="px-3 py-2">
                                                 <span class="text-sm text-secondary">{{ $doctor->license_number }}</span>
+                                            </td>
+                                            <td class="px-3 py-2">
+                                                @if($doctor->schedule_type_id && isset($doctor->scheduleType))
+                                                    {{ $doctor->scheduleType->name }}
+                                                @else
+                                                    -
+                                                @endif
                                             </td>
                                             <td class="px-3 py-2">
                                                 @if($doctor->is_active)

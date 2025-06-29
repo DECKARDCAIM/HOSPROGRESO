@@ -80,6 +80,21 @@
                                         @endforeach
                                     </select>
                                 </div>
+                                <div class="form-group mb-4">
+                                    <label for="schedule_type_id" class="form-control-label mb-2">
+                                        <i class="fas fa-calendar-alt text-info me-2"></i>Tipo de Horario
+                                    </label>
+                                    <select name="schedule_type_id" id="schedule_type_id"
+                                        class="form-control form-control-lg border border-2 border-info shadow-sm" required>
+                                        <option value="">Seleccione</option>
+                                        @foreach($scheduleTypes as $type)
+                                            <option value="{{ $type->id }}" {{ $doctor->schedule_type_id == $type->id ? 'selected' : '' }}>
+                                                {{ $type->name }} ({{ $type->specialty->name ?? '' }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="form-text text-muted">Seleccione el tipo de horario asignado al doctor</div>
+                                </div>
                             </div>
                             <div class="d-flex justify-content-end mt-4">
                                 <button type="button" class="btn btn-secondary btn-lg me-2" onclick="window.location.href='{{ route('doctors.index') }}'">

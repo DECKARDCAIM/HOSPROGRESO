@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Doctor;
 use App\Models\Specialty;
+use App\Models\ScheduleType;
 use Illuminate\Http\Request;
 use App\Services\NotificationService;
 
@@ -41,7 +42,8 @@ class DoctorController extends Controller
     public function create()
     {
         $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
-        return view('modules.doctors.create', compact('specialties'));
+        $scheduleTypes = ScheduleType::with('specialty')->orderBy('name')->get();
+        return view('modules.doctors.create', compact('specialties', 'scheduleTypes'));
     }
 
     public function store(Request $request)
@@ -56,6 +58,7 @@ class DoctorController extends Controller
             'cui' => 'required|string|max:13|unique:doctors,cui',
             'license_number' => 'required|string|max:255|unique:doctors,license_number',
             'specialty_id' => 'required|exists:specialties,id',
+            'schedule_type_id' => 'required|exists:schedule_types,id',
         ]);
 
         $doctor = Doctor::create($request->all());
@@ -72,7 +75,8 @@ class DoctorController extends Controller
     public function edit(Doctor $doctor)
     {
         $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
-        return view('modules.doctors.edit', compact('doctor', 'specialties'));
+        $scheduleTypes = ScheduleType::with('specialty')->orderBy('name')->get();
+        return view('modules.doctors.edit', compact('doctor', 'specialties', 'scheduleTypes'));
     }
 
     public function update(Request $request, Doctor $doctor)
@@ -87,6 +91,7 @@ class DoctorController extends Controller
             'cui' => 'required|string|max:13|unique:doctors,cui,' . $doctor->id,
             'license_number' => 'required|string|max:255|unique:doctors,license_number,' . $doctor->id,
             'specialty_id' => 'required|exists:specialties,id',
+            'schedule_type_id' => 'required|exists:schedule_types,id',
         ]);
 
         $doctor->update($request->all());

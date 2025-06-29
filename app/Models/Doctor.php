@@ -19,6 +19,7 @@ class Doctor extends Model
         'cui',
         'license_number',
         'specialty_id',
+        'schedule_type_id',
         'is_active'
     ];
 
@@ -29,6 +30,11 @@ class Doctor extends Model
     public function specialty()
     {
         return $this->belongsTo(Specialty::class);
+    }
+
+    public function scheduleType()
+    {
+        return $this->belongsTo(ScheduleType::class);
     }
 
     public function medicalConsultations()

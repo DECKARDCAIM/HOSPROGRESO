@@ -140,7 +140,7 @@ class SpecialtyController extends Controller
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Reactivación Éxitosa',
-                'message' => 'La especialidad ha sido reactivada correctamente.'
+                'message' => 'La especialidad ' . $specialty->name . ' ha sido reactivada correctamente.'
             ]);
     }
 }
