@@ -395,7 +395,21 @@ class MedicalConsultationController extends Controller
     public function print(MedicalConsultation $medicalConsultation)
     {
         $medicalConsultation->load(['clinicalRecord.sex', 'clinicalRecord', 'doctor', 'specialty', 'laboratoryTests', 'exams', 'medications']);
-        $pdf = Pdf::loadView('modules.medical_consultations.print_pdf', compact('medicalConsultation'));
+        
+        $pdf = Pdf::loadView('modules.medical_consultations.print_pdf', compact('medicalConsultation'))
+                  ->setPaper('A4', 'portrait')
+                  ->setOption('enable-local-file-access', true)
+                  ->setOption('page-size', 'A4')
+                  ->setOption('margin-top', '20mm')
+                  ->setOption('margin-right', '15mm')
+                  ->setOption('margin-bottom', '30mm')
+                  ->setOption('margin-left', '15mm')
+                  ->setOption('encoding', 'UTF-8')
+                  ->setOption('enable-javascript', true)
+                  ->setOption('javascript-delay', 1000)
+                  ->setOption('enable-smart-shrinking', true)
+                  ->setOption('no-stop-slow-scripts', true);
+        
         return $pdf->stream('historia_clinica_'.$medicalConsultation->id.'.pdf');
     }
 } 

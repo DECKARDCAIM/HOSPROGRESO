@@ -5,62 +5,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cita Médica - {{ $appointment->appointment_number }}</title>
     <style>
+        @page {
+            margin: 20mm 15mm 30mm 15mm;
+            size: A4;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
+            font-family: DejaVu Sans, Arial, sans-serif;
             font-size: 12px;
             line-height: 1.4;
             color: #333;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            height: 100vh;
+            page-break-after: always;
+        }
+        
+        .page-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .content-wrapper {
+            flex: 1;
+            padding: 0 5mm;
         }
         
         .header {
             text-align: center;
             border-bottom: 2px solid #2563eb;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
         }
         
         .logo {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
             color: #2563eb;
             margin-bottom: 5px;
         }
         
         .subtitle {
-            font-size: 14px;
+            font-size: 13px;
             color: #666;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         
         .appointment-number {
             font-size: 16px;
             font-weight: bold;
-            background-color: #f3f4f6;
+            background-color: #2563eb;
+            color: white;
             padding: 8px 15px;
             border-radius: 5px;
             display: inline-block;
-            margin-top: 10px;
+            margin-top: 8px;
         }
         
         .section {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             page-break-inside: avoid;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+            background: #ffffff;
         }
         
         .section-title {
             font-size: 14px;
             font-weight: bold;
             color: #2563eb;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 2px solid #2563eb;
             padding-bottom: 5px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
+            background: #f1f5f9;
+            padding: 8px 12px;
+            margin: -15px -15px 12px -15px;
+            border-radius: 5px 5px 0 0;
         }
         
         .info-grid {
             display: table;
             width: 100%;
+            border-collapse: collapse;
         }
         
         .info-row {
@@ -70,15 +102,17 @@
         .info-label {
             display: table-cell;
             font-weight: bold;
-            width: 30%;
-            padding: 3px 10px 3px 0;
+            width: 35%;
+            padding: 5px 15px 5px 0;
             vertical-align: top;
+            border-bottom: 1px solid #f1f5f9;
         }
         
         .info-value {
             display: table-cell;
-            padding: 3px 0;
+            padding: 5px 0;
             vertical-align: top;
+            border-bottom: 1px solid #f1f5f9;
         }
         
         .status-badge {
@@ -97,65 +131,107 @@
         .status-reagendada { background-color: #e0e7ff; color: #3730a3; }
         
         .attention-type {
-            padding: 3px 6px;
+            padding: 4px 8px;
             border-radius: 3px;
             font-size: 10px;
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .footer {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            text-align: center;
-            font-size: 10px;
-            color: #666;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 10px;
-        }
-        
-        .generated-info {
-            margin-top: 30px;
-            text-align: right;
-            font-size: 10px;
-            color: #666;
+            background-color: #e0f2fe;
+            border: 1px solid #0891b2;
+            color: #0891b2;
+            font-weight: bold;
         }
         
         .important-note {
             background-color: #fef3c7;
             border-left: 4px solid #f59e0b;
-            padding: 10px 15px;
-            margin: 20px 0;
+            padding: 12px 15px;
+            margin: 15px 0;
             border-radius: 0 5px 5px 0;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+        
+        .generated-info {
+            text-align: right;
+            font-size: 10px;
+            color: #666;
+            margin-top: 15px;
+            padding: 8px;
+            background: #f8fafc;
+            border-radius: 4px;
+        }
+        
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 25mm;
+            background: #2563eb;
+            color: white;
+            text-align: center;
+            padding: 8px 0;
+            font-size: 10px;
+            border-top: 2px solid #1e40af;
+        }
+        
+        .footer-content {
+            margin-bottom: 5px;
+        }
+        
+        .page-number {
+            position: absolute;
+            bottom: 5px;
+            right: 15px;
+            font-weight: bold;
         }
         
         .qr-placeholder {
-            width: 80px;
-            height: 80px;
+            width: 60px;
+            height: 60px;
             border: 2px dashed #d1d5db;
             display: inline-block;
             text-align: center;
-            line-height: 76px;
-            font-size: 10px;
+            line-height: 56px;
+            font-size: 9px;
             color: #9ca3af;
             vertical-align: middle;
+            float: right;
+            margin-left: 15px;
         }
         
+        /* Ajustes específicos para impresión */
         @media print {
-            body { margin: 0; }
-            .footer { position: fixed; bottom: 0; }
+            body { 
+                margin: 0; 
+                padding: 0;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .footer { 
+                position: fixed; 
+                bottom: 0; 
+            }
+            .page-container {
+                height: 100vh;
+                page-break-after: always;
+            }
+        }
+        
+        /* Evitar cortes de página en secciones importantes */
+        .section, .important-note {
+            page-break-inside: avoid;
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <div class="header">
-        <div class="logo">Hospital de Progreso</div>
-        <div class="subtitle">Sistema de Gestión de Citas Médicas</div>
-        <div class="appointment-number">CITA N° {{ $appointment->appointment_number }}</div>
-    </div>
+    <div class="page-container">
+        <div class="content-wrapper">
+            <!-- Header -->
+            <div class="header">
+                <div class="logo">HOSPITAL NACIONAL DE PROGRESO</div>
+                <div class="subtitle">Sistema de Gestión de Citas Médicas - Unidad 234</div>
+                <div class="appointment-number">CITA N° {{ $appointment->appointment_number }}</div>
+            </div>
 
     <!-- Información de la Cita -->
     <div class="section">
@@ -307,18 +383,34 @@
         • Si no se presenta a la cita, esta será marcada como "perdida"
     </div>
 
-    <!-- Información de Generación del PDF -->
-    <div class="generated-info">
-        <strong>PDF generado el:</strong> {{ now()->format('d/m/Y \a \l\a\s H:i') }}<br>
-        <strong>Usuario:</strong> {{ Auth::user()->name ?? 'Sistema' }}
+            <!-- Información de Generación del PDF -->
+            <div class="generated-info">
+                <strong>PDF generado el:</strong> {{ now()->format('d/m/Y \a \l\a\s H:i') }}<br>
+                <strong>Usuario:</strong> {{ Auth::user()->name ?? 'Sistema' }}
+            </div>
+        </div>
     </div>
 
-    <!-- Footer -->
+    <!-- Footer con numeración de páginas -->
     <div class="footer">
-        <div>Hospital de Progreso - Sistema de Gestión de Citas Médicas</div>
-        <div>Teléfono: (502) 0000-0000 | Email: citas@hospitalprogreso.gt</div>
-        <div style="margin-top: 5px; font-size: 9px;">
-            Este documento es un comprobante oficial de su cita médica. Conserve este documento para sus registros.
+        <div class="footer-content">
+            <div>Hospital Nacional de Progreso - Sistema de Gestión de Citas Médicas</div>
+            <div>Teléfono: (502) 0000-0000 | Email: citas@hospitalprogreso.gt</div>
+            <div style="margin-top: 3px; font-size: 9px;">
+                Este documento es un comprobante oficial de su cita médica. Conserve este documento para sus registros.
+            </div>
+        </div>
+        <div class="page-number">
+            <script type="text/php">
+                if (isset($pdf)) {
+                    $pdf->page_script('
+                        $font = $fontMetrics->get_font("DejaVu Sans", "normal");
+                        $size = 9;
+                        $pageText = "Página " . $PAGE_NUM . " de " . $PAGE_COUNT;
+                        $pdf->text(500, 820, $pageText, $font, $size, array(1,1,1));
+                    ');
+                }
+            </script>
         </div>
     </div>
 </body>

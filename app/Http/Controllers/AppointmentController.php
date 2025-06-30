@@ -387,11 +387,61 @@ class AppointmentController extends Controller
     {
         $appointment->load(['clinicalRecord', 'doctor', 'specialty', 'scheduleType', 'createdBy']);
         
-        $pdf = PDF::loadView('modules.appointments.print_pdf', compact('appointment'));
+        $pdf = PDF::loadView('modules.appointments.print_pdf', compact('appointment'))
+                  ->setPaper('A4', 'portrait')
+                  ->setOption('enable-local-file-access', true)
+                  ->setOption('page-size', 'A4')
+                  ->setOption('margin-top', '20mm')
+                  ->setOption('margin-right', '15mm')
+                  ->setOption('margin-bottom', '30mm')
+                  ->setOption('margin-left', '15mm')
+                  ->setOption('encoding', 'UTF-8')
+                  ->setOption('enable-javascript', true)
+                  ->setOption('javascript-delay', 1000)
+                  ->setOption('enable-smart-shrinking', true)
+                  ->setOption('no-stop-slow-scripts', true);
         
         $fileName = 'cita-' . $appointment->appointment_number . '.pdf';
         
-        return $pdf->download($fileName);
+        return $pdf->stream($fileName);
+    }
+
+    /**
+     * Imprimir múltiples citas en un solo PDF (cada cita en su propia página)
+     */
+    public function printMultiplePdf(Request $request)
+    {
+        $appointmentIds = $request->input('appointment_ids', []);
+        
+        if (empty($appointmentIds)) {
+            return back()->withErrors(['general' => 'Debe seleccionar al menos una cita para imprimir.']);
+        }
+        
+        $appointments = Appointment::with(['clinicalRecord', 'doctor', 'specialty', 'scheduleType', 'createdBy'])
+                                  ->whereIn('id', $appointmentIds)
+                                  ->get();
+        
+        if ($appointments->isEmpty()) {
+            return back()->withErrors(['general' => 'No se encontraron citas válidas.']);
+        }
+        
+        $pdf = PDF::loadView('modules.appointments.print_multiple_pdf', compact('appointments'))
+                  ->setPaper('A4', 'portrait')
+                  ->setOption('enable-local-file-access', true)
+                  ->setOption('page-size', 'A4')
+                  ->setOption('margin-top', '20mm')
+                  ->setOption('margin-right', '15mm')
+                  ->setOption('margin-bottom', '30mm')
+                  ->setOption('margin-left', '15mm')
+                  ->setOption('encoding', 'UTF-8')
+                  ->setOption('enable-javascript', true)
+                  ->setOption('javascript-delay', 1000)
+                  ->setOption('enable-smart-shrinking', true)
+                  ->setOption('no-stop-slow-scripts', true);
+        
+        $fileName = 'citas-multiples-' . now()->format('Y-m-d-H-i-s') . '.pdf';
+        
+        return $pdf->stream($fileName);
     }
 
     public function destroy(Appointment $appointment)

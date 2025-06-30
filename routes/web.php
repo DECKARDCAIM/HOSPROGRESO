@@ -163,3 +163,4 @@ Route::post('appointments/get-next-slot', [AppointmentController::class, 'getNex
 Route::put('appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.update-status')->middleware('auth');
 Route::post('appointments/{appointment}/reschedule', [AppointmentController::class, 'reschedule'])->name('appointments.reschedule')->middleware('auth');
 Route::get('appointments/{appointment}/print', [AppointmentController::class, 'printPdf'])->name('appointments.print')->middleware('auth');
+Route::post('appointments/print-multiple', [AppointmentController::class, 'printMultiplePdf'])->name('appointments.print-multiple')->middleware('auth');

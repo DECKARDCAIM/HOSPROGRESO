@@ -195,8 +195,27 @@ class ClinicalRecordController extends Controller
 
     public function printPdf(ClinicalRecord $clinicalRecord)
     {
-        $clinicalRecord->load(['sex', 'civilStatus', 'linguisticCommunity', 'ethnicity', 'medicalConsultations.doctor', 'medicalConsultations.specialty', 'medicalConsultations.laboratoryTests', 'medicalConsultations.exams', 'medicalConsultations.medications']);
-        $pdf = Pdf::loadView('modules.clinical_records.print_pdf', compact('clinicalRecord'));
+        $clinicalRecord->load([
+            'sex', 'civilStatus', 'linguisticCommunity', 'ethnicity',
+            'medicalConsultations.doctor', 'medicalConsultations.specialty', 
+            'medicalConsultations.laboratoryTests', 'medicalConsultations.exams', 'medicalConsultations.medications',
+            'appointments.doctor.specialty', 'appointments.scheduleType', 'appointments.createdBy'
+        ]);
+        
+        $pdf = Pdf::loadView('modules.clinical_records.print_pdf', compact('clinicalRecord'))
+                  ->setPaper('A4', 'portrait')
+                  ->setOption('enable-local-file-access', true)
+                  ->setOption('page-size', 'A4')
+                  ->setOption('margin-top', '20mm')
+                  ->setOption('margin-right', '15mm')
+                  ->setOption('margin-bottom', '30mm')
+                  ->setOption('margin-left', '15mm')
+                  ->setOption('encoding', 'UTF-8')
+                  ->setOption('enable-javascript', true)
+                  ->setOption('javascript-delay', 1000)
+                  ->setOption('enable-smart-shrinking', true)
+                  ->setOption('no-stop-slow-scripts', true);
+        
         return $pdf->stream('expediente_'.$clinicalRecord->record_number.'.pdf');
     }
 } 
