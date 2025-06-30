@@ -28,17 +28,17 @@ class AdminUserSeeder extends Seeder
         
         if (!$adminUser) {
             $adminUser = User::create([
-                'name' => 'Administrador del Sistema',
-                'email' => 'administrador@hosprogreso.local',
-                'password' => Hash::make('admin123456'),
+                'name' => 'Cristoffer Alexis Falla Marroquin',
+                'email' => 'falla3235@hotmail.com',
+                'password' => Hash::make('CAllofduty123@%'),
                 'role_id' => $adminRole->id,
                 'is_active' => true,
                 'email_verified_at' => now(),
             ]);
             
-            $this->command->info('Usuario administrador creado:');
-            $this->command->info('Email: administrador@hosprogreso.local');
-            $this->command->info('Contraseña: admin123456');
+            $this->command->info('Usuario Cristoffer Alexis Falla Marroquin creado:');
+            $this->command->info('Email: falla3235@hotmail.com');
+            $this->command->info('Contraseña: CAllofduty123@%');
             $this->command->warn('¡CAMBIE LA CONTRASEÑA POR DEFECTO!');
         } else {
             // Si existe pero no tiene rol, asignarle el rol de administrador

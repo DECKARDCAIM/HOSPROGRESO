@@ -52,6 +52,9 @@
                     <p class="mb-0 font-weight-normal text-sm">
                         {{ $user->email }}
                     </p>
+                    <p class="mb-0 font-weight-normal text-sm">
+                        {{ $user->getRoleName() }}
+                    </p>
                 </div>
             </div>
             <div class="col-lg-4 col-md-6 my-sm-auto ms-sm-auto me-sm-0 mx-auto mt-3">
