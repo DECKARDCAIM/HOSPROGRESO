@@ -20,6 +20,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'cui',
         'password',
         'phone',
         'address',
@@ -27,7 +28,8 @@ class User extends Authenticatable
         'gender',
         'profile_photo_path',
         'banner_photo_path',
-        'role',
+        'role_id',
+        'is_active',
     ];
 
     /**
@@ -60,13 +62,17 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'birth_date' => 'date',
+            'is_active' => 'boolean',
         ];
     }
 
-    // Constantes para roles
-    const ROLE_EMERGENCY = 'emergencia';
-    const ROLE_CONSULTATION = 'consulta_externa';
-    const ROLE_ADMIN = 'admin';
+    /**
+     * Relación con el rol
+     */
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
 
     /**
      * Get the URL to the user's profile photo.
@@ -110,29 +116,35 @@ class User extends Authenticatable
         return asset('img/carrusel/bk1.webp');
     }
 
-    // Métodos de ayuda para roles
-    public function isEmergency()
-    {
-        return $this->role === self::ROLE_EMERGENCY;
-    }
-
-    public function isConsultation()
-    {
-        return $this->role === self::ROLE_CONSULTATION;
-    }
-
+    /**
+     * Verificar si el usuario es administrador
+     */
     public function isAdmin()
     {
-        return $this->role === self::ROLE_ADMIN;
+        return $this->role && $this->role->name === 'Administrador';
     }
 
-    public function getRoleLabel()
+    /**
+     * Verificar si el usuario tiene un rol específico
+     */
+    public function hasRole($roleName)
     {
-        return match($this->role) {
-            self::ROLE_EMERGENCY => 'Emergencia',
-            self::ROLE_CONSULTATION => 'Consulta Externa',
-            self::ROLE_ADMIN => 'Administrador',
-            default => 'No definido'
-        };
+        return $this->role && $this->role->name === $roleName;
+    }
+
+    /**
+     * Obtener el nombre del rol del usuario
+     */
+    public function getRoleName()
+    {
+        return $this->role ? $this->role->name : 'Sin rol asignado';
+    }
+
+    /**
+     * Verificar si el usuario puede acceder al sistema
+     */
+    public function canAccess()
+    {
+        return $this->is_active && $this->role_id && $this->role && $this->role->is_active;
     }
 }
