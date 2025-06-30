@@ -227,7 +227,7 @@
     <div class="page-container">
         <div class="content-wrapper">
             <!-- Header -->
-            <div class="header">
+    <div class="header">
                 <div class="logo">HOSPITAL NACIONAL DE PROGRESO</div>
                 <div class="subtitle">Sistema de Gestión de Historias Clínicas - Unidad 234</div>
                 <div class="consultation-number">HISTORIA CLÍNICA #{{ $medicalConsultation->id }}</div>
@@ -274,9 +274,9 @@
                             {{ $medicalConsultation->clinicalRecord->municipality->name ?? '-' }}, 
                             {{ $medicalConsultation->clinicalRecord->department->name ?? '-' }}, 
                             {{ $medicalConsultation->clinicalRecord->country->name ?? '-' }}
-                        </div>
-                    </div>
-                </div>
+            </div>
+        </div>
+    </div>
             </div>
             <!-- Información de la Consulta -->
             <div class="section">
@@ -304,7 +304,7 @@
                         <div class="info-label">Estado:</div>
                         <div class="info-value">
                             <span class="status-badge status-{{ $medicalConsultation->status }}">{{ ucfirst($medicalConsultation->status) }}</span>
-                        </div>
+            </div>
                     </div>
                     @if($medicalConsultation->getFinalStatusLabel())
                     <div class="info-row">
@@ -312,11 +312,11 @@
                         <div class="info-value">{{ $medicalConsultation->getFinalStatusLabel() }}</div>
                     </div>
                     @endif
-                </div>
-            </div>
+        </div>
+    </div>
             <!-- Motivo de Consulta y Diagnóstico -->
-            <div class="section">
-                <div class="section-title">Motivo de Consulta y Diagnóstico</div>
+    <div class="section">
+        <div class="section-title">Motivo de Consulta y Diagnóstico</div>
                 <div class="info-grid">
                     <div class="info-row">
                         <div class="info-label">Motivo de Consulta:</div>
@@ -333,11 +333,11 @@
                     </div>
                     @endif
                 </div>
-            </div>
-            @if($medicalConsultation->isEmergency())
+    </div>
+    @if($medicalConsultation->isEmergency())
             <!-- Datos de Emergencia -->
-            <div class="section">
-                <div class="section-title">Datos de Emergencia</div>
+    <div class="section">
+        <div class="section-title">Datos de Emergencia</div>
                 <div class="info-grid">
                     @if($medicalConsultation->emergency_vital_signs)
                     <div class="info-row">
@@ -364,11 +364,11 @@
                     </div>
                     @endif
                 </div>
-            </div>
-            @else
+    </div>
+    @else
             <!-- Consulta Externa -->
-            <div class="section">
-                <div class="section-title">Consulta Externa</div>
+    <div class="section">
+        <div class="section-title">Consulta Externa</div>
                 <div class="info-grid">
                     @if($medicalConsultation->consultation_physical_exam)
                     <div class="info-row">
@@ -387,50 +387,50 @@
                     </div>
                     @endif
                 </div>
-            </div>
-            @endif
+    </div>
+    @endif
             <!-- Pruebas y Exámenes -->
-            <div class="section">
-                <div class="section-title">Pruebas y Exámenes</div>
+    <div class="section">
+        <div class="section-title">Pruebas y Exámenes</div>
                 <div class="info-grid">
                     <div class="info-row">
                         <div class="info-label">Pruebas de Laboratorio:</div>
                         <div class="info-value">
-                            @if($medicalConsultation->laboratoryTests->count())
+            @if($medicalConsultation->laboratoryTests->count())
                                 <div class="test-list">
-                                    {{ $medicalConsultation->laboratoryTests->pluck('name')->join(', ') }}
+                {{ $medicalConsultation->laboratoryTests->pluck('name')->join(', ') }}
                                 </div>
-                            @else
+            @else
                                 <span class="text-muted">No se solicitaron pruebas de laboratorio</span>
-                            @endif
-                        </div>
+            @endif
+        </div>
                     </div>
                     <div class="info-row">
                         <div class="info-label">Exámenes:</div>
                         <div class="info-value">
-                            @if($medicalConsultation->exams->count())
+            @if($medicalConsultation->exams->count())
                                 <div class="test-list">
-                                    {{ $medicalConsultation->exams->pluck('name')->join(', ') }}
+                {{ $medicalConsultation->exams->pluck('name')->join(', ') }}
                                 </div>
-                            @else
+            @else
                                 <span class="text-muted">No se solicitaron exámenes</span>
-                            @endif
-                        </div>
-                    </div>
+            @endif
+        </div>
+    </div>
                 </div>
             </div>
             <!-- Tratamiento y Medicamentos -->
-            <div class="section">
-                <div class="section-title">Tratamiento y Medicamentos</div>
+    <div class="section">
+        <div class="section-title">Tratamiento y Medicamentos</div>
                 <div class="info-grid">
                     <div class="info-row">
                         <div class="info-label">Medicamentos Recetados:</div>
                         <div class="info-value">
-                            @if($medicalConsultation->medications->count())
+            @if($medicalConsultation->medications->count())
                                 <div class="medication-list">
-                                    {{ $medicalConsultation->medications->pluck('name')->join(', ') }}
+                {{ $medicalConsultation->medications->pluck('name')->join(', ') }}
                                 </div>
-                            @else
+            @else
                                 <span class="text-muted">No se recetaron medicamentos</span>
                             @endif
                         </div>
@@ -442,12 +442,12 @@
                             <div class="text-content">{{ $medicalConsultation->reference_contrareference }}</div>
                         </div>
                     </div>
-                    @endif
-                </div>
-            </div>
+            @endif
+        </div>
+    </div>
             <!-- Notas de Enfermería y Admisión -->
-            <div class="section">
-                <div class="section-title">Notas de Enfermería y Admisión</div>
+    <div class="section">
+        <div class="section-title">Notas de Enfermería y Admisión</div>
                 <div class="info-grid">
                     @if($medicalConsultation->nursing_note)
                     <div class="info-row">

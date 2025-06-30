@@ -272,7 +272,7 @@
     <div class="page-container">
         <div class="content-wrapper">
             <!-- Header -->
-            <div class="header">
+    <div class="header">
                 <div class="logo">HOSPITAL NACIONAL DE PROGRESO</div>
                 <div class="subtitle">Sistema de Gestión de Expedientes Clínicos - Unidad 234</div>
                 <div class="record-number">EXPEDIENTE CLÍNICO #{{ $clinicalRecord->record_number }}</div>
@@ -386,12 +386,12 @@
                                 <div class="info-label">Diagnóstico Médico:</div>
                                 <div class="info-value">
                                     <div class="text-content">{{ $history->medical_diagnosis }}</div>
-                                </div>
-                            </div>
+        </div>
+    </div>
                             @endif
                         </div>
 
-                        @if($history->isEmergency())
+                @if($history->isEmergency())
                         <div class="info-grid" style="margin-top: 12px;">
                             @if($history->emergency_vital_signs)
                             <div class="info-row">
@@ -418,7 +418,7 @@
                             </div>
                             @endif
                         </div>
-                        @else
+                @else
                         <div class="info-grid" style="margin-top: 12px;">
                             @if($history->consultation_physical_exam)
                             <div class="info-row">
@@ -437,35 +437,35 @@
                             </div>
                             @endif
                         </div>
-                        @endif
+                @endif
 
                         <div class="info-grid" style="margin-top: 12px;">
                             <div class="info-row">
                                 <div class="info-label">Pruebas de Laboratorio:</div>
                                 <div class="info-value">
-                                    @if($history->laboratoryTests->count())
+                    @if($history->laboratoryTests->count())
                                         <div class="test-list">{{ $history->laboratoryTests->pluck('name')->join(', ') }}</div>
-                                    @else
+                    @else
                                         <span style="color: #666; font-style: italic;">No se solicitaron pruebas de laboratorio</span>
-                                    @endif
-                                </div>
+                    @endif
+                </div>
                             </div>
                             <div class="info-row">
                                 <div class="info-label">Exámenes:</div>
                                 <div class="info-value">
-                                    @if($history->exams->count())
+                    @if($history->exams->count())
                                         <div class="test-list">{{ $history->exams->pluck('name')->join(', ') }}</div>
-                                    @else
+                    @else
                                         <span style="color: #666; font-style: italic;">No se solicitaron exámenes</span>
-                                    @endif
-                                </div>
+                    @endif
+                </div>
                             </div>
                             <div class="info-row">
                                 <div class="info-label">Medicamentos:</div>
                                 <div class="info-value">
-                                    @if($history->medications->count())
+                    @if($history->medications->count())
                                         <div class="medication-list">{{ $history->medications->pluck('name')->join(', ') }}</div>
-                                    @else
+                    @else
                                         <span style="color: #666; font-style: italic;">No se recetaron medicamentos</span>
                                     @endif
                                 </div>
@@ -508,7 +508,7 @@
                 @empty
                     <div style="text-align: center; padding: 20px; color: #666; font-style: italic;">
                         No hay historias clínicas registradas para este expediente.
-                    </div>
+                </div>
                 @endforelse
             </div>
             
@@ -605,11 +605,11 @@
                             @endif
                         </div>
                     </div>
-                @empty
+        @empty
                     <div style="text-align: center; padding: 20px; color: #666; font-style: italic;">
                         No hay citas médicas registradas para este expediente.
                     </div>
-                @endforelse
+        @endforelse
             </div>
 
             <!-- Instrucciones Importantes -->
@@ -641,16 +641,16 @@
             </div>
         </div>
         <div class="page-number">
-            <script type="text/php">
-                if (isset($pdf)) {
+        <script type="text/php">
+            if (isset($pdf)) {
                     $pdf->page_script('
                         $font = $fontMetrics->get_font("DejaVu Sans", "normal");
                         $size = 9;
                         $pageText = "Página " . $PAGE_NUM . " de " . $PAGE_COUNT;
                         $pdf->text(500, 820, $pageText, $font, $size, array(1,1,1));
                     ');
-                }
-            </script>
+            }
+        </script>
         </div>
     </div>
 </body>
