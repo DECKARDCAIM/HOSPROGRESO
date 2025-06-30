@@ -11,6 +11,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SpecialtyController;
 use App\Http\Controllers\ScheduleTypeController;
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -164,3 +166,25 @@ Route::put('appointments/{appointment}/status', [AppointmentController::class, '
 Route::post('appointments/{appointment}/reschedule', [AppointmentController::class, 'reschedule'])->name('appointments.reschedule')->middleware('auth');
 Route::get('appointments/{appointment}/print', [AppointmentController::class, 'printPdf'])->name('appointments.print')->middleware('auth');
 Route::post('appointments/print-multiple', [AppointmentController::class, 'printMultiplePdf'])->name('appointments.print-multiple')->middleware('auth');
+
+// Rutas para Gestión de Roles
+Route::resource('roles', App\Http\Controllers\RoleController::class)
+    ->middleware('auth')
+    ->parameters(['roles' => 'role']);
+
+Route::post('roles/{id}/reactivate', [App\Http\Controllers\RoleController::class, 'reactivate'])
+    ->name('roles.reactivate')
+    ->middleware('auth');
+
+// Rutas para Gestión de Usuarios
+Route::resource('usuarios', App\Http\Controllers\UserController::class)
+    ->middleware('auth')
+    ->parameters(['usuarios' => 'user']);
+
+Route::post('usuarios/{id}/reactivate', [App\Http\Controllers\UserController::class, 'reactivate'])
+    ->name('usuarios.reactivate')
+    ->middleware('auth');
+
+Route::put('usuarios/{user}/reset-password', [App\Http\Controllers\UserController::class, 'resetPassword'])
+    ->name('usuarios.reset-password')
+    ->middleware('auth');

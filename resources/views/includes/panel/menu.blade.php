@@ -229,4 +229,31 @@
             </ul>
         </div>
     </li>
+
+    <!-- Administración del Sistema (Solo para administradores) -->
+    @if(auth()->check() && auth()->user()->isAdmin())
+    <li class="nav-item">
+        <a data-bs-toggle="collapse" href="#menuAdministracion" class="nav-link text-dark"
+            aria-controls="menuAdministracion" role="button" aria-expanded="false">
+            <i class="material-symbols-rounded opacity-5">admin_panel_settings</i>
+            <span class="nav-link-text ms-1 ps-1">Administración</span>
+        </a>
+        <div class="collapse" id="menuAdministracion">
+            <ul class="nav">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('usuarios.index') }}">
+                        <i class="material-symbols-rounded opacity-5 me-2">group</i>
+                        <span class="sidenav-normal">Gestión de Usuarios</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('roles.index') }}">
+                        <i class="material-symbols-rounded opacity-5 me-2">security</i>
+                        <span class="sidenav-normal">Roles de Usuario</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </li>
+    @endif
 </ul>
