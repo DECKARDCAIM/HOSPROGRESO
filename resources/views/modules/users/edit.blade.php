@@ -179,7 +179,7 @@
                             <h6 class="text-white mb-0"><i class="fas fa-lock me-2"></i>Restablecer Contraseña</h6>
                         </div>
                         <div class="card-body">
-                            <form action="{{ route('usuarios.reset-password', $user->id) }}" method="POST">
+                            <form action="{{ route('usuarios.reset-password', $user->id) }}" method="POST" id="reset-password-form">
                                 @csrf
                                 @method('PUT')
                                 <div class="row">
@@ -206,8 +206,8 @@
                                     </div>
                                 </div>
                                 <div class="text-end">
-                                    <button type="submit" class="btn bg-gradient-warning btn-lg text-white"
-                                        onclick="return confirm('¿Está seguro de restablecer la contraseña de este usuario?')">
+                                    <button type="button" class="btn bg-gradient-warning btn-lg text-white"
+                                        onclick="confirmResetPassword({{ $user->id }}, '{{ $user->name }}')">
                                         <i class="fas fa-sync me-2"></i>Restablecer contraseña
                                     </button>
                                 </div>
@@ -219,4 +219,65 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+// Función para confirmar restablecimiento de contraseña sin usar confirm() nativo
+function confirmResetPassword(id, name) {
+    // Crear toast de confirmación
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
+    
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true" id="confirm-toast-reset">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <strong><i class="fas fa-exclamation-triangle me-2"></i>Confirmar Restablecimiento</strong><br>
+                    ¿Está seguro de restablecer la contraseña del usuario "${name}"?
+                </div>
+                <div class="me-2 m-auto">
+                    <button type="button" class="btn btn-outline-light btn-sm me-1" onclick="executeResetPassword()">
+                        <i class="fas fa-check me-1"></i>Sí
+                    </button>
+                    <button type="button" class="btn btn-outline-light btn-sm" onclick="cancelResetPassword()">
+                        <i class="fas fa-times me-1"></i>No
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    
+    const toast = new bootstrap.Toast(document.getElementById('confirm-toast-reset'), {
+        autohide: false
+    });
+    toast.show();
+}
+
+function executeResetPassword() {
+    document.getElementById('reset-password-form').submit();
+    cancelResetPassword();
+}
+
+function cancelResetPassword() {
+    const toast = document.getElementById('confirm-toast-reset');
+    if (toast) {
+        const bsToast = bootstrap.Toast.getInstance(toast);
+        if (bsToast) {
+            bsToast.hide();
+        }
+        setTimeout(() => toast.remove(), 300);
+    }
+}
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container position-fixed top-0 end-0 p-3';
+    container.style.zIndex = '9999';
+    document.body.appendChild(container);
+    return container;
+}
+</script>
+@endpush
 @endsection 

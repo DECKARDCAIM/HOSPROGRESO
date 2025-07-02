@@ -194,10 +194,6 @@ Route::resource('control-types', App\Http\Controllers\ControlTypeController::cla
     ->middleware('auth')
     ->parameters(['control-types' => 'controlType']);
 
-Route::post('control-types/{controlType}/toggle-status', [App\Http\Controllers\ControlTypeController::class, 'toggleStatus'])
-    ->name('control-types.toggle-status')
-    ->middleware('auth');
-
 Route::post('control-types/{id}/reactivate', [App\Http\Controllers\ControlTypeController::class, 'reactivate'])
     ->name('control-types.reactivate')
     ->middleware('auth');
