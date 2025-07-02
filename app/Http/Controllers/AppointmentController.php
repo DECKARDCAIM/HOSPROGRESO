@@ -29,6 +29,9 @@ class AppointmentController extends Controller
 
     public function index(Request $request)
     {
+        // Verificar y marcar automáticamente citas perdidas (2 horas de gracia)
+        $this->checkAndMarkMissedAppointments();
+        
         $query = Appointment::with(['clinicalRecord', 'doctor', 'specialty', 'scheduleType', 'createdBy']);
         
         // Aplicar filtros
@@ -178,7 +181,26 @@ class AppointmentController extends Controller
             $slot = Appointment::getNextAvailableSlot($request->doctor_id);
             
             if (!$slot) {
-                return back()->withErrors(['appointment_date' => 'No hay cupos disponibles para este doctor.'])->withInput();
+                return back()->withErrors(['appointment_date' => 'No hay cupos disponibles para este doctor en los próximos 90 días.'])->withInput();
+            }
+            
+            // NUEVA VALIDACIÓN: Verificar que la fecha del slot no sea en el pasado
+            $slotDateTime = $slot['date'];
+            $now = now();
+            
+            if ($slotDateTime->lessThanOrEqualTo($now)) {
+                return back()->withErrors(['appointment_date' => 'No se pueden agendar citas en horarios que ya pasaron. El sistema encontró un error de programación.'])->withInput();
+            }
+            
+            // Verificar que si es el día de hoy, la hora no haya pasado (validación adicional)
+            if ($slotDateTime->isToday()) {
+                $doctorSchedule = \App\Models\Doctor::find($request->doctor_id)->scheduleType;
+                if ($doctorSchedule) {
+                    $scheduleTime = $slotDateTime->copy()->setTimeFromTimeString($doctorSchedule->start_time);
+                    if ($now->greaterThan($scheduleTime->addMinutes(30))) {
+                        return back()->withErrors(['appointment_date' => 'La hora de atención del doctor ya pasó. No se puede agendar para hoy.'])->withInput();
+                    }
+                }
             }
             
             $appointment = Appointment::create([
@@ -221,6 +243,9 @@ class AppointmentController extends Controller
 
     public function show(Appointment $appointment)
     {
+        // Verificar automáticamente citas perdidas antes de mostrar detalles
+        $this->checkAndMarkMissedAppointments();
+        
         $appointment->load(['clinicalRecord', 'doctor', 'specialty', 'scheduleType', 'createdBy', 'rescheduledFrom']);
         return view('modules.appointments.show', compact('appointment'));
     }
@@ -481,5 +506,46 @@ class AppointmentController extends Controller
         }
         
         return response()->json(['error' => 'No hay fechas disponibles'], 404);
+    }
+
+    /**
+     * Verificar y marcar automáticamente las citas como perdidas
+     * SOLO las citas PENDIENTES se marcan como perdidas
+     * Las CONFIRMADAS no se marcan como perdidas porque significa que el paciente sí vino
+     */
+    private function checkAndMarkMissedAppointments()
+    {
+        try {
+            // Obtener SOLO citas PENDIENTES que ya pasaron su fecha/hora
+            // Las citas CONFIRMADAS NO se marcan como perdidas automáticamente
+            // porque confirmada significa que el paciente sí vino
+            $cutoffTime = now()->subHours(2);
+            
+            $missedAppointments = Appointment::where('status', 'pendiente') // SOLO PENDIENTES
+                ->where('appointment_date', '<', $cutoffTime)
+                ->get();
+            
+            if ($missedAppointments->isNotEmpty()) {
+                foreach ($missedAppointments as $appointment) {
+                    $appointment->markAsMissed('Marcada automáticamente como perdida por el sistema - El paciente no se presentó (era estado: pendiente)');
+                    
+                    // Crear notificación para cada cita perdida
+                    $appointment->load('clinicalRecord');
+                    $patientName = $appointment->clinicalRecord->full_name ?? 'Paciente';
+                    
+                    NotificationService::create(
+                        'Cita Perdida Automática',
+                        "La cita {$appointment->appointment_number} para {$patientName} fue marcada automáticamente como perdida (no se presentó - era pendiente).",
+                        'warning'
+                    );
+                }
+                
+                // Log para el sistema (opcional)
+                \Log::info("Sistema marcó automáticamente {$missedAppointments->count()} citas PENDIENTES como perdidas");
+            }
+        } catch (\Exception $e) {
+            // No interrumpir la carga de la página si hay error
+            \Log::error('Error al verificar citas perdidas: ' . $e->getMessage());
+        }
     }
 } 

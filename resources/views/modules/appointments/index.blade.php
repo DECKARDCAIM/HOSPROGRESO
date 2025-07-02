@@ -9,69 +9,61 @@
     margin-bottom: 2rem;
 }
 
-/* Mantener dropdown dentro de la tabla */
+/* Estilos simples para tabla */
 .table-responsive {
     position: relative;
-    min-width: 100%;
+    width: 100%;
 }
 
 .table {
-    min-width: 1200px; /* Ancho mínimo para que todo se vea bien */
+    width: 100%;
 }
 
-.dropdown-menu {
-    position: absolute !important;
-    transform: none !important;
-    max-width: 280px;
-    min-width: 220px;
-    white-space: nowrap;
-    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important;
-    border: 1px solid rgba(0,0,0,.15);
-}
-
-/* Ajustar posición del dropdown según su ubicación */
-.dropdown.dropend .dropdown-menu {
-    left: 100% !important;
-    top: 0 !important;
-    margin-left: 0.125rem;
-}
-
-.dropdown.dropstart .dropdown-menu {
-    right: 100% !important;
-    top: 0 !important;
-    left: auto !important;
-    margin-right: 0.125rem;
-}
-
-.dropdown.dropup .dropdown-menu {
-    bottom: 100% !important;
-    top: auto !important;
-    margin-bottom: 0.125rem;
-}
-
-/* Asegurar que el dropdown esté siempre visible */
-.table td .dropdown {
-    position: relative;
-}
-
-.table td .dropdown-menu {
-    z-index: 1055;
-}
-
-/* Prevenir overflow en las celdas pero permitir dropdown */
-.table td {
-    overflow: visible;
-    position: relative;
-}
-
-/* Asegurar que las acciones estén siempre visibles */
+/* Columna de acciones */
 .table th:last-child,
 .table td:last-child {
-    position: sticky;
-    right: 0;
-    background: white;
-    z-index: 10;
-    border-left: 1px solid #dee2e6;
+    min-width: 200px;
+    text-align: center;
+}
+
+/* Botones de filtros sin animaciones problemáticas */
+.btn-group .btn {
+    transition: none !important;
+    border-radius: 0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.btn-group .btn:first-child {
+    border-top-left-radius: 0.375rem;
+    border-bottom-left-radius: 0.375rem;
+}
+
+.btn-group .btn:last-child {
+    border-top-right-radius: 0.375rem;
+    border-bottom-right-radius: 0.375rem;
+}
+
+/* Remover animaciones de hover y focus que causan problemas */
+.btn-group .btn:hover,
+.btn-group .btn:focus,
+.btn-group .btn:active {
+    transform: none !important;
+    box-shadow: none !important;
+    animation: none !important;
+}
+
+/* Estilos responsivos para los botones de filtro */
+@media (max-width: 768px) {
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn {
+        border-radius: 0.375rem !important;
+        margin-bottom: 5px;
+    }
 }
 </style>
 @endpush
@@ -217,38 +209,32 @@
                 <div class="card-body px-0 pt-0 pb-4">
                     <!-- Pestañas de filtros por estado -->
                     <div class="px-3 pt-4 pb-3">
-                        <ul class="nav nav-pills nav-fill" id="statusTabs" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link {{ !request('status') ? 'active' : '' }}" href="{{ route('appointments.index') }}">
-                                    <i class="fas fa-list me-2"></i>Todas ({{ $stats['total'] }})
-                                </a>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link {{ request('status') === 'pendiente' ? 'active' : '' }}" href="{{ route('appointments.index', ['status' => 'pendiente']) }}">
-                                    <i class="fas fa-clock me-2"></i>Pendientes ({{ $stats['pendientes'] }})
-                                </a>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link {{ request('status') === 'confirmada' ? 'active' : '' }}" href="{{ route('appointments.index', ['status' => 'confirmada']) }}">
-                                    <i class="fas fa-check-circle me-2"></i>Confirmadas ({{ $stats['confirmadas'] }})
-                                </a>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link {{ request('status') === 'atendida' ? 'active' : '' }}" href="{{ route('appointments.index', ['status' => 'atendida']) }}">
-                                    <i class="fas fa-user-check me-2"></i>Atendidas ({{ $stats['atendidas'] }})
-                                </a>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link {{ request('status') === 'perdida' ? 'active' : '' }}" href="{{ route('appointments.index', ['status' => 'perdida']) }}">
-                                    <i class="fas fa-user-slash me-2"></i>Perdidas ({{ $stats['perdidas'] }})
-                                </a>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link {{ request('status') === 'cancelada' ? 'active' : '' }}" href="{{ route('appointments.index', ['status' => 'cancelada']) }}">
-                                    <i class="fas fa-times-circle me-2"></i>Canceladas ({{ $stats['canceladas'] }})
-                                </a>
-                            </li>
-                        </ul>
+                        <div class="btn-group w-100" role="group" aria-label="Filtros de estado">
+                            <a href="{{ route('appointments.index') }}" 
+                               class="btn {{ !request('status') ? 'btn-primary' : 'btn-outline-primary' }} flex-fill">
+                                <i class="fas fa-list me-2"></i>Todas ({{ $stats['total'] }})
+                            </a>
+                            <a href="{{ route('appointments.index', ['status' => 'pendiente']) }}" 
+                               class="btn {{ request('status') === 'pendiente' ? 'btn-warning text-white' : 'btn-outline-warning' }} flex-fill">
+                                <i class="fas fa-clock me-2"></i>Pendientes ({{ $stats['pendientes'] }})
+                            </a>
+                            <a href="{{ route('appointments.index', ['status' => 'confirmada']) }}" 
+                               class="btn {{ request('status') === 'confirmada' ? 'btn-info text-white' : 'btn-outline-info' }} flex-fill">
+                                <i class="fas fa-check-circle me-2"></i>Confirmadas ({{ $stats['confirmadas'] }})
+                            </a>
+                            <a href="{{ route('appointments.index', ['status' => 'atendida']) }}" 
+                               class="btn {{ request('status') === 'atendida' ? 'btn-success text-white' : 'btn-outline-success' }} flex-fill">
+                                <i class="fas fa-user-check me-2"></i>Atendidas ({{ $stats['atendidas'] }})
+                            </a>
+                            <a href="{{ route('appointments.index', ['status' => 'perdida']) }}" 
+                               class="btn {{ request('status') === 'perdida' ? 'btn-secondary text-white' : 'btn-outline-secondary' }} flex-fill">
+                                <i class="fas fa-user-slash me-2"></i>Perdidas ({{ $stats['perdidas'] }})
+                            </a>
+                            <a href="{{ route('appointments.index', ['status' => 'cancelada']) }}" 
+                               class="btn {{ request('status') === 'cancelada' ? 'btn-danger text-white' : 'btn-outline-danger' }} flex-fill">
+                                <i class="fas fa-times-circle me-2"></i>Canceladas ({{ $stats['canceladas'] }})
+                            </a>
+                        </div>
                     </div>
 
                     <!-- Filtros avanzados -->
@@ -293,7 +279,7 @@
                     </form>
 
                     <!-- Tabla de citas -->
-                    <div class="table-responsive p-0" style="overflow-x: auto;">
+                    <div class="table-responsive p-0">
                         <table class="table align-items-center mb-0">
                             <thead>
                                 <tr>
@@ -343,41 +329,12 @@
                                             <span class="badge {{ $appointment->status_badge }}">{{ $appointment->status_text }}</span>
                                         </td>
                                         <td class="align-middle text-center">
-                                            <div class="dropdown">
-                                                <button class="btn btn-link text-secondary mb-0" data-bs-toggle="dropdown" data-bs-auto-close="true">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li><a class="dropdown-item" href="{{ route('appointments.show', $appointment) }}">
-                                                        <i class="fas fa-eye me-2"></i>Ver Detalles
-                                                    </a></li>
-                                                    <li><a class="dropdown-item" href="{{ route('appointments.print', $appointment) }}" target="_blank">
-                                                        <i class="fas fa-print me-2"></i>Imprimir PDF
-                                                    </a></li>
-                                                    @if(in_array($appointment->status, ['pendiente', 'confirmada']))
-                                                        <li><hr class="dropdown-divider"></li>
-                                                        @if($appointment->status === 'pendiente')
-                                                        <li><button class="dropdown-item text-info" onclick="updateStatus('{{ $appointment->id }}', 'confirmada')">
-                                                            <i class="fas fa-check me-2"></i>Confirmar Cita
-                                                        </button></li>
-                                                        @endif
-                                                        @if(in_array($appointment->status, ['pendiente', 'confirmada']))
-                                                        <li><button class="dropdown-item text-success" onclick="updateStatus('{{ $appointment->id }}', 'atendida')">
-                                                            <i class="fas fa-user-check me-2"></i>Marcar como Atendida
-                                                        </button></li>
-                                                        <li><button class="dropdown-item text-secondary" onclick="confirmAction(() => updateStatus('{{ $appointment->id }}', 'perdida'), '¿Marcar esta cita como perdida?')">
-                                                            <i class="fas fa-user-slash me-2"></i>Marcar como Perdida
-                                                        </button></li>
-                                                        <li><button class="dropdown-item text-warning" onclick="rescheduleAppointment('{{ $appointment->id }}')">
-                                                            <i class="fas fa-calendar-alt me-2"></i>Reagendar Cita
-                                                        </button></li>
-                                                        <li><button class="dropdown-item text-danger" onclick="confirmAction(() => updateStatus('{{ $appointment->id }}', 'cancelada'), '¿Está seguro de cancelar esta cita?')">
-                                                            <i class="fas fa-times me-2"></i>Cancelar Cita
-                                                        </button></li>
-                                                        @endif
-                                                    @endif
-                                                </ul>
-                                            </div>
+                                            <a href="{{ route('appointments.show', $appointment) }}" class="btn btn-primary rounded-pill px-3 py-2 me-2">
+                                                <i class="fas fa-eye me-1"></i> Ver
+                                            </a>
+                                            <a href="{{ route('appointments.print', $appointment) }}" class="btn btn-secondary rounded-pill px-3 py-2" target="_blank">
+                                                <i class="fas fa-print me-1"></i> Imprimir
+                                            </a>
                                         </td>
                                     </tr>
                                 @empty
@@ -399,316 +356,21 @@
     </div>
 </div>
 
-<!-- Modal para actualizar estado -->
-<div class="modal fade" id="statusModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Actualizar Estado de Cita</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="statusForm" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="modal-body">
-                    <input type="hidden" name="status" id="statusInput">
-                    <div class="mb-3">
-                        <label class="form-label">Notas adicionales</label>
-                        <textarea name="notes" class="form-control" rows="3" placeholder="Agregar notas sobre esta acción..."></textarea>
-                    </div>
-                    <div class="mb-3" id="cancelReasonDiv" style="display: none;">
-                        <label class="form-label">Razón de cancelación *</label>
-                        <input type="text" name="cancelled_reason" id="cancelledReasonInput" class="form-control" placeholder="Especificar razón de cancelación">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Actualizar Estado</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
-<!-- Modal para reagendar -->
-<div class="modal fade" id="rescheduleModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Reagendar Cita</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="rescheduleForm" method="POST">
-                @csrf
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Nuevo Doctor *</label>
-                        <select name="doctor_id" class="form-select" required>
-                            <option value="">Seleccionar doctor...</option>
-                            @foreach($doctors as $doctor)
-                                <option value="{{ $doctor->id }}">{{ $doctor->full_name }} - {{ $doctor->specialty->name ?? '' }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Notas</label>
-                        <textarea name="notes" class="form-control" rows="3" placeholder="Agregar notas sobre el reagendamiento..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-warning">Reagendar Cita</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 <script>
-function updateStatus(appointmentId, status) {
-    console.log('=== FUNCIÓN updateStatus LLAMADA ===');
-    console.log('appointmentId:', appointmentId);
-    console.log('status:', status);
-    
-    const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
-    const form = document.getElementById('statusForm');
-    const statusInput = document.getElementById('statusInput');
-    const cancelReasonDiv = document.getElementById('cancelReasonDiv');
-    const cancelReasonInput = document.getElementById('cancelledReasonInput');
-    
-    // CONFIGURAR FORMULARIO
-    form.action = `/appointments/${appointmentId}/status`;
-    statusInput.value = status;
-    
-    console.log('Form action configurada:', form.action);
-    console.log('Status input configurado:', statusInput.value);
-    
-    // MOSTRAR/OCULTAR CAMPO DE CANCELACIÓN
-    if (status === 'cancelada') {
-        cancelReasonDiv.style.display = 'block';
-        cancelReasonInput.required = true;
-        console.log('Campo de cancelación mostrado');
-    } else {
-        cancelReasonDiv.style.display = 'none';
-        cancelReasonInput.required = false;
-        cancelReasonInput.value = '';
-        console.log('Campo de cancelación ocultado');
-    }
-    
-    // CAMBIAR TÍTULO DEL MODAL
-    const modalTitle = document.querySelector('#statusModal .modal-title');
-    const statusTexts = {
-        'confirmada': 'Confirmar Cita',
-        'atendida': 'Marcar como Atendida',
-        'perdida': 'Marcar como Perdida',
-        'cancelada': 'Cancelar Cita'
-    };
-    modalTitle.textContent = statusTexts[status] || 'Actualizar Estado de Cita';
-    console.log('Título del modal:', modalTitle.textContent);
-    
-    // LIMPIAR NOTAS ANTERIORES
-    const notesInput = form.querySelector('textarea[name="notes"]');
-    if (notesInput) {
-        notesInput.value = '';
-    }
-    
-    statusModal.show();
-}
+// Tabla simple con botones directos como otros módulos
 
-function rescheduleAppointment(appointmentId) {
-    const rescheduleModal = new bootstrap.Modal(document.getElementById('rescheduleModal'));
-    const form = document.getElementById('rescheduleForm');
-    
-    form.action = `/appointments/${appointmentId}/reschedule`;
-    rescheduleModal.show();
-}
-
-// Función para confirmaciones
-function confirmAction(callback, message) {
-    if (confirm(message)) {
-        callback();
-    }
-}
-
-// Agregar token CSRF a todos los formularios
-document.addEventListener('DOMContentLoaded', function() {
-    // Asegurar que los formularios tengan el token CSRF
-    const forms = document.querySelectorAll('#statusForm, #rescheduleForm');
-    forms.forEach(form => {
-        if (!form.querySelector('input[name="_token"]')) {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]');
-            if (csrfToken) {
-                const tokenInput = document.createElement('input');
-                tokenInput.type = 'hidden';
-                tokenInput.name = '_token';
-                tokenInput.value = csrfToken.getAttribute('content');
-                form.appendChild(tokenInput);
-            }
-        }
-    });
-});
-
-// Manejar envío del formulario de estado
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('statusForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        console.log('=== FORMULARIO ENVIADO ===');
-        
-        const statusInput = document.getElementById('statusInput');
-        const cancelReasonInput = document.getElementById('cancelledReasonInput');
-        const notesInput = this.querySelector('textarea[name="notes"]');
-        
-        console.log('Status a enviar:', statusInput.value);
-        console.log('Notes:', notesInput.value);
-        console.log('Cancelled reason:', cancelReasonInput.value);
-        
-        // Validación para cancelación
-        if (statusInput.value === 'cancelada') {
-            if (!cancelReasonInput.value || cancelReasonInput.value.trim() === '') {
-                showErrorToast('Debe especificar un motivo para cancelar la cita', 'Campo Requerido');
-                cancelReasonInput.focus();
-                return;
-            }
-        }
-        
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesando...';
-        
-        // Crear FormData manualmente para control total
-        const formData = new FormData();
-        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-        formData.append('_method', 'PUT');
-        formData.append('status', statusInput.value);
-        formData.append('notes', notesInput.value || '');
-        
-        if (statusInput.value === 'cancelada') {
-            formData.append('cancelled_reason', cancelReasonInput.value);
-        }
-        
-        console.log('=== DATOS A ENVIAR ===');
-        for (let [key, value] of formData.entries()) {
-            console.log(key + ':', value);
-        }
-        
-        fetch(this.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => {
-            console.log('Response status:', response.status);
-            if (!response.ok) {
-                return response.json().then(err => Promise.reject(err));
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Response data:', data);
-            if (data.success) {
-                const modal = bootstrap.Modal.getInstance(document.getElementById('statusModal'));
-                modal.hide();
-                
-                const statusTexts = {
-                    'confirmada': 'confirmada',
-                    'atendida': 'atendida', 
-                    'perdida': 'perdida',
-                    'cancelada': 'cancelada'
-                };
-                
-                showSuccessToast(
-                    `La cita ha sido ${statusTexts[statusInput.value]} correctamente`,
-                    'Estado Actualizado'
-                );
-                
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
-            } else {
-                showErrorToast(data.message || 'Error desconocido', 'Error');
-            }
-        })
-        .catch(error => {
-            console.error('Error completo:', error);
-            if (error.errors) {
-                let errorMsg = '';
-                Object.keys(error.errors).forEach(key => {
-                    errorMsg += `${error.errors[key].join(', ')} `;
-                });
-                showErrorToast(errorMsg.trim(), 'Errores de Validación');
-            } else {
-                showErrorToast(error.message || 'Error inesperado', 'Error');
-            }
-        })
-        .finally(() => {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
-        });
-    });
-});
-
-document.getElementById('rescheduleForm').addEventListener('submit', function(e) {
-    const submitBtn = this.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Reagendando...';
-});
-
-// Auto-refresh si hay mensaje de éxito (indica que se actualizó algo)
+// Auto-refresh si hay mensaje de éxito
 @if(session('success'))
 setTimeout(function() {
-    // Recargar solo las estadísticas sin hacer refresh completo
     window.location.href = window.location.href.split('?')[0] + window.location.search;
 }, 100);
 @endif
 
-// Posicionamiento inteligente de dropdowns
+// JavaScript simple para tabla
 document.addEventListener('DOMContentLoaded', function() {
-    const dropdowns = document.querySelectorAll('.dropdown');
-    
-    dropdowns.forEach(dropdown => {
-        const button = dropdown.querySelector('[data-bs-toggle="dropdown"]');
-        const menu = dropdown.querySelector('.dropdown-menu');
-        
-        button.addEventListener('click', function() {
-            setTimeout(() => {
-                const rect = button.getBoundingClientRect();
-                const tableContainer = document.querySelector('.table-responsive');
-                const containerRect = tableContainer.getBoundingClientRect();
-                
-                // Calcular posición relativa dentro del contenedor
-                const relativeX = rect.left - containerRect.left;
-                const relativeY = rect.top - containerRect.top;
-                const containerWidth = containerRect.width;
-                const containerHeight = containerRect.height;
-                
-                // Ajustar posición según ubicación
-                menu.classList.remove('dropdown-menu-end', 'dropdown-menu-start');
-                dropdown.classList.remove('dropup', 'dropend', 'dropstart');
-                
-                // Si está muy a la derecha, abrir hacia la izquierda
-                if (relativeX > containerWidth * 0.7) {
-                    menu.classList.add('dropdown-menu-end');
-                    dropdown.classList.add('dropstart');
-                }
-                
-                // Si está muy abajo, abrir hacia arriba
-                if (relativeY > containerHeight * 0.7) {
-                    dropdown.classList.add('dropup');
-                }
-                
-                // Si está muy a la izquierda, abrir hacia la derecha
-                if (relativeX < containerWidth * 0.3) {
-                    menu.classList.add('dropdown-menu-start');
-                    dropdown.classList.add('dropend');
-                }
-            }, 10);
-        });
-    });
+    console.log('Tabla de citas cargada correctamente');
 });
 </script>
 @endsection 

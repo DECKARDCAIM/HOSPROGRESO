@@ -103,8 +103,9 @@
                                     <h6><i class="fas fa-cogs me-2"></i>Acciones Disponibles</h6>
                                 </div>
                                 <div class="card-body">
-                                    @if(in_array($appointment->status, ['pendiente', 'confirmada']))
-                                        <div class="d-grid gap-2">
+                                    <div class="d-grid gap-2">
+                                        @if(in_array($appointment->status, ['pendiente', 'confirmada']))
+                                            {{-- Citas pendientes o confirmadas - Acciones normales --}}
                                             @if($appointment->status === 'pendiente')
                                                 <button class="btn btn-info" onclick="updateStatus('{{ $appointment->id }}', 'confirmada')">
                                                     <i class="fas fa-check me-2"></i>Confirmar Cita
@@ -119,15 +120,50 @@
                                                 <i class="fas fa-user-slash me-2"></i>Marcar como Perdida
                                             </button>
                                             
-                                            <button class="btn btn-warning" onclick="rescheduleAppointment('{{ $appointment->id }}')">
+                                            <a href="{{ route('appointments.create', ['clinical_record_id' => $appointment->clinical_record_id]) }}" class="btn btn-warning">
                                                 <i class="fas fa-calendar-alt me-2"></i>Reagendar Cita
-                                            </button>
+                                            </a>
                                             
                                             <button class="btn btn-danger" onclick="updateStatus('{{ $appointment->id }}', 'cancelada')">
                                                 <i class="fas fa-times me-2"></i>Cancelar Cita
                                             </button>
-                                        </div>
-                                    @endif
+
+                                        @elseif($appointment->status === 'perdida')
+                                            {{-- Cita perdida - Solo reagendar --}}
+                                            <div class="alert alert-warning">
+                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                                <strong>Cita Perdida:</strong> El paciente no se presentó a la cita.
+                                            </div>
+                                            <a href="{{ route('appointments.create', ['clinical_record_id' => $appointment->clinical_record_id]) }}" class="btn btn-warning btn-lg">
+                                                <i class="fas fa-calendar-alt me-2"></i>Reagendar Cita
+                                            </a>
+
+                                        @elseif($appointment->status === 'atendida')
+                                            {{-- Cita atendida - Agendar nueva --}}
+                                            <div class="alert alert-success">
+                                                <i class="fas fa-check-circle me-2"></i>
+                                                <strong>Cita Atendida:</strong> El paciente fue atendido exitosamente.
+                                            </div>
+                                            <a href="{{ route('appointments.create', ['clinical_record_id' => $appointment->clinical_record_id]) }}" class="btn btn-success btn-lg">
+                                                <i class="fas fa-plus-circle me-2"></i>Agendar Nueva Cita
+                                            </a>
+
+                                        @elseif($appointment->status === 'cancelada')
+                                            {{-- Cita cancelada - Agendar nueva --}}
+                                            <div class="alert alert-danger">
+                                                <i class="fas fa-times-circle me-2"></i>
+                                                <strong>Cita Cancelada:</strong> 
+                                                @if($appointment->cancelled_reason)
+                                                    {{ $appointment->cancelled_reason }}
+                                                @else
+                                                    Cita cancelada por el sistema.
+                                                @endif
+                                            </div>
+                                            <a href="{{ route('appointments.create', ['clinical_record_id' => $appointment->clinical_record_id]) }}" class="btn btn-info btn-lg">
+                                                <i class="fas fa-plus-circle me-2"></i>Agendar Nueva Cita
+                                            </a>
+                                        @endif
+                                    </div>
 
                                     <hr>
                                     
@@ -135,6 +171,13 @@
                                         <a href="{{ route('appointments.print', $appointment) }}" class="btn btn-outline-primary" target="_blank">
                                             <i class="fas fa-print me-2"></i>Imprimir PDF
                                         </a>
+                                        
+                                        @if($appointment->status !== 'atendida')
+                                            {{-- Mostrar botón para ver expediente completo si no está atendida --}}
+                                            <a href="{{ route('clinical-records.show', $appointment->clinicalRecord) }}" class="btn btn-outline-info">
+                                                <i class="fas fa-folder-medical me-2"></i>Ver Expediente Completo
+                                            </a>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
