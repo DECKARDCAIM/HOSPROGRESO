@@ -24,6 +24,9 @@ class DatabaseSeeder extends Seeder
             LaboratoryTestSeeder::class,
             ExamSeeder::class,
             MedicationSeeder::class,
+            ControlTypeSeeder::class,
+            RoleSeeder::class,
+            AdminUserSeeder::class,
         ]);
     }
 }

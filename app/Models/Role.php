@@ -9,6 +9,12 @@ class Role extends Model
 {
     use HasFactory;
 
+    // IDs fijos de roles críticos del sistema (NO CAMBIAR)
+    public const CONSULTA_EXTERNA_ID = 1;
+    public const EMERGENCIA_ID = 2;
+    public const ADMINISTRADOR_ID = 5;
+    public const ARCHIVO_CLINICO_ID = 3;
+
     protected $fillable = [
         'name',
         'description',

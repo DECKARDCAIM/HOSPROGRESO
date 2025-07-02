@@ -147,4 +147,36 @@ class User extends Authenticatable
     {
         return $this->is_active && $this->role_id && $this->role && $this->role->is_active;
     }
+
+    /**
+     * Verificar si el usuario es de Emergencia
+     */
+    public function isEmergency()
+    {
+        return $this->role_id === Role::EMERGENCIA_ID;
+    }
+
+    /**
+     * Verificar si el usuario es de Consulta Externa
+     */
+    public function isConsultation()
+    {
+        return $this->role_id === Role::CONSULTA_EXTERNA_ID;
+    }
+
+    /**
+     * Verificar si el usuario es de Archivo Clínico
+     */
+    public function isArchive()
+    {
+        return $this->role_id === Role::ARCHIVO_CLINICO_ID;
+    }
+
+    /**
+     * Verificar si el usuario es administrador (usando ID fijo)
+     */
+    public function isAdminById()
+    {
+        return $this->role_id === Role::ADMINISTRADOR_ID;
+    }
 }
