@@ -200,11 +200,10 @@
                                         
                                         @if($user->is_active)
                                             @if($user->id !== auth()->id())
-                                                <form action="{{ route('usuarios.destroy', $user->id) }}" method="POST" class="d-inline" id="delete-form-{{ $user->id }}">
+                                                <form action="{{ route('usuarios.destroy', $user->id) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="button" class="btn btn-warning"
-                                                        onclick="confirmDelete({{ $user->id }}, '{{ $user->name }}')">
+                                                    <button type="submit" class="btn btn-warning">
                                                         <i class="fas fa-user-times me-1"></i>Desactivar usuario
                                                     </button>
                                                 </form>
@@ -227,65 +226,4 @@
         </div>
     </div>
 </div>
-
-@push('scripts')
-<script>
-// Función para confirmar eliminación sin usar confirm() nativo
-function confirmDelete(id, name) {
-    // Crear toast de confirmación
-    const toastContainer = document.getElementById('toast-container') || createToastContainer();
-    
-    const toastHtml = `
-        <div class="toast align-items-center text-white bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true" id="confirm-toast-${id}">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <strong><i class="fas fa-exclamation-triangle me-2"></i>Confirmar Desactivación</strong><br>
-                    ¿Está seguro de desactivar al usuario "${name}"?
-                </div>
-                <div class="me-2 m-auto">
-                    <button type="button" class="btn btn-outline-light btn-sm me-1" onclick="executeDelete(${id})">
-                        <i class="fas fa-check me-1"></i>Sí
-                    </button>
-                    <button type="button" class="btn btn-outline-light btn-sm" onclick="cancelDelete(${id})">
-                        <i class="fas fa-times me-1"></i>No
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-    
-    const toast = new bootstrap.Toast(document.getElementById(`confirm-toast-${id}`), {
-        autohide: false
-    });
-    toast.show();
-}
-
-function executeDelete(id) {
-    document.getElementById(`delete-form-${id}`).submit();
-    cancelDelete(id);
-}
-
-function cancelDelete(id) {
-    const toast = document.getElementById(`confirm-toast-${id}`);
-    if (toast) {
-        const bsToast = bootstrap.Toast.getInstance(toast);
-        if (bsToast) {
-            bsToast.hide();
-        }
-        setTimeout(() => toast.remove(), 300);
-    }
-}
-
-function createToastContainer() {
-    const container = document.createElement('div');
-    container.id = 'toast-container';
-    container.className = 'toast-container position-fixed top-0 end-0 p-3';
-    container.style.zIndex = '9999';
-    document.body.appendChild(container);
-    return container;
-}
-</script>
-@endpush
 @endsection 

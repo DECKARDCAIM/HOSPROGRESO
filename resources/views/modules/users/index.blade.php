@@ -90,10 +90,10 @@
                                 <thead>
                                     <tr>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Usuario</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Estado</th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">CUI</th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Contacto</th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Rol</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Estado</th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3 text-center">Acciones</th>
                                     </tr>
                                 </thead>
@@ -112,6 +112,17 @@
                                                 </div>
                                             </td>
                                             <td class="px-3 py-2">
+                                                @if($user->is_active)
+                                                    @if($user->canAccess())
+                                                        <span class="badge bg-success">Activo</span>
+                                                    @else
+                                                        <span class="badge bg-warning">Activo (Sin acceso)</span>
+                                                    @endif
+                                                @else
+                                                    <span class="badge bg-secondary">Inactivo</span>
+                                                @endif
+                                            </td>
+                                            <td class="px-3 py-2">
                                                 <p class="text-sm font-weight-bold mb-0">{{ $user->cui ?? 'No registrado' }}</p>
                                             </td>
                                             <td class="px-3 py-2">
@@ -125,36 +136,23 @@
                                                     <span class="badge bg-secondary">Sin rol asignado</span>
                                                 @endif
                                             </td>
-                                            <td class="px-3 py-2">
-                                                @if($user->is_active)
-                                                    @if($user->canAccess())
-                                                        <span class="badge bg-success">Activo</span>
-                                                    @else
-                                                        <span class="badge bg-warning">Activo (Sin acceso)</span>
-                                                    @endif
-                                                @else
-                                                    <span class="badge bg-secondary">Inactivo</span>
-                                                @endif
-                                            </td>
                                             <td class="align-middle text-center">
                                                 @if ($status === 'active')
                                                     <a href="{{ route('usuarios.show', $user->id) }}"
-                                                        class="btn btn-primary rounded-pill px-3 py-2 me-1" title="Ver detalles">
-                                                        <i class="fas fa-eye"></i>
+                                                        class="btn btn-primary rounded-pill px-3 py-2 me-2">
+                                                        <i class="fas fa-eye me-1"></i> Ver
                                                     </a>
                                                     <a href="{{ route('usuarios.edit', $user->id) }}"
-                                                        class="btn btn-info rounded-pill px-3 py-2 me-1" title="Editar">
-                                                        <i class="fas fa-edit"></i>
+                                                        class="btn btn-info rounded-pill px-3 py-2 me-2">
+                                                        <i class="fas fa-edit me-1"></i> Editar
                                                     </a>
                                                     @if($user->id !== auth()->id())
                                                         <form action="{{ route('usuarios.destroy', $user->id) }}"
-                                                            method="POST" class="d-inline" id="delete-form-{{ $user->id }}">
+                                                            method="POST" class="d-inline">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="button" class="btn btn-danger rounded-pill px-3 py-2"
-                                                                onclick="confirmDelete({{ $user->id }}, '{{ $user->name }}')"
-                                                                title="Desactivar">
-                                                                <i class="fas fa-trash"></i>
+                                                            <button type="submit" class="btn btn-danger rounded-pill px-3 py-2">
+                                                                <i class="fas fa-trash me-1"></i> Eliminar
                                                             </button>
                                                         </form>
                                                     @endif
@@ -186,65 +184,4 @@
             </div>
         </div>
     </div>
-
-@push('scripts')
-<script>
-// Función para confirmar eliminación sin usar confirm() nativo
-function confirmDelete(id, name) {
-    // Crear toast de confirmación
-    const toastContainer = document.getElementById('toast-container') || createToastContainer();
-    
-    const toastHtml = `
-        <div class="toast align-items-center text-white bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true" id="confirm-toast-${id}">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <strong><i class="fas fa-exclamation-triangle me-2"></i>Confirmar Desactivación</strong><br>
-                    ¿Está seguro de desactivar al usuario "${name}"?
-                </div>
-                <div class="me-2 m-auto">
-                    <button type="button" class="btn btn-outline-light btn-sm me-1" onclick="executeDelete(${id})">
-                        <i class="fas fa-check me-1"></i>Sí
-                    </button>
-                    <button type="button" class="btn btn-outline-light btn-sm" onclick="cancelDelete(${id})">
-                        <i class="fas fa-times me-1"></i>No
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-    
-    const toast = new bootstrap.Toast(document.getElementById(`confirm-toast-${id}`), {
-        autohide: false
-    });
-    toast.show();
-}
-
-function executeDelete(id) {
-    document.getElementById(`delete-form-${id}`).submit();
-    cancelDelete(id);
-}
-
-function cancelDelete(id) {
-    const toast = document.getElementById(`confirm-toast-${id}`);
-    if (toast) {
-        const bsToast = bootstrap.Toast.getInstance(toast);
-        if (bsToast) {
-            bsToast.hide();
-        }
-        setTimeout(() => toast.remove(), 300);
-    }
-}
-
-function createToastContainer() {
-    const container = document.createElement('div');
-    container.id = 'toast-container';
-    container.className = 'toast-container position-fixed top-0 end-0 p-3';
-    container.style.zIndex = '9999';
-    document.body.appendChild(container);
-    return container;
-}
-</script>
-@endpush
 @endsection 
