@@ -16,10 +16,12 @@ class ScheduleType extends Model
         'start_time',
         'end_time',
         'max_patients',
+        'is_active'
     ];
 
     protected $casts = [
         'days_of_week' => 'array',
+        'is_active' => 'boolean',
     ];
 
     public function specialty()
@@ -30,5 +32,13 @@ class ScheduleType extends Model
     public function doctors()
     {
         return $this->hasMany(Doctor::class);
+    }
+
+    /**
+     * Obtener tipos de horario activos
+     */
+    public static function active()
+    {
+        return static::where('is_active', true)->orderBy('name');
     }
 } 

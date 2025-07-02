@@ -146,6 +146,7 @@ Route::middleware('auth')->group(function () {
     Route::post('laboratory-tests/{id}/reactivate', [App\Http\Controllers\LaboratoryTestController::class, 'reactivate'])->name('laboratory-tests.reactivate');
     Route::post('exams/{id}/reactivate', [App\Http\Controllers\ExamController::class, 'reactivate'])->name('exams.reactivate');
     Route::post('medications/{id}/reactivate', [App\Http\Controllers\MedicationController::class, 'reactivate'])->name('medications.reactivate');
+    Route::post('schedule-types/{id}/reactivate', [App\Http\Controllers\ScheduleTypeController::class, 'reactivate'])->name('schedule-types.reactivate');
 });
 
 Route::get('clinical-records/{clinicalRecord}/print', [App\Http\Controllers\ClinicalRecordController::class, 'printPdf'])->name('clinical-records.print')->middleware('auth');
