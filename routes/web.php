@@ -188,3 +188,24 @@ Route::post('usuarios/{id}/reactivate', [App\Http\Controllers\UserController::cl
 Route::put('usuarios/{user}/reset-password', [App\Http\Controllers\UserController::class, 'resetPassword'])
     ->name('usuarios.reset-password')
     ->middleware('auth');
+
+// Rutas para Tipos de Control (SIGSA 3H)
+Route::resource('control-types', App\Http\Controllers\ControlTypeController::class)
+    ->middleware('auth')
+    ->parameters(['control-types' => 'controlType']);
+
+Route::post('control-types/{controlType}/toggle-status', [App\Http\Controllers\ControlTypeController::class, 'toggleStatus'])
+    ->name('control-types.toggle-status')
+    ->middleware('auth');
+
+Route::post('control-types/{id}/reactivate', [App\Http\Controllers\ControlTypeController::class, 'reactivate'])
+    ->name('control-types.reactivate')
+    ->middleware('auth');
+
+// Rutas para Módulo de Reportes SIGSA 3H
+Route::prefix('reports')->middleware('auth')->group(function () {
+    Route::get('/', [App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
+    Route::post('/sigsa-3h', [App\Http\Controllers\ReportController::class, 'generateSigsa'])->name('reports.generate-sigsa');
+    Route::post('/preview', [App\Http\Controllers\ReportController::class, 'preview'])->name('reports.preview');
+    Route::get('/statistics', [App\Http\Controllers\ReportController::class, 'statistics'])->name('reports.statistics');
+});

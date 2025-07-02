@@ -256,4 +256,29 @@
         </div>
     </li>
     @endif
+
+    <!-- Reportes SIGSA 3H -->
+    <li class="nav-item">
+        <a data-bs-toggle="collapse" href="#menuReportes" class="nav-link text-dark"
+            aria-controls="menuReportes" role="button" aria-expanded="false">
+            <i class="material-symbols-rounded opacity-5">assessment</i>
+            <span class="nav-link-text ms-1 ps-1">Reportes SIGSA 3H</span>
+        </a>
+        <div class="collapse" id="menuReportes">
+            <ul class="nav">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('reports.index') }}">
+                        <i class="material-symbols-rounded opacity-5 me-2">bar_chart</i>
+                        <span class="sidenav-normal">Generar Reportes</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('control-types.index') }}">
+                        <i class="material-symbols-rounded opacity-5 me-2">assignment</i>
+                        <span class="sidenav-normal">Tipos de Control</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </li>
 </ul>

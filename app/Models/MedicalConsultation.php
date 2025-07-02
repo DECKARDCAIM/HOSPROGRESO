@@ -28,11 +28,31 @@ class MedicalConsultation extends Model
         'consultation_physical_exam',
         'consultation_treatment_plan',
         'final_status',
-        'additional_notes'
+        'additional_notes',
+        // Campos SIGSA 3H
+        'control_type_id',
+        'has_igss',
+        'is_new_patient',
+        'diagnosis_cie10_code',
+        'prescribed_treatment',
+        'was_referred',
+        'comes_counter_referred',
+        'comes_referred',
+        'was_counter_referred',
+        'reference_destination',
+        'reference_reason',
+        'gestation_weeks',
+        'sigsa_observations'
     ];
 
     protected $casts = [
         'consultation_date' => 'datetime',
+        'has_igss' => 'boolean',
+        'is_new_patient' => 'boolean',
+        'was_referred' => 'boolean',
+        'comes_counter_referred' => 'boolean',
+        'comes_referred' => 'boolean',
+        'was_counter_referred' => 'boolean',
     ];
 
     // Estados de consulta
@@ -62,6 +82,11 @@ class MedicalConsultation extends Model
     public function specialty()
     {
         return $this->belongsTo(Specialty::class);
+    }
+
+    public function controlType()
+    {
+        return $this->belongsTo(ControlType::class);
     }
 
     public function laboratoryTests()

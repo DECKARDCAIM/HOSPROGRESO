@@ -72,6 +72,45 @@
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            <!-- CAMPOS SIGSA 3H - PASO 1 -->
+                                            <div class="row mt-3">
+                                                <div class="col-md-4">
+                                                    <div class="mb-3">
+                                                        <label for="control_type_id" class="form-label">Tipo de Control SIGSA</label>
+                                                        <select id="control_type_id" name="control_type_id" class="form-control">
+                                                            <option value="">Seleccione tipo de control</option>
+                                                            @foreach($controlTypes as $controlType)
+                                                                <option value="{{ $controlType->id }}" {{ $medicalConsultation->control_type_id == $controlType->id ? 'selected' : '' }}>
+                                                                    {{ $controlType->name }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">¿Paciente Nuevo?</label>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="is_new_patient" name="is_new_patient" value="1" {{ $medicalConsultation->is_new_patient ? 'checked' : '' }}>
+                                                            <label class="form-check-label" for="is_new_patient">
+                                                                Es paciente nuevo
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">¿Tiene derecho IGSS?</label>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="has_igss" name="has_igss" value="1" {{ $medicalConsultation->has_igss ? 'checked' : '' }}>
+                                                            <label class="form-check-label" for="has_igss">
+                                                                Tiene derecho IGSS
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             <div class="button-row d-flex mt-4">
                                                 <button class="btn bg-gradient-info ms-auto mb-0 js-btn-next" type="button" title="Next">Siguiente</button>
                                             </div>
@@ -89,10 +128,37 @@
                                         <p class="mb-0 text-sm">Diagnóstico y evaluación específica</p>
                                         <div class="multisteps-form__content">
                                             <div class="row mt-3">
-                                                <div class="col-12">
+                                                <div class="col-md-8">
                                                     <div class="mb-3">
                                                         <label for="medical_diagnosis" class="form-label">Diagnóstico Médico</label>
                                                         <textarea id="medical_diagnosis" name="medical_diagnosis" class="form-control" rows="3">{{ $medicalConsultation->medical_diagnosis }}</textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="mb-3">
+                                                        <label for="diagnosis_cie10_code" class="form-label">Código CIE-10</label>
+                                                        <input type="text" id="diagnosis_cie10_code" name="diagnosis_cie10_code" class="form-control" 
+                                                               value="{{ $medicalConsultation->diagnosis_cie10_code }}" placeholder="Ej: Z34.9">
+                                                        <small class="text-muted">Código internacional de enfermedades</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Campos específicos para embarazo -->
+                                            <div class="row mt-3">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="gestation_weeks" class="form-label">Semanas de Gestación (si aplica)</label>
+                                                        <input type="number" id="gestation_weeks" name="gestation_weeks" class="form-control" 
+                                                               value="{{ $medicalConsultation->gestation_weeks }}" min="1" max="42" placeholder="Ej: 28">
+                                                        <small class="text-muted">Solo llenar si es control prenatal</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="prescribed_treatment" class="form-label">Tratamiento Detallado</label>
+                                                        <textarea id="prescribed_treatment" name="prescribed_treatment" class="form-control" rows="3" 
+                                                                  placeholder="Descripción detallada del tratamiento con dosis y frecuencia">{{ $medicalConsultation->prescribed_treatment }}</textarea>
                                                     </div>
                                                 </div>
                                             </div>
@@ -218,6 +284,74 @@
                                                     <div class="mb-3">
                                                         <label for="reference_contrareference" class="form-label">Referencia/Contrarreferencia</label>
                                                         <textarea id="reference_contrareference" name="reference_contrareference" class="form-control" rows="3">{{ $medicalConsultation->reference_contrareference }}</textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- CAMPOS SIGSA 3H - REFERENCIAS -->
+                                            <div class="row mt-3">
+                                                <div class="col-md-12">
+                                                    <h6 class="text-primary">Referencias SIGSA 3H</h6>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="was_referred" name="was_referred" value="1" {{ $medicalConsultation->was_referred ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="was_referred">
+                                                            Fue referido
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="comes_counter_referred" name="comes_counter_referred" value="1" {{ $medicalConsultation->comes_counter_referred ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="comes_counter_referred">
+                                                            Viene contra referido
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="comes_referred" name="comes_referred" value="1" {{ $medicalConsultation->comes_referred ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="comes_referred">
+                                                            Viene referido
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="was_counter_referred" name="was_counter_referred" value="1" {{ $medicalConsultation->was_counter_referred ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="was_counter_referred">
+                                                            Fue contra referido
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row mt-3">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="reference_destination" class="form-label">Destino de Referencia</label>
+                                                        <input type="text" id="reference_destination" name="reference_destination" class="form-control" 
+                                                               value="{{ $medicalConsultation->reference_destination }}" placeholder="Ej: Laboratorio Clínico">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="reference_reason" class="form-label">Motivo de Referencia</label>
+                                                        <textarea id="reference_reason" name="reference_reason" class="form-control" rows="2" 
+                                                                  placeholder="Motivo por el cual se refiere">{{ $medicalConsultation->reference_reason }}</textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mt-3">
+                                                <div class="col-12">
+                                                    <div class="mb-3">
+                                                        <label for="sigsa_observations" class="form-label">Observaciones SIGSA</label>
+                                                        <textarea id="sigsa_observations" name="sigsa_observations" class="form-control" rows="3" 
+                                                                  placeholder="Observaciones adicionales para el reporte SIGSA 3H">{{ $medicalConsultation->sigsa_observations }}</textarea>
                                                     </div>
                                                 </div>
                                             </div>

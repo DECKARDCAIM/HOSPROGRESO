@@ -23,9 +23,9 @@ class MedicalConsultationController extends Controller
 
         // Filtrar por tipo de atención según el rol del usuario
         $user = auth()->user();
-        if (method_exists($user, 'isEmergency') && $user->isEmergency()) {
+        if ($user->isEmergency()) {
             $query->where('attention_type', 'emergencia');
-        } elseif (method_exists($user, 'isConsultation') && $user->isConsultation()) {
+        } elseif ($user->isConsultation()) {
             $query->where('attention_type', 'consulta_externa');
         }
 
@@ -94,9 +94,10 @@ class MedicalConsultationController extends Controller
         $laboratoryTests = LaboratoryTest::where('is_active', true)->orderBy('name')->get();
         $exams = Exam::where('is_active', true)->orderBy('name')->get();
         $medications = Medication::where('is_active', true)->orderBy('name')->get();
+        $controlTypes = ControlType::where('is_active', true)->orderBy('name')->get();
 
         return view('modules.medical_consultations.process', compact(
-            'medicalConsultation', 'doctors', 'specialties', 'laboratoryTests', 'exams', 'medications'
+            'medicalConsultation', 'doctors', 'specialties', 'laboratoryTests', 'exams', 'medications', 'controlTypes'
         ));
     }
 
@@ -119,6 +120,9 @@ class MedicalConsultationController extends Controller
             'doctor_id' => 'required|exists:doctors,id',
             'specialty_id' => 'required|exists:specialties,id',
             'consultation_reason' => 'required|string',
+            'control_type_id' => 'nullable|exists:control_types,id',
+            'is_new_patient' => 'nullable|boolean',
+            'has_igss' => 'nullable|boolean',
                 ];
                 break;
             case 2:
@@ -126,6 +130,9 @@ class MedicalConsultationController extends Controller
             'medical_diagnosis' => 'nullable|string',
             'nursing_note' => 'nullable|string',
             'admission_note' => 'nullable|string',
+            'diagnosis_cie10_code' => 'nullable|string|max:10',
+            'gestation_weeks' => 'nullable|integer|min:1|max:42',
+            'prescribed_treatment' => 'nullable|string',
                 ];
                 if ($medicalConsultation->isEmergency()) {
                     $rules = array_merge($rules, [
@@ -153,6 +160,13 @@ class MedicalConsultationController extends Controller
             'medication_ids' => 'nullable|array',
             'medication_ids.*' => 'exists:medications,id',
                     'reference_contrareference' => 'nullable|string',
+                    'was_referred' => 'nullable|boolean',
+                    'comes_counter_referred' => 'nullable|boolean',
+                    'comes_referred' => 'nullable|boolean',
+                    'was_counter_referred' => 'nullable|boolean',
+                    'reference_destination' => 'nullable|string',
+                    'reference_reason' => 'nullable|string',
+                    'sigsa_observations' => 'nullable|string',
                 ];
                 break;
             case 5:
@@ -180,6 +194,9 @@ class MedicalConsultationController extends Controller
                     'doctor_id' => $request->doctor_id,
                     'specialty_id' => $request->specialty_id,
                     'consultation_reason' => $request->consultation_reason,
+                    'control_type_id' => $request->control_type_id,
+                    'is_new_patient' => $request->has('is_new_patient'),
+                    'has_igss' => $request->has('has_igss'),
                 ];
                 break;
             case 2:
@@ -187,6 +204,9 @@ class MedicalConsultationController extends Controller
                     'medical_diagnosis' => $request->medical_diagnosis,
                     'nursing_note' => $request->nursing_note,
                     'admission_note' => $request->admission_note,
+                    'diagnosis_cie10_code' => $request->diagnosis_cie10_code,
+                    'gestation_weeks' => $request->gestation_weeks,
+                    'prescribed_treatment' => $request->prescribed_treatment,
                 ];
                 if ($medicalConsultation->isEmergency()) {
                     $data = array_merge($data, [
@@ -207,6 +227,13 @@ class MedicalConsultationController extends Controller
             case 4:
                 $data = [
                     'reference_contrareference' => $request->reference_contrareference,
+                    'was_referred' => $request->has('was_referred'),
+                    'comes_counter_referred' => $request->has('comes_counter_referred'),
+                    'comes_referred' => $request->has('comes_referred'),
+                    'was_counter_referred' => $request->has('was_counter_referred'),
+                    'reference_destination' => $request->reference_destination,
+                    'reference_reason' => $request->reference_reason,
+                    'sigsa_observations' => $request->sigsa_observations,
                 ];
                 break;
             case 5:
