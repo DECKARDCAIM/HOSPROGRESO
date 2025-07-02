@@ -13,14 +13,54 @@ class ControlTypeSeeder extends Seeder
      */
     public function run(): void
     {
-        $controlTypes = ControlType::getSystemControlTypes();
+        $controlTypes = [
+            [
+                'name' => 'Control Prenatal',
+                'description' => 'Control médico durante el embarazo'
+            ],
+            [
+                'name' => 'Control de Puerperio',
+                'description' => 'Control médico después del parto'
+            ],
+            [
+                'name' => 'Planificación Familiar',
+                'description' => 'Control de planificación familiar'
+            ],
+            [
+                'name' => 'Profilaxis',
+                'description' => 'Medidas preventivas de salud'
+            ],
+            [
+                'name' => 'Papanicolau',
+                'description' => 'Examen de detección de cáncer cervical'
+            ],
+            [
+                'name' => 'IVAA',
+                'description' => 'Inspección Visual con Ácido Acético'
+            ],
+            [
+                'name' => 'Violencia Intrafamiliar',
+                'description' => 'Atención por violencia intrafamiliar'
+            ],
+            [
+                'name' => 'Crecimiento y Desarrollo',
+                'description' => 'Control de crecimiento y desarrollo infantil'
+            ],
+            [
+                'name' => 'Vacunación',
+                'description' => 'Aplicación de vacunas'
+            ],
+            [
+                'name' => 'Curación',
+                'description' => 'Curación de heridas'
+            ]
+        ];
 
-        foreach ($controlTypes as $controlType) {
+        foreach ($controlTypes as $controlTypeData) {
             ControlType::firstOrCreate(
-                ['code' => $controlType['code']],
+                ['name' => $controlTypeData['name']],
                 [
-                    'name' => $controlType['name'],
-                    'description' => $controlType['description'],
+                    'description' => $controlTypeData['description'],
                     'is_active' => true
                 ]
             );

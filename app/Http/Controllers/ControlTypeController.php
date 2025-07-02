@@ -8,17 +8,32 @@ use Illuminate\Http\Request;
 
 class ControlTypeController extends Controller
 {
-    /**
-     * Mostrar lista de tipos de control
-     */
-    public function index()
+    public function __construct()
     {
-        $controlTypes = ControlType::orderBy('name')->paginate(25);
-        return view('modules.control_types.index', compact('controlTypes'));
+        $this->middleware('auth');
     }
 
     /**
-     * Mostrar formulario de creación
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        $status = $request->query('status', 'active');
+        $search = $request->query('search');
+        
+        $controlTypes = ControlType::where('is_active', $status === 'active' ? 1 : 0)
+            ->when($search, function ($query) use ($search) {
+                return $query->where('name', 'like', "%$search%");
+            })
+            ->orderBy('name')
+            ->paginate(25)
+            ->appends($request->all());
+
+        return view('modules.control_types.index', compact('controlTypes', 'status', 'search'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
      */
     public function create()
     {
@@ -26,35 +41,39 @@ class ControlTypeController extends Controller
     }
 
     /**
-     * Guardar nuevo tipo de control
+     * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $rules = [
             'name' => 'required|string|max:255|unique:control_types,name',
-            'code' => 'required|string|max:50|unique:control_types,code',
-            'description' => 'nullable|string',
-            'is_active' => 'boolean'
-        ]);
+            'description' => 'nullable|string|max:255'
+        ];
 
-        $controlType = ControlType::create([
-            'name' => $request->name,
-            'code' => strtoupper($request->code),
-            'description' => $request->description,
-            'is_active' => $request->has('is_active')
-        ]);
+        $messages = [
+            'name.required' => 'El nombre del tipo de control es obligatorio.',
+            'name.unique' => 'Ya existe un tipo de control con este nombre.'
+        ];
+
+        $this->validate($request, $rules, $messages);
+
+        $controlType = new ControlType();
+        $controlType->name = $request->input('name');
+        $controlType->description = $request->input('description');
+        $controlType->is_active = true;
+        $controlType->save();
 
         NotificationService::notifyCreate('Tipo de Control', $controlType->name);
 
-        return redirect()->route('control-types.index')
-            ->with('success', [
-                'title' => 'Tipo de Control Creado',
-                'message' => 'El tipo de control se ha creado correctamente.'
-            ]);
+        return redirect()->route('control-types.index')->with('toast', [
+            'type' => 'success',
+            'title' => 'Creación Éxitosa',
+            'message' => 'El tipo de control ' . $controlType->name . ' se ha creado correctamente.'
+        ]);
     }
 
     /**
-     * Mostrar detalles del tipo de control
+     * Display the specified resource.
      */
     public function show(ControlType $controlType)
     {
@@ -62,7 +81,7 @@ class ControlTypeController extends Controller
     }
 
     /**
-     * Mostrar formulario de edición
+     * Show the form for editing the specified resource.
      */
     public function edit(ControlType $controlType)
     {
@@ -70,81 +89,72 @@ class ControlTypeController extends Controller
     }
 
     /**
-     * Actualizar tipo de control
+     * Update the specified resource in storage.
      */
     public function update(Request $request, ControlType $controlType)
     {
-        $request->validate([
+        $rules = [
             'name' => 'required|string|max:255|unique:control_types,name,' . $controlType->id,
-            'code' => 'required|string|max:50|unique:control_types,code,' . $controlType->id,
-            'description' => 'nullable|string',
-            'is_active' => 'boolean'
-        ]);
+            'description' => 'nullable|string|max:255'
+        ];
 
-        $controlType->update([
-            'name' => $request->name,
-            'code' => strtoupper($request->code),
-            'description' => $request->description,
-            'is_active' => $request->has('is_active')
-        ]);
+        $messages = [
+            'name.required' => 'El nombre del tipo de control es obligatorio.',
+            'name.unique' => 'Ya existe un tipo de control con este nombre.'
+        ];
+
+        $this->validate($request, $rules, $messages);
+
+        $controlType->name = $request->input('name');
+        $controlType->description = $request->input('description');
+        $controlType->save();
 
         NotificationService::notifyUpdate('Tipo de Control', $controlType->name);
 
-        return redirect()->route('control-types.index')
-            ->with('success', [
-                'title' => 'Tipo de Control Actualizado',
-                'message' => 'El tipo de control se ha actualizado correctamente.'
-            ]);
+        return redirect()->route('control-types.index')->with('toast', [
+            'type' => 'info',
+            'title' => 'Actualización Éxitosa',
+            'message' => 'El tipo de control ' . $controlType->name . ' se ha actualizado correctamente.'
+        ]);
     }
 
     /**
-     * Eliminar tipo de control
+     * Remove the specified resource from storage (soft delete).
      */
     public function destroy(ControlType $controlType)
     {
         try {
             // Verificar si tiene consultas asociadas
             if ($controlType->medicalConsultations()->count() > 0) {
-                return back()->withErrors(['general' => 'No se puede eliminar un tipo de control que tiene consultas médicas asociadas.']);
+                return back()->with('toast', [
+                    'type' => 'error',
+                    'title' => 'Error de Eliminación',
+                    'message' => 'No se puede eliminar un tipo de control que tiene consultas médicas asociadas.'
+                ]);
             }
 
-            $name = $controlType->name;
-            $controlType->delete();
+            $controlTypeName = $controlType->name;
+            $controlType->is_active = false;
+            $controlType->save();
 
-            NotificationService::notifyDelete('Tipo de Control', $name);
+            NotificationService::notifyDelete('Tipo de Control', $controlTypeName);
 
-            return redirect()->route('control-types.index')
-                ->with('toast', [
-                    'type' => 'warning',
-                    'title' => 'Eliminación Exitosa',
-                    'message' => 'El tipo de control se ha eliminado correctamente.'
-                ]);
+            return redirect()->route('control-types.index')->with('toast', [
+                'type' => 'warning',
+                'title' => 'Eliminación Éxitosa',
+                'message' => 'El tipo de control ' . $controlTypeName . ' se ha eliminado correctamente.'
+            ]);
         } catch (\Exception $e) {
-            return back()->withErrors(['general' => 'Error al eliminar el tipo de control: ' . $e->getMessage()]);
+            return back()->with('toast', [
+                'type' => 'error',
+                'title' => 'Error',
+                'message' => 'Error al eliminar el tipo de control: ' . $e->getMessage()
+            ]);
         }
     }
 
     /**
-     * Cambiar estado activo/inactivo
-     */
-    public function toggleStatus(ControlType $controlType)
-    {
-        $controlType->is_active = !$controlType->is_active;
-        $controlType->save();
-
-        $status = $controlType->is_active ? 'activado' : 'desactivado';
-        
-        NotificationService::notifyUpdate('Tipo de Control', $controlType->name . ' ' . $status);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Estado actualizado correctamente',
-            'is_active' => $controlType->is_active
-        ]);
-    }
-
-    /**
-     * Reactivar tipo de control
+     * Reactivar tipo de control inactivo.
      */
     public function reactivate($id)
     {
@@ -152,12 +162,13 @@ class ControlTypeController extends Controller
         $controlType->is_active = true;
         $controlType->save();
 
-        NotificationService::notifyUpdate('Tipo de Control', $controlType->name . ' reactivado');
+        NotificationService::notifyUpdate('Tipo de Control', $controlType->name);
 
-        return redirect()->route('control-types.index')
-            ->with('success', [
-                'title' => 'Tipo de Control Reactivado',
-                'message' => 'El tipo de control se ha reactivado correctamente.'
+        return redirect()->route('control-types.index', ['status' => 'inactive'])
+            ->with('toast', [
+                'type' => 'success',
+                'title' => 'Reactivación Éxitosa',
+                'message' => 'El tipo de control ' . $controlType->name . ' ha sido reactivado correctamente.'
             ]);
     }
 }
