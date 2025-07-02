@@ -174,8 +174,8 @@
                     </form>
 
                     <!-- Sección de restablecimiento de contraseña -->
-                    <div class="card mt-4 border border-warning">
-                        <div class="card-header bg-warning">
+                    <div class="card mt-4 border border-info">
+                        <div class="card-header bg-info">
                             <h6 class="text-white mb-0"><i class="fas fa-lock me-2"></i>Restablecer Contraseña</h6>
                         </div>
                         <div class="card-body">
@@ -186,10 +186,10 @@
                                     <div class="col-md-6">
                                         <div class="form-group mb-3">
                                             <label for="password" class="form-control-label mb-2">
-                                                <i class="fas fa-key text-warning me-2"></i>Nueva contraseña
+                                                <i class="fas fa-key text-info me-2"></i>Nueva contraseña
                                             </label>
                                             <input type="password" name="password" id="password" 
-                                                class="form-control form-control-lg border border-2 border-warning shadow-sm" 
+                                                class="form-control form-control-lg border border-2 border-info shadow-sm" 
                                                 placeholder="Nueva contraseña">
                                             <div class="form-text text-muted">Mínimo 8 caracteres</div>
                                         </div>
@@ -197,16 +197,16 @@
                                     <div class="col-md-6">
                                         <div class="form-group mb-3">
                                             <label for="password_confirmation" class="form-control-label mb-2">
-                                                <i class="fas fa-key text-warning me-2"></i>Confirmar nueva contraseña
+                                                <i class="fas fa-key text-info me-2"></i>Confirmar nueva contraseña
                                             </label>
                                             <input type="password" name="password_confirmation" id="password_confirmation" 
-                                                class="form-control form-control-lg border border-2 border-warning shadow-sm" 
+                                                class="form-control form-control-lg border border-2 border-info shadow-sm" 
                                                 placeholder="Confirmar nueva contraseña">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="text-end">
-                                    <button type="button" class="btn bg-gradient-warning btn-lg text-white"
+                                    <button type="button" class="btn bg-gradient-info btn-lg text-white"
                                         onclick="confirmResetPassword({{ $user->id }}, '{{ $user->name }}')">
                                         <i class="fas fa-sync me-2"></i>Restablecer contraseña
                                     </button>
