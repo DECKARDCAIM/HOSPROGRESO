@@ -559,5 +559,5 @@ Este proyecto está desarrollado para uso exclusivo del Hospital Nacional de El 
 
 <p align="center">
   <strong>Desarrollado con ❤️ para el Hospital Nacional de El Progreso</strong><br>
-  Sistema de Gestión Hospitalaria - Guatemala 2024
+  Sistema de Gestión Hospitalaria - Guatemala 2025
 </p>
