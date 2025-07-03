@@ -466,10 +466,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Función para eliminar foto de perfil actual
     window.deleteCurrentProfilePhoto = function() {
-        if (!confirm('¿Estás seguro de que quieres eliminar tu foto de perfil? Se usará la foto por defecto.')) {
-            return;
-        }
-
         fetch('{{ route("profile.deletePhoto") }}', {
             method: 'DELETE',
             headers: {
@@ -497,10 +493,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Función para eliminar banner actual
     window.deleteCurrentBanner = function() {
-        if (!confirm('¿Estás seguro de que quieres eliminar tu banner? Se usará el banner por defecto.')) {
-            return;
-        }
-
         fetch('{{ route("profile.deleteBanner") }}', {
             method: 'DELETE',
             headers: {
