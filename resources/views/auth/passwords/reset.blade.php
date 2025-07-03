@@ -1,6 +1,6 @@
 @extends('layouts.form')
 
-@section('tittle', 'Restablecer Contraseña')
+@section('title', 'Restablecer Contraseña')
 @section('description', 'Ingrese su nueva contraseña para continuar')
 
 @section('content')
@@ -24,17 +24,26 @@
 
         {{-- CORREO ELECTRONICO --}}
         <div class="input-group input-group-outline mb-3 @error('email') is-invalid @enderror">
-            <input id="email" type="email" class="form-control" name="email" value="{{ $email ?? old('email') }}" placeholder="Correo electrónico" required autocomplete="email" autofocus readonly>
+            <input id="email" type="email" class="form-control" name="email" value="{{ $email ?? old('email') }}" placeholder="Correo electrónico" required autocomplete="email" autofocus readonly aria-describedby="email-error">
+            @error('email')
+                <div id="email-error" class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
         {{-- CONTRASEÑA --}}
         <div class="input-group input-group-outline mb-3 @error('password') is-invalid @enderror">
-            <input id="password" type="password" class="form-control" name="password" placeholder="Nueva contraseña" required autocomplete="new-password">
+            <input id="password" type="password" class="form-control" name="password" placeholder="Nueva contraseña" required autocomplete="new-password" aria-describedby="password-error">
+            @error('password')
+                <div id="password-error" class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
         {{-- CONFIRMAR CONTRASEÑA --}}
-        <div class="input-group input-group-outline mb-3">
-            <input id="password-confirmation" type="password" class="form-control" name="password_confirmation" placeholder="Confirmar contraseña" required autocomplete="new-password">
+        <div class="input-group input-group-outline mb-3 @error('password_confirmation') is-invalid @enderror">
+            <input id="password-confirmation" type="password" class="form-control" name="password_confirmation" placeholder="Confirmar contraseña" required autocomplete="new-password" aria-describedby="password-confirmation-error">
+            @error('password_confirmation')
+                <div id="password-confirmation-error" class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
         {{-- BOTON DE ENVIAR --}}
