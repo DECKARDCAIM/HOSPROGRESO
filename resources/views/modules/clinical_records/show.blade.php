@@ -245,9 +245,7 @@
 @push('scripts')
 <script>
 function updateStatus(appointmentId, status) {
-    console.log('=== EXPEDIENTE - updateStatus LLAMADA ===');
-    console.log('appointmentId:', appointmentId);
-    console.log('status:', status);
+    
 
     const statusTexts = {
         'confirmada': 'confirmar',
@@ -269,8 +267,7 @@ function updateStatus(appointmentId, status) {
     statusForm.action = `{{ url('appointments') }}/${appointmentId}/status`;
     statusInput.value = status;
 
-    console.log('Form action:', statusForm.action);
-    console.log('Status configurado:', statusInput.value);
+    
 
     // Limpiar notas anteriores
     if (notesInput) {
@@ -281,12 +278,10 @@ function updateStatus(appointmentId, status) {
     if (status === 'cancelada') {
         cancelledReasonDiv.style.display = 'block';
         cancelledReasonInput.required = true;
-        console.log('Campo cancelación mostrado');
     } else {
         cancelledReasonDiv.style.display = 'none';
         cancelledReasonInput.required = false;
         cancelledReasonInput.value = '';
-        console.log('Campo cancelación ocultado');
     }
 
     // Mostrar modal
@@ -299,15 +294,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('statusForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        console.log('=== EXPEDIENTE - FORMULARIO ENVIADO ===');
-        
         const statusInput = document.getElementById('status');
         const cancelReasonInput = document.getElementById('cancelled_reason');
         const notesInput = this.querySelector('textarea[name="notes"]');
-        
-        console.log('Status a enviar:', statusInput.value);
-        console.log('Notes:', notesInput.value);
-        console.log('Cancelled reason:', cancelReasonInput.value);
         
         // Validación para cancelación
         if (statusInput.value === 'cancelada') {
@@ -333,11 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (statusInput.value === 'cancelada') {
             formData.append('cancelled_reason', cancelReasonInput.value);
         }
-        
-        console.log('=== EXPEDIENTE - DATOS A ENVIAR ===');
-        for (let [key, value] of formData.entries()) {
-            console.log(key + ':', value);
-        }
+
         
         fetch(this.action, {
             method: 'POST',
@@ -348,14 +333,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .then(response => {
-            console.log('Response status:', response.status);
             if (!response.ok) {
                 return response.json().then(err => Promise.reject(err));
             }
             return response.json();
         })
         .then(data => {
-            console.log('Response data:', data);
             if (data.success) {
                 const modal = bootstrap.Modal.getInstance(document.getElementById('statusModal'));
                 modal.hide();

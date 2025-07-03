@@ -278,14 +278,9 @@
                                 <button type="button" class="btn btn-secondary" onclick="backToStep1()">
                                     <i class="fas fa-arrow-left me-2"></i>Volver a Selección de Paciente
                                 </button>
-                                <div>
-                                    <button type="button" class="btn btn-warning me-2" onclick="debugForm()" style="font-size: 12px;">
-                                        <i class="fas fa-bug me-1"></i>Debug
-                                    </button>
-                                    <button type="button" class="btn btn-success" disabled id="submitBtn" onclick="submitForm()">
-                                        <i class="fas fa-calendar-plus me-2"></i>Agendar Cita
-                                    </button>
-                                </div>
+                                <button type="button" class="btn btn-success" disabled id="submitBtn" onclick="submitForm()">
+                                    <i class="fas fa-calendar-plus me-2"></i>Agendar Cita
+                                </button>
                             </div>
                         </div>
                             </form>
@@ -298,8 +293,7 @@
 <script>
 // Función que se ejecuta cuando el DOM está listo
 function initializeApp() {
-    console.log('=== INICIALIZANDO APLICACIÓN ===');
-    console.log('DOM cargado:', document.readyState);
+    
     // Auto-submit para filtros
     document.querySelectorAll('.auto-submit').forEach(function(el) {
         el.addEventListener('change', function() {
@@ -434,7 +428,7 @@ function initializeApp() {
         const slotDetails = document.getElementById('slotDetails');
         const submitBtn = document.getElementById('submitBtn');
         
-        console.log('Doctor seleccionado:', doctorId);
+
         
         if (doctorId) {
             fetch('/appointments/get-next-slot', {
@@ -461,7 +455,7 @@ function initializeApp() {
                         <p class="mb-0"><strong>Cupos disponibles:</strong> ${data.available_slots}</p>
                     `;
                     submitBtn.disabled = false;
-                    console.log('Botón habilitado - slot disponible encontrado');
+  
                 }
                 nextSlotInfo.style.display = 'block';
             })
@@ -485,16 +479,10 @@ function initializeApp() {
     const submitButton = document.getElementById('submitBtn');
     if (submitButton) {
         submitButton.addEventListener('click', function(e) {
-            console.log('=== CLICK EN BOTÓN DETECTADO ===');
             e.preventDefault();
             submitForm();
         });
-        console.log('Event listener agregado al botón de envío');
-    } else {
-        console.error('No se encontró el botón submitBtn');
     }
-
-    console.log('=== INICIALIZACIÓN COMPLETA ===');
 }
 
 // Ejecutar cuando el DOM esté listo
@@ -532,7 +520,7 @@ function proceedToStep2() {
     const patientId = selectedRadio.value;
     document.getElementById('selectedPatientId').value = patientId;
     
-    console.log('Procediendo al paso 2 con paciente ID:', patientId);
+
     
     document.getElementById('step1').style.display = 'none';
     document.getElementById('step2').style.display = 'block';
@@ -558,24 +546,12 @@ function initializeSelectedPatient() {
 
 // Función para enviar el formulario
 function submitForm() {
-    console.log('=== INTENTANDO ENVIAR FORMULARIO ===');
-    
     const selectedPatientId = document.getElementById('selectedPatientId').value;
     const specialtyId = document.getElementById('specialty_id').value;
     const doctorId = document.getElementById('doctor_id').value;
     const attentionType = document.querySelector('[name="attention_type"]').value;
     const submitBtn = document.getElementById('submitBtn');
     const form = document.getElementById('appointmentForm');
-    
-    console.log('Datos del formulario:', {
-        selectedPatientId,
-        specialtyId,
-        doctorId,
-        attentionType,
-        submitBtnDisabled: submitBtn.disabled,
-        formAction: form.action,
-        formMethod: form.method
-    });
     
     // Validaciones
     if (!selectedPatientId) {
@@ -604,8 +580,6 @@ function submitForm() {
         return false;
     }
     
-    console.log('Formulario válido, enviando...');
-    
     // Deshabilitar botón para evitar envíos duplicados
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesando...';
@@ -613,53 +587,14 @@ function submitForm() {
     // Enviar formulario
     try {
         form.submit();
-        console.log('Formulario enviado correctamente');
     } catch (error) {
-        console.error('Error al enviar formulario:', error);
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="fas fa-calendar-plus me-2"></i>Agendar Cita';
         alert('Error al enviar el formulario. Por favor, intenta de nuevo.');
     }
 }
 
-// Función de debug
-function debugForm() {
-    console.log('=== DEBUG DEL FORMULARIO ===');
-    
-    const form = document.getElementById('appointmentForm');
-    const selectedPatientId = document.getElementById('selectedPatientId').value;
-    const specialtyId = document.getElementById('specialty_id').value;
-    const doctorId = document.getElementById('doctor_id').value;
-    const attentionType = document.querySelector('[name="attention_type"]').value;
-    const submitBtn = document.getElementById('submitBtn');
-    const selectedRadio = document.querySelector('.patient-radio:checked');
-    
-    const debugInfo = {
-        formExists: !!form,
-        formAction: form ? form.action : 'NO FORM',
-        formMethod: form ? form.method : 'NO FORM',
-        selectedPatientId: selectedPatientId,
-        specialtyId: specialtyId,
-        doctorId: doctorId,
-        attentionType: attentionType,
-        submitBtnExists: !!submitBtn,
-        submitBtnDisabled: submitBtn ? submitBtn.disabled : 'NO BUTTON',
-        selectedRadio: selectedRadio ? selectedRadio.value : 'NO RADIO SELECTED',
-        currentStep: document.getElementById('step2').style.display !== 'none' ? 'step2' : 'step1'
-    };
-    
-    console.table(debugInfo);
-    
-    // Mostrar en alerta también
-    let message = 'DEBUG INFO:\n';
-    Object.keys(debugInfo).forEach(key => {
-        message += `${key}: ${debugInfo[key]}\n`;
-    });
-    
-    alert(message);
-    
-    return debugInfo;
-}
+
 
 // Validar formulario (función de respaldo)
 function validateForm() {

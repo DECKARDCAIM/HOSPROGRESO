@@ -785,10 +785,7 @@
     <script>
         // Sistema de persistencia completa del menú - MEJORADO
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Iniciando sistema de persistencia del menú');
-            
             const currentUrl = window.location.pathname;
-            console.log('📍 URL actual:', currentUrl);
             
             // Lista de todos los menús disponibles
             const allMenus = [
@@ -807,7 +804,6 @@
             // PASO 1: Función para restaurar estados guardados
             function restoreMenuStates() {
                 const savedMenuStates = JSON.parse(localStorage.getItem('menuStates') || '{}');
-                console.log('💾 Estados guardados:', savedMenuStates);
                 
                 // Control especial para ProfileNav
                 const isProfilePage = currentUrl.includes('/perfil') || currentUrl.includes('/profile');
@@ -822,30 +818,23 @@
                         // ProfileNav solo debe estar abierto en páginas de perfil
                         if (menuId === 'ProfileNav') {
                             shouldBeOpen = isProfilePage;
-                            console.log(`👤 ProfileNav en página ${isProfilePage ? 'de perfil' : 'normal'}: ${shouldBeOpen ? 'abierto' : 'cerrado'}`);
                         }
                         
                         if (shouldBeOpen) {
-                            console.log(`✅ Abriendo menú: ${menuId}`);
                             menuElement.classList.add('show');
                             triggerElement.setAttribute('aria-expanded', 'true');
                             triggerElement.classList.remove('collapsed');
                         } else {
-                            console.log(`❌ Cerrando menú: ${menuId}`);
                             menuElement.classList.remove('show');
                             triggerElement.setAttribute('aria-expanded', 'false');
                             triggerElement.classList.add('collapsed');
                         }
-                    } else {
-                        console.log(`⚠️ No se encontró menú: ${menuId}`);
                     }
                 });
             }
             
             // PASO 2: Función para marcar página activa y gestionar menús especiales
             function markActivePage() {
-                console.log('🎯 Marcando página activa');
-                
                 // Limpiar estados activos previos
                 document.querySelectorAll('.active-menu-item').forEach(el => {
                     el.classList.remove('active-menu-item');
@@ -856,8 +845,6 @@
                 
                 // Detectar si estamos en páginas de perfil
                 if (currentUrl.includes('/perfil') || currentUrl.includes('/profile')) {
-                    console.log('👤 Detectada página de perfil');
-                    
                     // Mantener abierto el menú "Mi Cuenta"
                     const profileMenu = document.getElementById('ProfileNav');
                     const profileTrigger = document.querySelector('a[href="#ProfileNav"]');
@@ -866,25 +853,21 @@
                         profileMenu.classList.add('show');
                         profileTrigger.setAttribute('aria-expanded', 'true');
                         profileTrigger.classList.remove('collapsed');
-                        console.log('📂 Mi Cuenta abierto automáticamente');
                     }
                     
                     // Marcar el enlace "Mi Perfil" como activo
                     const profileLink = document.querySelector('a[href*="/perfil"]') || document.querySelector('a[href*="/profile"]');
                     if (profileLink) {
                         profileLink.classList.add('active-menu-item');
-                        console.log('✨ Mi Perfil marcado como activo');
                     }
                     return;
                 }
                 
                 // Detectar si estamos en inicio/dashboard
                 if (currentUrl === '/panel' || currentUrl === '/' || currentUrl.includes('/home')) {
-                    console.log('🏠 Detectada página de inicio');
                     const logoLink = document.querySelector('.navbar-brand');
                     if (logoLink) {
                         logoLink.classList.add('active-logo');
-                        console.log('✨ HOSPROGRESO marcado como activo');
                     }
                     return;
                 }
@@ -894,7 +877,6 @@
                 
                 // 1. Intentar encontrar enlace exacto
                 activeLink = document.querySelector(`a[href="${currentUrl}"]`);
-                console.log('🔍 Enlace exacto encontrado:', !!activeLink);
                 
                 // 2. Si no se encuentra exacto, buscar que contenga la URL
                 if (!activeLink) {
@@ -912,15 +894,11 @@
                         }
                     }
                     activeLink = bestMatch;
-                    console.log('🔍 Mejor coincidencia encontrada:', activeLink ? activeLink.getAttribute('href') : 'ninguna');
                 }
                 
                 // 3. Marcar como activo
                 if (activeLink) {
                     activeLink.classList.add('active-menu-item');
-                    console.log('✨ Página marcada como activa:', activeLink.getAttribute('href'));
-                } else {
-                    console.log('❓ No se encontró enlace activo para:', currentUrl);
                 }
             }
             
@@ -928,33 +906,18 @@
             function saveMenuState(menuId, isOpen) {
                 // ProfileNav no debe guardar su estado porque se controla automáticamente
                 if (menuId === 'ProfileNav') {
-                    console.log(`👤 ProfileNav estado temporal (no guardado): ${isOpen ? 'abierto' : 'cerrado'}`);
                     return;
                 }
                 
                 const savedStates = JSON.parse(localStorage.getItem('menuStates') || '{}');
                 savedStates[menuId] = isOpen;
                 localStorage.setItem('menuStates', JSON.stringify(savedStates));
-                console.log(`💾 Estado guardado - ${menuId}: ${isOpen ? 'abierto' : 'cerrado'}`);
             }
             
             // PASO 4: Esperar a que Bootstrap esté listo
             setTimeout(() => {
-                console.log('⏰ Ejecutando restauración después de Bootstrap');
                 restoreMenuStates();
                 markActivePage();
-                
-                // Verificar estados después de restaurar
-                setTimeout(() => {
-                    console.log('🔍 Verificando estados restaurados:');
-                    allMenus.forEach(menuId => {
-                        const menuElement = document.getElementById(menuId);
-                        if (menuElement) {
-                            const isOpen = menuElement.classList.contains('show');
-                            console.log(`  ${menuId}: ${isOpen ? 'ABIERTO' : 'cerrado'}`);
-                        }
-                    });
-                }, 500);
             }, 300);
             
             // PASO 5: Escuchar eventos de Bootstrap para guardar estados
@@ -963,12 +926,10 @@
                 if (menuElement) {
                     // Eventos de Bootstrap collapse
                     menuElement.addEventListener('shown.bs.collapse', function() {
-                        console.log(`📂 Bootstrap evento: ${menuId} abierto`);
                         saveMenuState(menuId, true);
                     });
                     
                     menuElement.addEventListener('hidden.bs.collapse', function() {
-                        console.log(`📁 Bootstrap evento: ${menuId} cerrado`);
                         saveMenuState(menuId, false);
                     });
                 }
@@ -979,7 +940,6 @@
                 const clickedElement = e.target.closest('[data-bs-toggle="collapse"]');
                 if (clickedElement) {
                     const menuId = clickedElement.getAttribute('href').replace('#', '');
-                    console.log(`🖱️ Click detectado en: ${menuId}`);
                     
                     // Esperar a que se procese el cambio
                     setTimeout(() => {
@@ -992,40 +952,13 @@
                 }
             });
             
-            // PASO 7: Funciones de debugging
-            window.resetMenuStates = function() {
-                console.log('🔄 Reseteando estados del menú');
-                localStorage.removeItem('menuStates');
-                location.reload();
-            };
-            
-            window.showMenuStates = function() {
-                const states = JSON.parse(localStorage.getItem('menuStates') || '{}');
-                console.log('📊 Estados actuales del menú:', states);
-                return states;
-            };
-            
-            window.forceOpenMenu = function(menuId) {
-                const menuElement = document.getElementById(menuId);
-                const triggerElement = document.querySelector(`[href="#${menuId}"]`);
-                if (menuElement && triggerElement) {
-                    menuElement.classList.add('show');
-                    triggerElement.setAttribute('aria-expanded', 'true');
-                    triggerElement.classList.remove('collapsed');
-                    saveMenuState(menuId, true);
-                    console.log(`🔓 Menú ${menuId} forzado a abrir`);
-                }
-            };
-            
-            console.log('✅ Sistema de persistencia del menú iniciado');
+
         });
     </script>
 
     <!-- Script Búsqueda Global -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔍 Iniciando sistema de búsqueda global');
-            
             const searchModal = document.getElementById('globalSearchModal');
             const searchInput = document.getElementById('globalSearchInput');
             const closeButton = document.getElementById('closeGlobalSearch');
@@ -1034,7 +967,6 @@
             
             // Función para abrir búsqueda
             function openSearch() {
-                console.log('🔍 Abriendo búsqueda global');
                 searchModal.style.display = 'flex';
                 setTimeout(() => {
                     searchModal.classList.add('show');
@@ -1045,7 +977,6 @@
             
             // Función para cerrar búsqueda
             function closeSearch() {
-                console.log('❌ Cerrando búsqueda global');
                 searchModal.classList.remove('show');
                 setTimeout(() => {
                     searchModal.style.display = 'none';
@@ -1196,7 +1127,6 @@
                  });
                  
                  performSearch(query);
-                 console.log('🔍 Buscando:', query);
              });
 
              // Función para ejecutar búsqueda con Enter o click
@@ -1236,9 +1166,7 @@
                  }, 6000);
              }, 2000);
             
-            console.log('✅ Sistema de búsqueda global iniciado');
-            console.log('💡 Presiona TAB para abrir la búsqueda global');
-            console.log('💡 Presiona Ctrl+K para búsqueda rápida');
+
         });
         
         // Estilo adicional para selección por teclado

@@ -1358,9 +1358,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         countElement.innerHTML = '';
                     }
                 }
-                console.log('Contador de notificaciones actualizado:', notificationCount);
+    
             })
-            .catch(error => console.error('Error cargando contador:', error));
+                          .catch(error => {});
     }
     
     // Función para cargar notificaciones no leídas
@@ -1413,7 +1413,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             })
-            .catch(error => console.error('Error cargando notificaciones:', error));
+            .catch(error => {});
     }
     
     // Función para cargar todas las notificaciones
@@ -1468,13 +1468,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             })
-            .catch(error => console.error('Error cargando todas las notificaciones:', error));
+            .catch(error => {});
     }
     
     // Función para marcar notificación como leída
     function markAsRead(notificationId) {
-        console.log('Marcando notificación como leída:', notificationId);
-        
         fetch('{{ route("notifications.mark-as-read") }}', {
             method: 'POST',
             headers: {
@@ -1485,7 +1483,6 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            console.log('Respuesta del servidor:', data);
             if (data.success) {
                 // Actualizar contador inmediatamente
                 notificationCount = Math.max(0, notificationCount - 1);
@@ -1513,13 +1510,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         })
-        .catch(error => console.error('Error marcando como leída:', error));
+        .catch(error => {});
     }
     
     // Función para marcar todas como leídas
     function markAllAsRead() {
-        console.log('Marcando todas las notificaciones como leídas');
-        
         fetch('{{ route("notifications.mark-all-as-read") }}', {
             method: 'POST',
             headers: {
@@ -1529,7 +1524,6 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            console.log('Respuesta del servidor:', data);
             if (data.success) {
                 // Actualizar contador inmediatamente a 0
                 notificationCount = 0;
@@ -1550,7 +1544,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         })
-        .catch(error => console.error('Error marcando todas como leídas:', error));
+        .catch(error => {});
     }
     
     // Función para obtener color según tipo de notificación
@@ -1637,7 +1631,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const button = e.target.classList.contains('mark-read-btn') ? e.target : e.target.closest('.mark-read-btn');
             const notificationId = button.getAttribute('data-notification-id');
             if (notificationId) {
-                console.log('Evento de click capturado para notificación:', notificationId);
                 markAsRead(notificationId);
             }
         }
@@ -1674,20 +1667,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Exponer función para mostrar toasts desde otros scripts
     window.showNotificationToast = showNotificationToast;
     
-    // Función de debugging para verificar el estado del badge
-    window.debugNotificationBadge = function() {
-        const countElement = document.getElementById('notification-count');
-        console.log('=== Debug Badge ===');
-        console.log('Elemento encontrado:', !!countElement);
-        console.log('Contador actual:', notificationCount);
-        if (countElement) {
-            console.log('Texto del badge:', countElement.textContent);
-            console.log('HTML del badge:', countElement.innerHTML);
-            console.log('Display:', countElement.style.display);
-            console.log('Visibility:', countElement.style.visibility);
-            console.log('Clases:', countElement.classList.toString());
-        }
-        console.log('==================');
-    };
+
 });
 </script>

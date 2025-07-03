@@ -370,7 +370,7 @@ setTimeout(function() {
 
 // JavaScript simple para tabla
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Tabla de citas cargada correctamente');
+
 });
 </script>
 @endsection 
