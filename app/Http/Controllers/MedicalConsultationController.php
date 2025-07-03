@@ -9,6 +9,7 @@ use App\Models\Specialty;
 use App\Models\LaboratoryTest;
 use App\Models\Exam;
 use App\Models\Medication;
+use App\Models\ControlType;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use App\Models\ClinicalRecord;

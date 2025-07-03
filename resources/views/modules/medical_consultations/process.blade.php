@@ -45,12 +45,15 @@
                                             <div class="row mt-3">
                                                 <div class="col-12 col-sm-6">
                                                     <div class="mb-3">
-                                                        <label for="doctor_id" class="form-label">Seleccione un doctor</label>
-                                                        <select id="doctor_id" name="doctor_id" class="form-control">
+                                                        <label for="doctor_id" class="form-label">Seleccione un doctor *</label>
+                                                        <select id="doctor_id" name="doctor_id" class="form-control" required>
                                                             <option value="">Seleccione un doctor</option>
                                                             @foreach($doctors as $doctor)
-                                                                <option value="{{ $doctor->id }}" data-specialty="{{ $doctor->specialty->name ?? '' }}" data-specialty-id="{{ $doctor->specialty_id }}" {{ $medicalConsultation->doctor_id == $doctor->id ? 'selected' : '' }}>
-                                                                    Dr. {{ $doctor->first_name }} {{ $doctor->first_lastname }}
+                                                                <option value="{{ $doctor->id }}" 
+                                                                        data-specialty="{{ $doctor->specialty->name ?? '' }}" 
+                                                                        data-specialty-id="{{ $doctor->specialty_id ?? '' }}" 
+                                                                        {{ $medicalConsultation->doctor_id == $doctor->id ? 'selected' : '' }}>
+                                                                    Dr. {{ $doctor->first_name }} {{ $doctor->first_lastname }} {{ $doctor->second_lastname ?? '' }}
                                                                 </option>
                                                             @endforeach
                                                         </select>
@@ -58,8 +61,9 @@
                                                 </div>
                                                 <div class="col-12 col-sm-6 mt-3 mt-sm-0">
                                                     <div class="mb-3">
-                                                        <label for="specialty_name" class="form-label">Especialidad</label>
-                                                        <input type="text" id="specialty_name" class="form-control" value="{{ $medicalConsultation->doctor && $medicalConsultation->doctor->specialty ? $medicalConsultation->doctor->specialty->name : '' }}" readonly>
+                                                        <label for="specialty_name" class="form-label">Especialidad *</label>
+                                                        <input type="text" id="specialty_name" class="form-control" 
+                                                               value="{{ $medicalConsultation->doctor && $medicalConsultation->doctor->specialty ? $medicalConsultation->doctor->specialty->name : '' }}" readonly>
                                                         <input type="hidden" id="specialty_id" name="specialty_id" value="{{ $medicalConsultation->specialty_id }}">
                                                     </div>
                                                 </div>
@@ -67,8 +71,10 @@
                                             <div class="row mt-3">
                                                 <div class="col-12">
                                                     <div class="mb-3">
-                                                        <label for="consultation_reason" class="form-label">Motivo de Consulta</label>
-                                                        <textarea id="consultation_reason" name="consultation_reason" class="form-control" rows="3">{{ $medicalConsultation->consultation_reason }}</textarea>
+                                                        <label for="consultation_reason" class="form-label">Motivo de Consulta *</label>
+                                                        <textarea id="consultation_reason" name="consultation_reason" class="form-control" rows="3" 
+                                                                  placeholder="Describa el motivo principal por el cual el paciente solicita la consulta" 
+                                                                  required>{{ $medicalConsultation->consultation_reason !== 'Pendiente de completar' ? $medicalConsultation->consultation_reason : '' }}</textarea>
                                                     </div>
                                                 </div>
                                             </div>
@@ -411,6 +417,44 @@
     </div>
 </div>
 
+@push('styles')
+<style>
+    .is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    }
+    
+    .multisteps-form__progress-btn.js-active {
+        background: linear-gradient(310deg, #17a2b8, #22d3ee) !important;
+        color: white !important;
+    }
+    
+    .bg-gradient-info {
+        background: linear-gradient(310deg, #17a2b8, #22d3ee) !important;
+    }
+    
+    .btn.bg-gradient-info {
+        background: linear-gradient(310deg, #17a2b8, #22d3ee) !important;
+        border: none;
+        color: white;
+    }
+    
+    .btn.bg-gradient-info:hover {
+        background: linear-gradient(310deg, #138496, #1fb5d3) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 7px 14px rgba(50, 50, 93, .1), 0 3px 6px rgba(0, 0, 0, .08);
+    }
+    
+    .choices__inner {
+        border-radius: 0.375rem;
+    }
+    
+    .text-primary {
+        color: #17a2b8 !important;
+    }
+</style>
+@endpush
+
 @push('scripts')
 <!-- Choices.js -->
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
@@ -427,8 +471,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Autocompletar especialidad al seleccionar doctor
     document.getElementById('doctor_id').addEventListener('change', function() {
         const selected = this.options[this.selectedIndex];
-        document.getElementById('specialty_name').value = selected.getAttribute('data-specialty') || '';
-        document.getElementById('specialty_id').value = selected.getAttribute('data-specialty-id') || '';
+        const specialtyName = selected.getAttribute('data-specialty') || '';
+        const specialtyId = selected.getAttribute('data-specialty-id') || '';
+        
+        document.getElementById('specialty_name').value = specialtyName;
+        document.getElementById('specialty_id').value = specialtyId;
+        
+        // También actualizar campos ocultos si existen
+        const hiddenSpecialtyId = document.getElementById('hidden_specialty_id');
+        if (hiddenSpecialtyId) {
+            hiddenSpecialtyId.value = specialtyId;
+        }
     });
 
     // Variables globales
@@ -540,10 +593,39 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Función para validar paso actual
+    function validateCurrentStep(step) {
+        const activePanel = document.querySelector('.multisteps-form__panel.js-active');
+        const requiredFields = activePanel.querySelectorAll('input[required], select[required], textarea[required]');
+        let isValid = true;
+        let errors = [];
+
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                isValid = false;
+                field.classList.add('is-invalid');
+                errors.push(field.getAttribute('aria-label') || field.previousElementSibling?.textContent?.replace('*', '').trim() || 'Campo requerido');
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+
+        if (!isValid) {
+            showToast('error', 'Campos Requeridos', 'Por favor complete todos los campos marcados con *');
+        }
+
+        return isValid;
+    }
+
     // Event listeners para botones siguiente
     nextBtns.forEach((btn, idx) => {
         btn.addEventListener('click', function() {
             if (currentStep < totalSteps) {
+                // Validar antes de guardar
+                if (!validateCurrentStep(currentStep)) {
+                    return;
+                }
+
                 saveStep(currentStep, function(success) {
                     if (success) {
                         panels[currentStep - 1].classList.remove('js-active');
@@ -558,10 +640,13 @@ document.addEventListener('DOMContentLoaded', function() {
                                 progressBtn.classList.remove('js-active');
                             }
                         });
+
+                        // Mostrar/ocultar botones previous según el paso
+                        if (currentStep > 1) {
+                            document.querySelectorAll('.js-btn-prev').forEach(btn => btn.style.display = 'inline-block');
+                        }
                     }
                 });
-            } else if (currentStep === totalSteps) {
-                finalizarHistoria();
             }
         });
     });
@@ -680,13 +765,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Sincronizar los campos ocultos con los visibles en el paso 1
     function syncHiddenBasicFields() {
-        document.getElementById('hidden_doctor_id').value = document.getElementById('doctor_id').value;
-        document.getElementById('hidden_specialty_id').value = document.getElementById('specialty_id').value;
-        document.getElementById('hidden_consultation_reason').value = document.getElementById('consultation_reason').value;
+        const hiddenDoctorId = document.getElementById('hidden_doctor_id');
+        const hiddenSpecialtyId = document.getElementById('hidden_specialty_id');
+        const hiddenConsultationReason = document.getElementById('hidden_consultation_reason');
+        
+        if (hiddenDoctorId) hiddenDoctorId.value = document.getElementById('doctor_id').value;
+        if (hiddenSpecialtyId) hiddenSpecialtyId.value = document.getElementById('specialty_id').value;
+        if (hiddenConsultationReason) hiddenConsultationReason.value = document.getElementById('consultation_reason').value;
     }
+    
     document.getElementById('doctor_id').addEventListener('change', syncHiddenBasicFields);
-    document.getElementById('specialty_id').addEventListener('change', syncHiddenBasicFields);
+    const specialtyIdField = document.getElementById('specialty_id');
+    if (specialtyIdField) {
+        specialtyIdField.addEventListener('change', syncHiddenBasicFields);
+    }
     document.getElementById('consultation_reason').addEventListener('input', syncHiddenBasicFields);
+
+    // Eliminar campos vacíos de validación en load para mejor UX
+    document.querySelectorAll('input, select, textarea').forEach(field => {
+        field.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid') && this.value.trim()) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
 });
 </script>
 @endpush
