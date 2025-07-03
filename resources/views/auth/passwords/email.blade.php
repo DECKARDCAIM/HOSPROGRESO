@@ -1,6 +1,6 @@
 @extends('layouts.form')
 
-@section('tittle', 'Restablecer Contraseña')
+@section('title', 'Restablecer Contraseña')
 @section('description', 'Ingrese su correo electrónico para recibir un enlace de restablecimiento')
 
 @section('content')
@@ -27,8 +27,11 @@
         @csrf
 
         {{-- CORREO ELECTRONICO --}}
-        <div class="input-group input-group-outline mb-3">
-            <input id="email" type="email" class="form-control" name="email" value="{{ old('email') }}" placeholder="Correo electrónico" required autocomplete="email" autofocus>
+        <div class="input-group input-group-outline mb-3 @error('email') is-invalid @enderror">
+            <input id="email" type="email" class="form-control" name="email" value="{{ old('email') }}" placeholder="Correo electrónico" required autocomplete="email" autofocus aria-describedby="email-error">
+            @error('email')
+                <div id="email-error" class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
         {{-- BOTON DE ENVIAR --}}

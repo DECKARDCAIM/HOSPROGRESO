@@ -1,0 +1,95 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\CivilStatus;
+use Illuminate\Http\Request;
+
+class CivilStatusController extends Controller
+{
+    public function index(Request $request)
+    {
+        $status = $request->query('status', 'active');
+        $search = $request->query('search', '');
+        $civilStatuses = CivilStatus::where('is_active', $status === 'active' ? 1 : 0)
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', "%$search%");
+            })
+            ->orderBy('name')
+            ->paginate(25)
+            ->appends(['status' => $status, 'search' => $search]);
+        return view('modules.civil_statuses.index', compact('civilStatuses', 'status', 'search'));
+    }
+
+    public function create()
+    {
+        return view('modules.civil_statuses.create');
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:255',
+        ]);
+        $civilStatus = CivilStatus::create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'is_active' => true
+        ]);
+        return redirect()->route('civil-statuses.index')
+            ->with('toast', [
+                'type' => 'success',
+                'title' => 'Creación Éxitosa',
+                'message' => 'El estado civil ' . $civilStatus->name . ' se ha creado correctamente.'
+            ]);
+    }
+
+    public function edit(CivilStatus $civilStatus)
+    {
+        return view('modules.civil_statuses.edit', compact('civilStatus'));
+    }
+
+    public function update(Request $request, CivilStatus $civilStatus)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:255',
+        ]);
+        $civilStatus->update([
+            'name' => $request->name,
+            'description' => $request->description,
+        ]);
+        return redirect()->route('civil-statuses.index')
+            ->with('toast', [
+                'type' => 'info',
+                'title' => 'Actualización Éxitosa',
+                'message' => 'El estado civil ' . $civilStatus->name . ' se ha actualizado correctamente.'
+            ]);
+    }
+
+    public function destroy(CivilStatus $civilStatus)
+    {
+        $civilStatus->update(['is_active' => false]);
+
+        return redirect()->route('civil-statuses.index')
+            ->with('toast', [
+                'type' => 'warning',
+                'title' => 'Eliminación Éxitosa',
+                'message' => 'El estado civil se ha eliminado correctamente.'
+            ]);
+    }
+
+    public function reactivate($id)
+    {
+        $civilStatus = CivilStatus::findOrFail($id);
+        $civilStatus->is_active = true;
+        $civilStatus->save();
+        return redirect()->route('civil-statuses.index', ['status' => 'inactive'])
+            ->with('toast', [
+                'type' => 'success',
+                'title' => 'Reactivación Éxitosa',
+                'message' => 'El estado civil ' . $civilStatus->name . ' ha sido reactivado correctamente.'
+            ]);
+    }
+} 

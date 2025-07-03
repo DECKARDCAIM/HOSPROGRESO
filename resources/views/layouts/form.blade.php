@@ -7,7 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/png" href="{{ asset('img/logo.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('img/logo.png') }}">
-    <title>{{ config('app.name') }} - @yield('tittle')</title>
+    <title>{{ config('app.name') }} - @yield('title')</title>
     <link href="{{ asset('css/nucleo-icons.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/nucleo-svg.css') }}" rel="stylesheet" />
     <link id="pagestyle" href="{{ asset('css/material-dashboard.css?v=3.1.0') }}" rel="stylesheet" />
@@ -27,7 +27,7 @@
                             class="img-fluid">
                     </div>
 
-                    <h3 class="text-center">@yield('tittle')</h3>
+                    <h3 class="text-center">@yield('title')</h3>
                     <p class="form-text text-center">@yield('description')</p>
 
                     @yield('content')

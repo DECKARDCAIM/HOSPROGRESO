@@ -11,7 +11,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        // Registrar el middleware para verificar acceso de usuarios
+        $middleware->alias([
+            'check.user.access' => \App\Http\Middleware\CheckUserAccess::class,
+        ]);
+        
+        // Aplicar el middleware a todas las rutas web autenticadas
+        $middleware->appendToGroup('web', [
+            \App\Http\Middleware\CheckUserAccess::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
