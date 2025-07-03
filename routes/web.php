@@ -51,7 +51,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/perfil', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/perfil/password', [ProfileController::class, 'updatePassword'])->name('profile.updatePassword');
     Route::put('/perfil/photo', [ProfileController::class, 'updatePhoto'])->name('profile.updatePhoto');
+    Route::delete('/perfil/photo', [ProfileController::class, 'deletePhoto'])->name('profile.deletePhoto');
     Route::put('/perfil/banner', [ProfileController::class, 'updateBanner'])->name('profile.updateBanner');
+    Route::delete('/perfil/banner', [ProfileController::class, 'deleteBanner'])->name('profile.deleteBanner');
     Route::delete('/perfil/sesion/{session_id}', [ProfileController::class, 'logoutSession'])->name('profile.logoutSession');
 });
 

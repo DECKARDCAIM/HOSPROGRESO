@@ -4,36 +4,13 @@
 
 @section('content')
 @push('styles')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" integrity="sha512-zxCiHjjAbBILGlO7JAiPOhEk6KSPG+BFCk23+SonilaBGJo3QozM59JvsLCAgmNCoFKgf/t6spGqJCfeA6CJcQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <style>
     .page-header {
         background-image: url('{{ asset('img/carrusel/bk1.webp') }}');
         background-size: cover;
         background-position: center;
     }
-    .profile-photo-container {
-        position: relative;
-        display: inline-block;
-        cursor: pointer;
-    }
-    .profile-photo-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background-color: rgba(0, 0, 0, 0.5);
-        color: white;
-        width: 100%;
-        transition: .3s ease;
-        opacity: 0;
-        padding: 8px;
-        text-align: center;
-        border-bottom-left-radius: .75rem;
-        border-bottom-right-radius: .75rem;
-    }
-    .profile-photo-container:hover .profile-photo-overlay {
-        opacity: 1;
-    }
+
     .form-control-static {
         padding-top: .5rem;
         padding-bottom: .5rem;
@@ -46,24 +23,7 @@
         border-color: #5e72e4 !important;
         box-shadow: 0 0 0 2px rgba(94, 114, 228, 0.25) !important;
     }
-    .profile-avatar-container {
-        position: relative;
-        width: fit-content;
-    }
-    .edit-photo-icon {
-        position: absolute;
-        bottom: 5px;
-        right: 5px;
-        background-color: white;
-        color: #344767;
-        border-radius: 50%;
-        padding: 8px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-        line-height: 1;
-        cursor: pointer;
-        transition: all 0.2s ease-in-out;
-    }
-    .edit-photo-icon:hover { transform: scale(1.1); }
+
     .card-body .form-control, .card-body .form-select {
         border: 1px solid #d2d6da !important;
         background-color: #fff !important;
@@ -73,48 +33,56 @@
         border-color: #5e72e4 !important;
         box-shadow: 0 0 0 2px rgba(94, 114, 228, 0.25) !important;
     }
-    #banner-btn {
-        font-size: 1.5rem;
-        width: 50px;
-        height: 50px;
-        cursor: pointer;
+
+    /* Estilos para las nuevas secciones de fotos */
+    .card-header.bg-info {
+        background: linear-gradient(135deg, #1e88e5 0%, #1976d2 100%) !important;
     }
-    .cropper-container {
-        direction: ltr;
-        font-size: 0;
-        line-height: 0;
-        position: relative;
-        -ms-touch-action: none;
-        touch-action: none;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
+
+    .form-control.border-2 {
+        border-width: 2px !important;
+        transition: all 0.3s ease;
     }
-    .img-container { max-height: 60vh; }
+
+    .form-control.border-2:focus {
+        border-color: #1e88e5 !important;
+        box-shadow: 0 0 0 0.2rem rgba(30, 136, 229, 0.25) !important;
+    }
+
+    .nav-pills .nav-link:not(.active):hover {
+        background-color: rgba(30, 136, 229, 0.1) !important;
+        color: #1e88e5 !important;
+        transform: translateY(-1px);
+        transition: all 0.2s ease;
+    }
+
+    .btn.bg-gradient-info {
+        background: linear-gradient(135deg, #1e88e5 0%, #1976d2 100%) !important;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn.bg-gradient-info:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(30, 136, 229, 0.4) !important;
+    }
+
+    .btn.bg-gradient-info:disabled {
+        opacity: 0.7;
+        transform: none !important;
+    }
 </style>
 @endpush
 <!-- Header -->
 <div class="container-fluid px-2 px-md-4">
     <div class="page-header min-height-300 border-radius-xl mt-4" style="background-image: url('{{ $user->banner_photo_url }}');">
         <span class="mask bg-gradient-dark opacity-4"></span>
-        
-        <label for="banner-upload" id="banner-btn" title="Cambiar Banner" class="btn btn-icon-only btn-sm btn-white mb-0 rounded-circle position-absolute top-0 end-0 m-3 d-flex justify-content-center align-items-center">
-            <i class="fas fa-camera"></i>
-        </label>
-        <input type="file" id="banner-upload" class="d-none" accept="image/*">
     </div>
     <div class="card card-body mx-3 mx-md-4 mt-n6">
         <div class="row gx-4 mb-2">
             <div class="col-auto">
-                <div class="profile-avatar-container">
-                    <div class="avatar avatar-xl position-relative">
-                        <img src="{{ $user->profile_photo_url }}" alt="profile_image" id="profile-image-preview" class="w-100 border-radius-lg shadow-sm">
-                    </div>
-                    <label for="photo-upload" class="cursor-pointer">
-                       <i class="fas fa-camera edit-photo-icon" title="Cambiar foto de perfil"></i>
-                    </label>
-                    <input type="file" id="photo-upload" class="d-none" accept="image/*">
+                <div class="avatar avatar-xl position-relative" style="width: 80px; height: 80px; overflow: hidden; border-radius: 12px;">
+                    <img src="{{ $user->profile_photo_url }}" alt="profile_image" class="shadow-sm" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
             </div>
             <div class="col-auto my-auto">
@@ -126,27 +94,14 @@
                         {{ $user->email }}
                     </p>
                     <p class="mb-0 font-weight-normal text-sm">
-                        {{ $user->getRoleName() }}
+                        <span class="badge bg-info">{{ $user->getRoleName() }}</span>
                     </p>
                 </div>
             </div>
-            <div class="col-lg-4 col-md-6 my-sm-auto ms-sm-auto me-sm-0 mx-auto mt-3">
-                <div class="nav-wrapper position-relative end-0">
-                    <ul class="nav nav-pills nav-fill p-1" role="tablist">
-                        <li class="nav-item">
-                            <a class="nav-link mb-0 px-0 py-1" href="{{ route('profile.index') }}">
-                                <i class="material-symbols-rounded text-lg position-relative">person</i>
-                                <span class="ms-1">Ver Perfil</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link mb-0 px-0 py-1 active" href="javascript:;">
-                                <i class="material-symbols-rounded text-lg position-relative">settings</i>
-                                <span class="ms-1">Editar Perfil</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+            <div class="col-lg-4 col-md-6 my-sm-auto ms-sm-auto me-sm-0 mt-3 text-end">
+                <a class="btn btn-sm bg-gradient-info me-1" href="{{ route('profile.index') }}">
+                    <i class="fas fa-arrow-left me-2"></i>Regresar
+                </a>
             </div>
         </div>
     </div>
@@ -173,14 +128,26 @@
                 <ul class="nav flex-column bg-white border-radius-lg p-3">
                     <li class="nav-item">
                         <a class="nav-link text-dark d-flex" data-scroll href="#basic-info">
-                            <i class="material-symbols-rounded text-lg me-2">receipt_long</i>
+                            <i class="fas fa-user text-lg me-2"></i>
                             <span class="text-sm">Información Básica</span>
                         </a>
                     </li>
                     <li class="nav-item pt-2">
                         <a class="nav-link text-dark d-flex" data-scroll href="#password">
-                            <i class="material-symbols-rounded text-lg me-2">lock</i>
+                            <i class="fas fa-lock text-lg me-2"></i>
                             <span class="text-sm">Cambiar Contraseña</span>
+                        </a>
+                    </li>
+                    <li class="nav-item pt-2">
+                        <a class="nav-link text-dark d-flex" data-scroll href="#profile-photo">
+                            <i class="fas fa-camera text-lg me-2"></i>
+                            <span class="text-sm">Foto de Perfil</span>
+                        </a>
+                    </li>
+                    <li class="nav-item pt-2">
+                        <a class="nav-link text-dark d-flex" data-scroll href="#banner-photo">
+                            <i class="fas fa-image text-lg me-2"></i>
+                            <span class="text-sm">Banner</span>
                         </a>
                     </li>
                 </ul>
@@ -192,8 +159,10 @@
                 @csrf
                 @method('PUT')
                 <div class="card" id="basic-info">
-                    <div class="card-header">
-                        <h5>Información Básica</h5>
+                    <div class="card-header bg-info">
+                        <h6 class="text-white mb-0">
+                            <i class="fas fa-user me-2"></i>Información Básica
+                        </h6>
                     </div>
                     <div class="card-body pt-0">
                         <div class="row">
@@ -204,17 +173,24 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="email" class="form-label">Correo Electrónico</label>
-                                <input type="email" name="email" id="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', $user->email) }}" required>
-                                @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <input type="email" name="email" id="email" class="form-control" value="{{ $user->email }}" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
+                                <small class="text-muted">El correo electrónico no se puede modificar</small>
                             </div>
                         </div>
                         <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="cui" class="form-label">CUI</label>
+                                <input type="text" name="cui" id="cui" class="form-control @error('cui') is-invalid @enderror" value="{{ old('cui', $user->cui) }}" maxlength="13" placeholder="Ej: 1234567890123">
+                                @error('cui') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
                             <div class="col-md-6 mb-3">
                                 <label for="phone" class="form-label">Teléfono</label>
                                 <input type="text" name="phone" id="phone" class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone', $user->phone) }}">
                                 @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
-                            <div class="col-md-6 mb-3">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
                                  <label for="address" class="form-label">Dirección</label>
                                 <input type="text" name="address" id="address" class="form-control @error('address') is-invalid @enderror" value="{{ old('address', $user->address) }}">
                                 @error('address') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -238,7 +214,7 @@
                         </div>
                     </div>
                     <div class="card-footer text-end">
-                        <button type="submit" class="btn bg-gradient-dark">Guardar Cambios</button>
+                        <button type="submit" class="btn bg-gradient-info">Guardar Cambios</button>
                     </div>
                 </div>
             </form>
@@ -248,8 +224,10 @@
                 @csrf
                 @method('PUT')
                 <div class="card mt-4" id="password">
-                    <div class="card-header">
-                        <h5>Cambiar Contraseña</h5>
+                    <div class="card-header bg-info">
+                        <h6 class="text-white mb-0">
+                            <i class="fas fa-lock me-2"></i>Cambiar Contraseña
+                        </h6>
                     </div>
                     <div class="card-body pt-0">
                         <div class="mb-3">
@@ -268,102 +246,385 @@
                         </div>
                     </div>
                      <div class="card-footer text-end">
-                        <button type="submit" class="btn bg-gradient-dark">Actualizar Contraseña</button>
+                        <button type="submit" class="btn bg-gradient-info">Actualizar Contraseña</button>
                     </div>
                 </div>
             </form>
-        </div>
-    </div>
-</div>
 
-<!-- Cropper Modal -->
-<div class="modal fade" id="cropperModal" tabindex="-1" aria-labelledby="cropperModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="cropperModalLabel">Recortar Imagen</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="img-container">
-                    <img id="cropperImage" src="">
+            <!-- Sección para cambiar foto de perfil -->
+            <div class="card mt-4" id="profile-photo">
+                <div class="card-header bg-info">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="text-white mb-0">
+                                <i class="fas fa-camera me-2"></i>Nueva foto de perfil
+                            </h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body pt-0">
+                    <!-- Foto actual -->
+                    @if($user->profile_photo_path)
+                    <div class="mb-3" id="current-profile-photo">
+                        <label class="form-label">Foto actual:</label>
+                        <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ $user->profile_photo_url }}" alt="Foto actual" class="me-3" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                                <div>
+                                    <h6 class="mb-1">Foto de perfil actual</h6>
+                                    <small class="text-muted">Haz clic en eliminar para usar la foto por defecto</small>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteCurrentProfilePhoto()">
+                                <i class="fas fa-trash me-1"></i>Eliminar
+                            </button>
+                        </div>
+                    </div>
+                    @endif
+
+                    <form id="profile-photo-form" enctype="multipart/form-data">
+                        @csrf
+                        @method('PUT')
+                        <div class="mb-3">
+                            <label class="form-label">{{ $user->profile_photo_path ? 'Cambiar foto:' : 'Nueva foto:' }}</label>
+                            <input type="file" 
+                                   name="profile_photo" 
+                                   id="profile-photo-input" 
+                                   class="form-control form-control-lg border-2" 
+                                   accept="image/jpeg,image/png,image/jpg" 
+                                   style="border-color: #1e88e5;">
+                            <div class="form-text text-muted mt-2">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Formatos permitidos: JPG, PNG. Tamaño máximo: 2MB.
+                            </div>
+                        </div>
+                        <div id="profile-photo-preview" class="mb-3" style="display: none;">
+                            <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                                <div class="d-flex align-items-center">
+                                    <img id="profile-photo-preview-img" src="" alt="Preview" class="me-3" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                                    <div>
+                                        <h6 class="mb-1" id="profile-photo-filename">archivo.jpg</h6>
+                                        <small class="text-muted" id="profile-photo-filesize">0 KB</small>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearProfilePhoto()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn bg-gradient-info" id="upload-profile-photo-btn" disabled>
+                                <i class="fas fa-upload me-2"></i>Subir Foto de Perfil
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn bg-gradient-dark" id="cropAndUpload">Recortar y Guardar</button>
+
+            <!-- Sección para cambiar banner -->
+            <div class="card mt-4" id="banner-photo">
+                <div class="card-header bg-info">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="text-white mb-0">
+                                <i class="fas fa-image me-2"></i>Nuevo banner de perfil
+                            </h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body pt-0">
+                    <!-- Banner actual -->
+                    @if($user->banner_photo_path)
+                    <div class="mb-3" id="current-banner-photo">
+                        <label class="form-label">Banner actual:</label>
+                        <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ $user->banner_photo_url }}" alt="Banner actual" class="me-3" style="width: 80px; height: 45px; object-fit: cover; border-radius: 8px;">
+                                <div>
+                                    <h6 class="mb-1">Banner actual</h6>
+                                    <small class="text-muted">Haz clic en eliminar para usar el banner por defecto</small>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteCurrentBanner()">
+                                <i class="fas fa-trash me-1"></i>Eliminar
+                            </button>
+                        </div>
+                    </div>
+                    @endif
+
+                    <form id="banner-photo-form" enctype="multipart/form-data">
+                        @csrf
+                        @method('PUT')
+                        <div class="mb-3">
+                            <label class="form-label">{{ $user->banner_photo_path ? 'Cambiar banner:' : 'Nuevo banner:' }}</label>
+                            <input type="file" 
+                                   name="banner_photo" 
+                                   id="banner-photo-input" 
+                                   class="form-control form-control-lg border-2" 
+                                   accept="image/jpeg,image/png,image/jpg" 
+                                   style="border-color: #1e88e5;">
+                            <div class="form-text text-muted mt-2">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Formatos permitidos: JPG, PNG. Tamaño máximo: 4MB.
+                            </div>
+                        </div>
+                        <div id="banner-photo-preview" class="mb-3" style="display: none;">
+                            <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                                <div class="d-flex align-items-center">
+                                    <img id="banner-photo-preview-img" src="" alt="Preview" class="me-3" style="width: 80px; height: 45px; object-fit: cover; border-radius: 8px;">
+                                    <div>
+                                        <h6 class="mb-1" id="banner-photo-filename">archivo.jpg</h6>
+                                        <small class="text-muted" id="banner-photo-filesize">0 KB</small>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearBannerPhoto()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn bg-gradient-info" id="upload-banner-photo-btn" disabled>
+                                <i class="fas fa-upload me-2"></i>Subir Banner
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+
+
 @push('scripts')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js" integrity="sha512-9KkIqdfN7ipEW6B6iN+5lnf+iF9iG2RzVFAwc3iJEJUdAiR0nCjMvdo9iAUuC3p7jKoPoaUbv2aJvjKagN3gpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const cropperModalEl = document.getElementById('cropperModal');
-    const cropperModal = new bootstrap.Modal(cropperModalEl);
-    const image = document.getElementById('cropperImage');
-    const cropAndUploadBtn = document.getElementById('cropAndUpload');
-    let cropper;
-    let uploadUrl = '';
-    let inputName = '';
+    // Funciones para manejar preview de archivos
+    function setupFilePreview(inputId, previewId, previewImgId, filenameId, filesizeId, uploadBtnId, clearFunction) {
+        const input = document.getElementById(inputId);
+        const preview = document.getElementById(previewId);
+        const previewImg = document.getElementById(previewImgId);
+        const filename = document.getElementById(filenameId);
+        const filesize = document.getElementById(filesizeId);
+        const uploadBtn = document.getElementById(uploadBtnId);
 
-    function showCropper(file, options) {
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            image.src = e.target.result;
-            cropperModal.show();
-        };
-        reader.readAsDataURL(file);
+        input.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validaciones
+                const maxSize = 2 * 1024 * 1024; // 2MB
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+                
+                if (!allowedTypes.includes(file.type)) {
+                    showErrorToast('Solo se permiten archivos JPG, PNG.', 'Formato no válido');
+                    e.target.value = '';
+                    return;
+                }
+                
+                if (file.size > maxSize) {
+                    showErrorToast('El archivo no debe ser mayor a 2MB.', 'Archivo muy grande');
+                    e.target.value = '';
+                    return;
+                }
 
-        cropperModalEl.addEventListener('shown.bs.modal', function () {
-            if (cropper) cropper.destroy();
-            cropper = new Cropper(image, options);
-        }, { once: true });
+                // Mostrar preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    filename.textContent = file.name;
+                    filesize.textContent = formatFileSize(file.size);
+                    preview.style.display = 'block';
+                    uploadBtn.disabled = false;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
     }
 
-    document.getElementById('photo-upload').addEventListener('change', function (e) {
-        uploadUrl = "{{ route('profile.updatePhoto') }}";
-        inputName = 'photo';
-        showCropper(e.target.files[0], { aspectRatio: 1, viewMode: 1 });
-        e.target.value = '';
-    });
+    // Función para formatear tamaño de archivo
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
 
-    document.getElementById('banner-upload').addEventListener('change', function (e) {
-        uploadUrl = "{{ route('profile.updateBanner') }}";
-        inputName = 'banner_photo';
-        showCropper(e.target.files[0], { aspectRatio: 16 / 5, viewMode: 1, autoCropArea: 1});
-        e.target.value = '';
-    });
+    // Función para limpiar foto de perfil
+    window.clearProfilePhoto = function() {
+        document.getElementById('profile-photo-input').value = '';
+        document.getElementById('profile-photo-preview').style.display = 'none';
+        document.getElementById('upload-profile-photo-btn').disabled = true;
+    };
 
-    cropAndUploadBtn.addEventListener('click', function () {
-        this.disabled = true;
-        this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
+    // Función para limpiar banner
+    window.clearBannerPhoto = function() {
+        document.getElementById('banner-photo-input').value = '';
+        document.getElementById('banner-photo-preview').style.display = 'none';
+        document.getElementById('upload-banner-photo-btn').disabled = true;
+    };
 
-        cropper.getCroppedCanvas({ maxWidth: 4096, maxHeight: 4096 }).toBlob((blob) => {
-            const formData = new FormData();
-            formData.append(inputName, blob, 'image.jpg');
-            formData.append('_method', 'PUT');
-            formData.append('_token', "{{ csrf_token() }}");
+    // Función para eliminar foto de perfil actual
+    window.deleteCurrentProfilePhoto = function() {
+        if (!confirm('¿Estás seguro de que quieres eliminar tu foto de perfil? Se usará la foto por defecto.')) {
+            return;
+        }
 
-            fetch(uploadUrl, {
-                method: 'POST',
-                headers: { 'Accept': 'application/json' },
-                body: formData,
-            })
-            .then(response => response.json().then(data => ({ ok: response.ok, data })))
-            .then(({ ok, data }) => {
-                if (ok) {
+        fetch('{{ route("profile.deletePhoto") }}', {
+            method: 'DELETE',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showSuccessToast('Foto de perfil eliminada correctamente.', 'Foto Eliminada');
+                setTimeout(() => {
                     window.location.reload();
-                } else {
-                    alert('Error: ' + (data.message || 'Ocurrió un error al subir la imagen.'));
-                }
-            })
-            .catch(error => alert('Ocurrió un error de red.'))
-            .finally(() => { cropperModal.hide(); });
-        }, 'image/jpeg');
+                }, 1500);
+            } else {
+                showErrorToast(data.message || 'Error al eliminar la foto.', 'Error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showErrorToast('Error de conexión. Intenta nuevamente.', 'Error');
+        });
+    };
+
+    // Función para eliminar banner actual
+    window.deleteCurrentBanner = function() {
+        if (!confirm('¿Estás seguro de que quieres eliminar tu banner? Se usará el banner por defecto.')) {
+            return;
+        }
+
+        fetch('{{ route("profile.deleteBanner") }}', {
+            method: 'DELETE',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showSuccessToast('Banner eliminado correctamente.', 'Banner Eliminado');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showErrorToast(data.message || 'Error al eliminar el banner.', 'Error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showErrorToast('Error de conexión. Intenta nuevamente.', 'Error');
+        });
+    };
+
+    // Configurar previews
+    setupFilePreview(
+        'profile-photo-input', 
+        'profile-photo-preview', 
+        'profile-photo-preview-img', 
+        'profile-photo-filename', 
+        'profile-photo-filesize', 
+        'upload-profile-photo-btn',
+        clearProfilePhoto
+    );
+
+    setupFilePreview(
+        'banner-photo-input', 
+        'banner-photo-preview', 
+        'banner-photo-preview-img', 
+        'banner-photo-filename', 
+        'banner-photo-filesize', 
+        'upload-banner-photo-btn',
+        clearBannerPhoto
+    );
+
+    // Handle foto de perfil upload
+    document.getElementById('profile-photo-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const btn = document.getElementById('upload-profile-photo-btn');
+        const originalText = btn.innerHTML;
+        
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Subiendo...';
+
+        fetch('{{ route("profile.updatePhoto") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showSuccessToast('Foto de perfil actualizada correctamente.', 'Actualización Exitosa');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showErrorToast(data.message || 'Error al subir la foto.', 'Error');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showErrorToast('Error de conexión. Intenta nuevamente.', 'Error');
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        });
+    });
+
+    // Handle banner upload
+    document.getElementById('banner-photo-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const btn = document.getElementById('upload-banner-photo-btn');
+        const originalText = btn.innerHTML;
+        
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Subiendo...';
+
+        fetch('{{ route("profile.updateBanner") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showSuccessToast('Banner actualizado correctamente.', 'Actualización Exitosa');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showErrorToast(data.message || 'Error al subir el banner.', 'Error');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showErrorToast('Error de conexión. Intenta nuevamente.', 'Error');
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        });
     });
 });
 </script>

@@ -149,6 +149,12 @@
                                     <span class="sidenav-normal">Alergias</span>
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="{{ route('control-types.index') }}">
+                                    <i class="material-symbols-rounded opacity-5 me-2">assignment</i>
+                                    <span class="sidenav-normal">Tipos de Control</span>
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </li>
@@ -258,12 +264,6 @@
                     <a class="nav-link text-dark" href="{{ route('reports.index') }}">
                         <i class="material-symbols-rounded opacity-5 me-2">bar_chart</i>
                         <span class="sidenav-normal">Generar Reportes</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('control-types.index') }}">
-                        <i class="material-symbols-rounded opacity-5 me-2">assignment</i>
-                        <span class="sidenav-normal">Tipos de Control</span>
                     </a>
                 </li>
             </ul>

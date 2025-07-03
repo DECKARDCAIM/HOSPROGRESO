@@ -49,6 +49,7 @@ class User extends Authenticatable
      */
     protected $appends = [
         'profile_photo_url',
+        'banner_photo_url',
     ];
 
     /**

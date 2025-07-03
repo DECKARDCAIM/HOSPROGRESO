@@ -603,6 +603,10 @@
                             <i class="fas fa-exclamation-triangle"></i>
                             <span>Alergias</span>
                         </a>
+                        <a href="{{ route('control-types.index') }}" class="suggestion-item" data-search="tipos control sigsa clasificacion">
+                            <i class="fas fa-list-check"></i>
+                            <span>Tipos de Control</span>
+                        </a>
                     </div>
 
                     <div class="suggestion-group">
@@ -656,10 +660,6 @@
                         <a href="{{ route('reports.index') }}" class="suggestion-item" data-search="reportes sigsa generar estadisticas">
                             <i class="fas fa-chart-line"></i>
                             <span>Generar Reportes</span>
-                        </a>
-                        <a href="{{ route('control-types.index') }}" class="suggestion-item" data-search="tipos control sigsa clasificacion">
-                            <i class="fas fa-list-check"></i>
-                            <span>Tipos de Control</span>
                         </a>
                     </div>
                     

@@ -40,8 +40,8 @@
     <div class="card card-body mx-3 mx-md-4 mt-n6">
         <div class="row gx-4 mb-2">
             <div class="col-auto">
-                <div class="avatar avatar-xl position-relative">
-                    <img src="{{ $user->profile_photo_url }}" alt="profile_image" class="w-100 border-radius-lg shadow-sm">
+                <div class="avatar avatar-xl position-relative" style="width: 80px; height: 80px; overflow: hidden; border-radius: 12px;">
+                    <img src="{{ $user->profile_photo_url }}" alt="profile_image" class="shadow-sm" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
             </div>
             <div class="col-auto my-auto">
@@ -53,27 +53,14 @@
                         {{ $user->email }}
                     </p>
                     <p class="mb-0 font-weight-normal text-sm">
-                        {{ $user->getRoleName() }}
+                        <span class="badge bg-info">{{ $user->getRoleName() }}</span>
                     </p>
                 </div>
             </div>
-            <div class="col-lg-4 col-md-6 my-sm-auto ms-sm-auto me-sm-0 mx-auto mt-3">
-                <div class="nav-wrapper position-relative end-0">
-                    <ul class="nav nav-pills nav-fill p-1" role="tablist">
-                        <li class="nav-item">
-                            <a class="nav-link mb-0 px-0 py-1 active" href="javascript:;">
-                                <i class="material-symbols-rounded text-lg position-relative">person</i>
-                                <span class="ms-1">Ver Perfil</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link mb-0 px-0 py-1" href="{{ route('profile.edit') }}">
-                                <i class="material-symbols-rounded text-lg position-relative">settings</i>
-                                <span class="ms-1">Editar Perfil</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+            <div class="col-lg-4 col-md-6 my-sm-auto ms-sm-auto me-sm-0 mt-3 text-end">
+                <a class="btn btn-sm bg-gradient-info me-1" href="{{ route('profile.edit') }}">
+                    <i class="fas fa-edit me-2"></i>Editar Perfil
+                </a>
             </div>
         </div>
     </div>
@@ -87,13 +74,13 @@
                 <ul class="nav flex-column bg-white border-radius-lg p-3">
                     <li class="nav-item">
                         <a class="nav-link text-dark d-flex" data-scroll href="#basic-info">
-                            <i class="material-symbols-rounded text-lg me-2">receipt_long</i>
+                            <i class="fas fa-user text-lg me-2"></i>
                             <span class="text-sm">Información Básica</span>
                         </a>
                     </li>
                     <li class="nav-item pt-2">
                         <a class="nav-link text-dark d-flex" data-scroll href="#sessions">
-                            <i class="material-symbols-rounded text-lg me-2">settings_applications</i>
+                            <i class="fas fa-desktop text-lg me-2"></i>
                             <span class="text-sm">Sesiones</span>
                         </a>
                     </li>
@@ -103,28 +90,38 @@
         <div class="col-lg-9 mt-lg-0 mt-4">
             <!-- Card Basic Info -->
             <div class="card card-profile" id="basic-info">
-                <div class="card-header pb-0 p-3">
+                <div class="card-header bg-info pb-0 p-3">
                     <div class="row">
                         <div class="col-md-8 d-flex align-items-center">
-                            <h6 class="mb-0">Información del Perfil</h6>
+                            <h6 class="mb-0 text-white">
+                                <i class="fas fa-user me-2"></i>Información del Perfil
+                                <p class="text-sm">
+                        Bienvenido a tu perfil. Desde aquí puedes ver tus sesiones activas y tus datos personales.
+                    </p>
+                            </h6>
+                            
                         </div>
                     </div>
                 </div>
                 <div class="card-body p-3">
-                    <p class="text-sm">
-                        Bienvenido a tu perfil. Desde aquí puedes ver tus sesiones activas y tus datos personales.
-                    </p>
+                    
                     
                     <div class="row">
                         <div class="col-md-6">
                             <p class="mb-2"><strong class="text-dark">Nombre:</strong><br> {{ $user->name }}</p>
                             <p class="mb-2"><strong class="text-dark">Email:</strong><br> {{ $user->email }}</p>
+                            <p class="mb-2"><strong class="text-dark">CUI:</strong><br> {{ $user->cui ?? 'No especificado' }}</p>
                             <p class="mb-0"><strong class="text-dark">Género:</strong><br> {{ $user->gender ?? 'No especificado' }}</p>
                         </div>
                         <div class="col-md-6">
                             <p class="mb-2"><strong class="text-dark">Teléfono:</strong><br> {{ $user->phone ?? 'No especificado' }}</p>
                             <p class="mb-2"><strong class="text-dark">Dirección:</strong><br> {{ $user->address ?? 'No especificado' }}</p>
-                            <p class="mb-0"><strong class="text-dark">Fecha de Nacimiento:</strong><br> {{ $user->birth_date ? $user->birth_date->format('d/m/Y') : 'No especificada' }}</p>
+                            <p class="mb-2"><strong class="text-dark">Fecha de Nacimiento:</strong><br> {{ $user->birth_date ? $user->birth_date->format('d/m/Y') : 'No especificada' }}</p>
+                            <p class="mb-0"><strong class="text-dark">Estado:</strong><br> 
+                                <span class="badge bg-{{ $user->is_active ? 'success' : 'danger' }}">
+                                    {{ $user->is_active ? 'Activo' : 'Inactivo' }}
+                                </span>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -132,9 +129,12 @@
 
             <!-- Card Sessions -->
             <div class="card mt-4" id="sessions">
-                <div class="card-header pb-3">
-                    <h5>Sesiones Activas</h5>
-                    <p class="text-sm">Esta es una lista de dispositivos que han iniciado sesión en tu cuenta. Revoca las sesiones que no reconozcas.</p>
+                <div class="card-header bg-info pb-3">
+                    <h6 class="text-white mb-2">
+                        <i class="fas fa-desktop me-2"></i>Sesiones Activas
+                        <p class="text-sm mb-0">Esta es una lista de dispositivos que han iniciado sesión en tu cuenta. Revoca las sesiones que no reconozcas.</p>
+                    </h6>
+                    
                 </div>
                 <div class="card-body p-3">
                     @if(session('success'))

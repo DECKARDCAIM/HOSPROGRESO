@@ -81,7 +81,7 @@ class ProfileController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'cui' => ['nullable', 'string', 'max:13'],
             'phone' => ['nullable', 'string', 'max:20'],
             'address' => ['nullable', 'string', 'max:255'],
             'birth_date' => ['nullable', 'date'],
@@ -132,26 +132,52 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
 
-        $request->validate([
-            'photo' => ['required', 'image', 'max:2048'],
-        ]);
+        try {
+            $request->validate([
+                'profile_photo' => ['required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
+            ]);
 
-        if ($user->profile_photo_path) {
-            Storage::disk('public')->delete($user->profile_photo_path);
+            // Eliminar la foto anterior si existe
+            if ($user->profile_photo_path && Storage::disk('public')->exists($user->profile_photo_path)) {
+                Storage::disk('public')->delete($user->profile_photo_path);
+            }
+
+            $path = $request->file('profile_photo')->store('profile-photos', 'public');
+            $user->update(['profile_photo_path' => $path]);
+
+            NotificationService::create('Foto de Perfil Actualizada', 'Tu foto de perfil ha sido actualizada.', 'info');
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true, 
+                    'message' => 'Foto de perfil actualizada correctamente.',
+                    'path' => $user->profile_photo_url
+                ]);
+            }
+
+            return back()->with('toast', [
+                'type' => 'success',
+                'title' => 'Foto de Perfil Actualizada',
+                'message' => 'Foto de perfil actualizada correctamente.'
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error de validación: ' . collect($e->errors())->flatten()->first()
+                ], 422);
+            }
+            throw $e;
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al subir la foto: ' . $e->getMessage()
+                ], 500);
+            }
+            throw $e;
         }
-        $path = $request->file('photo')->store('profile-photos', 'public');
-        $user->update(['profile_photo_path' => '/storage/' . $path]);
-
-        NotificationService::create('Foto de Perfil Actualizada', 'Tu foto de perfil ha sido actualizada.', 'info');
-
-        if ($request->expectsJson()) {
-            return response()->json(['success' => true, 'path' => $user->profile_photo_url]);
-        }
-        return back()->with('toast', [
-            'type' => 'success',
-            'title' => 'Foto de Perfil Actualizada',
-            'message' => 'Foto de perfil actualizada correctamente.'
-        ]);
     }
 
     /**
@@ -180,26 +206,138 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
 
-        $request->validate([
-            'banner_photo' => ['required', 'image', 'max:4096'],
-        ]);
+        try {
+            $request->validate([
+                'banner_photo' => ['required', 'image', 'mimes:jpeg,png,jpg', 'max:4096'],
+            ]);
 
-        if ($user->banner_photo_path) {
-            Storage::disk('public')->delete($user->banner_photo_path);
+            // Eliminar el banner anterior si existe
+            if ($user->banner_photo_path && Storage::disk('public')->exists($user->banner_photo_path)) {
+                Storage::disk('public')->delete($user->banner_photo_path);
+            }
+
+            $path = $request->file('banner_photo')->store('banner-photos', 'public');
+            $user->update(['banner_photo_path' => $path]);
+
+            NotificationService::create('Banner Actualizado', 'Tu banner ha sido actualizado correctamente.', 'info');
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Banner actualizado correctamente.',
+                    'path' => $user->banner_photo_url
+                ]);
+            }
+
+            return back()->with('toast', [
+                'type' => 'success',
+                'title' => 'Banner Actualizado',
+                'message' => 'Banner actualizado correctamente.'
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error de validación: ' . collect($e->errors())->flatten()->first()
+                ], 422);
+            }
+            throw $e;
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al subir el banner: ' . $e->getMessage()
+                ], 500);
+            }
+            throw $e;
         }
-        $path = $request->file('banner_photo')->store('banner-photos', 'public');
-        $user->update(['banner_photo_path' => '/storage/' . $path]);
+    }
 
-        NotificationService::create('Banner Actualizado', 'Tu banner ha sido actualizado correctamente.', 'info');
+    /**
+     * Delete the user's profile photo.
+     */
+    public function deletePhoto(Request $request)
+    {
+        $user = Auth::user();
 
-        if ($request->expectsJson()) {
-            return response()->json(['success' => true, 'path' => $user->banner_photo_url]);
+        try {
+            // Eliminar la foto del storage si existe
+            if ($user->profile_photo_path && Storage::disk('public')->exists($user->profile_photo_path)) {
+                Storage::disk('public')->delete($user->profile_photo_path);
+            }
+
+            // Resetear a null para usar la foto por defecto
+            $user->update(['profile_photo_path' => null]);
+
+            NotificationService::create('Foto Eliminada', 'Tu foto de perfil ha sido eliminada.', 'warning');
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Foto de perfil eliminada correctamente.',
+                    'path' => $user->profile_photo_url
+                ]);
+            }
+
+            return back()->with('toast', [
+                'type' => 'success',
+                'title' => 'Foto Eliminada',
+                'message' => 'Foto de perfil eliminada correctamente.'
+            ]);
+
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al eliminar la foto: ' . $e->getMessage()
+                ], 500);
+            }
+            throw $e;
         }
-        return back()->with('toast', [
-            'type' => 'success',
-            'title' => 'Banner Actualizado',
-            'message' => 'Banner actualizado correctamente.'
-        ]);
+    }
+
+    /**
+     * Delete the user's banner photo.
+     */
+    public function deleteBanner(Request $request)
+    {
+        $user = Auth::user();
+
+        try {
+            // Eliminar el banner del storage si existe
+            if ($user->banner_photo_path && Storage::disk('public')->exists($user->banner_photo_path)) {
+                Storage::disk('public')->delete($user->banner_photo_path);
+            }
+
+            // Resetear a null para usar el banner por defecto
+            $user->update(['banner_photo_path' => null]);
+
+            NotificationService::create('Banner Eliminado', 'Tu banner ha sido eliminado.', 'warning');
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Banner eliminado correctamente.',
+                    'path' => $user->banner_photo_url
+                ]);
+            }
+
+            return back()->with('toast', [
+                'type' => 'success',
+                'title' => 'Banner Eliminado',
+                'message' => 'Banner eliminado correctamente.'
+            ]);
+
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al eliminar el banner: ' . $e->getMessage()
+                ], 500);
+            }
+            throw $e;
+        }
     }
 
     public function logoutOtherBrowserSessions(Request $request)
