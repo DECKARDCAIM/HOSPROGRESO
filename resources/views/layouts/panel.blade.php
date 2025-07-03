@@ -23,8 +23,8 @@
 
 <body class="g-sidenav-show  bg-gray-100">
 
-    <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2  bg-white my-2"
-        id="sidenav-main">
+    <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2 bg-white my-2"
+        id="sidenav-main" style="width: 280px !important; min-width: 280px !important;">
         <div class="sidenav-header">
             <i class="fas fa-times p-3 cursor-pointer text-dark opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
                 aria-hidden="true" id="iconSidenav"></i>
@@ -73,7 +73,7 @@
         </div>
     </aside>
 
-    <main class="main-content position-relative border-radius-lg d-flex flex-column" style="height: 100vh;">
+    <main class="main-content position-relative border-radius-lg d-flex flex-column" style="height: 100vh; margin-left: 296px !important;">
         <!-- Navbar -->
         @if (!request()->routeIs('profile.index') && !request()->routeIs('profile.edit'))
             <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl" id="navbarBlur" data-scroll="true">
@@ -185,6 +185,191 @@
         });
     </script>
     @endif
+
+    <script>
+        // Sistema de persistencia completa del menú - MEJORADO
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Iniciando sistema de persistencia del menú');
+            
+            const currentUrl = window.location.pathname;
+            console.log('📍 URL actual:', currentUrl);
+            
+            // Lista de todos los menús disponibles
+            const allMenus = [
+                'menuEmergencia',
+                'menuConsulta', 
+                'menuMantenimiento',
+                'menuGestionMedica',
+                'menuCatalogosMedicos',
+                'menuEstudiosMedicamentos',
+                'menuUbicaciones',
+                'menuAdministracion',
+                'menuReportes'
+            ];
+            
+            // PASO 1: Función para restaurar estados guardados
+            function restoreMenuStates() {
+                const savedMenuStates = JSON.parse(localStorage.getItem('menuStates') || '{}');
+                console.log('💾 Estados guardados:', savedMenuStates);
+                
+                allMenus.forEach(menuId => {
+                    const menuElement = document.getElementById(menuId);
+                    const triggerElement = document.querySelector(`[href="#${menuId}"]`);
+                    
+                    if (menuElement && triggerElement) {
+                        const shouldBeOpen = savedMenuStates[menuId] === true;
+                        
+                        if (shouldBeOpen) {
+                            console.log(`✅ Abriendo menú: ${menuId}`);
+                            menuElement.classList.add('show');
+                            triggerElement.setAttribute('aria-expanded', 'true');
+                            triggerElement.classList.remove('collapsed');
+                        } else {
+                            console.log(`❌ Cerrando menú: ${menuId}`);
+                            menuElement.classList.remove('show');
+                            triggerElement.setAttribute('aria-expanded', 'false');
+                            triggerElement.classList.add('collapsed');
+                        }
+                    } else {
+                        console.log(`⚠️ No se encontró menú: ${menuId}`);
+                    }
+                });
+            }
+            
+            // PASO 2: Función para marcar página activa
+            function markActivePage() {
+                console.log('🎯 Marcando página activa');
+                
+                // Limpiar estados activos previos
+                document.querySelectorAll('.active-menu-item').forEach(el => {
+                    el.classList.remove('active-menu-item');
+                });
+                
+                // Buscar el enlace exacto de la página actual
+                let activeLink = null;
+                
+                // 1. Intentar encontrar enlace exacto
+                activeLink = document.querySelector(`a[href="${currentUrl}"]`);
+                console.log('🔍 Enlace exacto encontrado:', !!activeLink);
+                
+                // 2. Si no se encuentra exacto, buscar que contenga la URL
+                if (!activeLink) {
+                    const links = document.querySelectorAll('.sidenav a[href*="/"]');
+                    let bestMatch = null;
+                    let longestMatch = 0;
+                    
+                    for (let link of links) {
+                        const href = link.getAttribute('href');
+                        if (href && href !== '/' && currentUrl.includes(href)) {
+                            if (href.length > longestMatch) {
+                                bestMatch = link;
+                                longestMatch = href.length;
+                            }
+                        }
+                    }
+                    activeLink = bestMatch;
+                    console.log('🔍 Mejor coincidencia encontrada:', activeLink ? activeLink.getAttribute('href') : 'ninguna');
+                }
+                
+                // 3. Marcar como activo
+                if (activeLink) {
+                    activeLink.classList.add('active-menu-item');
+                    console.log('✨ Página marcada como activa:', activeLink.getAttribute('href'));
+                } else {
+                    console.log('❓ No se encontró enlace activo para:', currentUrl);
+                }
+            }
+            
+            // PASO 3: Función para guardar estado de menú
+            function saveMenuState(menuId, isOpen) {
+                const savedStates = JSON.parse(localStorage.getItem('menuStates') || '{}');
+                savedStates[menuId] = isOpen;
+                localStorage.setItem('menuStates', JSON.stringify(savedStates));
+                console.log(`💾 Estado guardado - ${menuId}: ${isOpen ? 'abierto' : 'cerrado'}`);
+            }
+            
+            // PASO 4: Esperar a que Bootstrap esté listo
+            setTimeout(() => {
+                console.log('⏰ Ejecutando restauración después de Bootstrap');
+                restoreMenuStates();
+                markActivePage();
+                
+                // Verificar estados después de restaurar
+                setTimeout(() => {
+                    console.log('🔍 Verificando estados restaurados:');
+                    allMenus.forEach(menuId => {
+                        const menuElement = document.getElementById(menuId);
+                        if (menuElement) {
+                            const isOpen = menuElement.classList.contains('show');
+                            console.log(`  ${menuId}: ${isOpen ? 'ABIERTO' : 'cerrado'}`);
+                        }
+                    });
+                }, 500);
+            }, 300);
+            
+            // PASO 5: Escuchar eventos de Bootstrap para guardar estados
+            allMenus.forEach(menuId => {
+                const menuElement = document.getElementById(menuId);
+                if (menuElement) {
+                    // Eventos de Bootstrap collapse
+                    menuElement.addEventListener('shown.bs.collapse', function() {
+                        console.log(`📂 Bootstrap evento: ${menuId} abierto`);
+                        saveMenuState(menuId, true);
+                    });
+                    
+                    menuElement.addEventListener('hidden.bs.collapse', function() {
+                        console.log(`📁 Bootstrap evento: ${menuId} cerrado`);
+                        saveMenuState(menuId, false);
+                    });
+                }
+            });
+            
+            // PASO 6: Backup - escuchar clics directos también
+            document.addEventListener('click', function(e) {
+                const clickedElement = e.target.closest('[data-bs-toggle="collapse"]');
+                if (clickedElement) {
+                    const menuId = clickedElement.getAttribute('href').replace('#', '');
+                    console.log(`🖱️ Click detectado en: ${menuId}`);
+                    
+                    // Esperar a que se procese el cambio
+                    setTimeout(() => {
+                        const menuElement = document.getElementById(menuId);
+                        if (menuElement) {
+                            const isOpen = menuElement.classList.contains('show');
+                            saveMenuState(menuId, isOpen);
+                        }
+                    }, 400);
+                }
+            });
+            
+            // PASO 7: Funciones de debugging
+            window.resetMenuStates = function() {
+                console.log('🔄 Reseteando estados del menú');
+                localStorage.removeItem('menuStates');
+                location.reload();
+            };
+            
+            window.showMenuStates = function() {
+                const states = JSON.parse(localStorage.getItem('menuStates') || '{}');
+                console.log('📊 Estados actuales del menú:', states);
+                return states;
+            };
+            
+            window.forceOpenMenu = function(menuId) {
+                const menuElement = document.getElementById(menuId);
+                const triggerElement = document.querySelector(`[href="#${menuId}"]`);
+                if (menuElement && triggerElement) {
+                    menuElement.classList.add('show');
+                    triggerElement.setAttribute('aria-expanded', 'true');
+                    triggerElement.classList.remove('collapsed');
+                    saveMenuState(menuId, true);
+                    console.log(`🔓 Menú ${menuId} forzado a abrir`);
+                }
+            };
+            
+            console.log('✅ Sistema de persistencia del menú iniciado');
+        });
+    </script>
 
 
 </body>

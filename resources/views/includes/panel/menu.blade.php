@@ -12,21 +12,21 @@
         <div class="collapse" id="menuEmergencia">
             <ul class="nav">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#">
-                        <i class="material-symbols-rounded opacity-5 me-2">personal_injury</i>
-                        <span class="sidenav-normal">Paciente</span>
+                    <a class="nav-link text-dark" href="{{ route('clinical-records.index') }}">
+                        <i class="material-symbols-rounded opacity-5 me-2">folder_shared</i>
+                        <span class="sidenav-normal">Expedientes Clínicos</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#">
-                        <i class="material-symbols-rounded opacity-5 me-2">list_alt</i>
-                        <span class="sidenav-normal">Lista de Turnos</span>
+                    <a class="nav-link text-dark" href="{{ route('medical-consultations.index') }}">
+                        <i class="material-symbols-rounded opacity-5 me-2">medical_services</i>
+                        <span class="sidenav-normal">Consultas Médicas</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#">
-                        <i class="material-symbols-rounded opacity-5 me-2">shortcut</i>
-                        <span class="sidenav-normal">Referencias</span>
+                    <a class="nav-link text-dark" href="{{ route('appointments.index') }}">
+                        <i class="material-symbols-rounded opacity-5 me-2">calendar_month</i>
+                        <span class="sidenav-normal">Gestión de Citas</span>
                     </a>
                 </li>
             </ul>
@@ -55,21 +55,9 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#">
-                        <i class="material-symbols-rounded opacity-5 me-2">list_alt</i>
-                        <span class="sidenav-normal">Lista de Turnos</span>
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('appointments.index') }}">
                         <i class="material-symbols-rounded opacity-5 me-2">calendar_month</i>
                         <span class="sidenav-normal">Gestión de Citas</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('appointments.create') }}">
-                        <i class="material-symbols-rounded opacity-5 me-2">event_note</i>
-                        <span class="sidenav-normal">Agendar Nueva Cita</span>
                     </a>
                 </li>
             </ul>

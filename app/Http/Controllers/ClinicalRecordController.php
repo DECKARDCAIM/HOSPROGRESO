@@ -12,6 +12,7 @@ use App\Models\Allergy;
 use App\Models\Country;
 use App\Models\Department;
 use App\Models\Municipality;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -117,6 +118,12 @@ class ClinicalRecordController extends Controller
         $clinicalRecord->disabilities()->sync($request->disability_id ?? []);
         $clinicalRecord->allergies()->sync($request->allergy_id ?? []);
 
+        // Crear notificación
+        NotificationService::notifyCreate(
+            'Expediente Clínico',
+            $clinicalRecord->record_number . ' - ' . $clinicalRecord->first_name . ' ' . $clinicalRecord->first_lastname
+        );
+
         return redirect()->route('clinical-records.index')
             ->with('toast', [
                 'type' => 'success',
@@ -170,6 +177,12 @@ class ClinicalRecordController extends Controller
         $clinicalRecord->update($data);
         $clinicalRecord->disabilities()->sync($request->disability_id ?? []);
         $clinicalRecord->allergies()->sync($request->allergy_id ?? []);
+
+        // Crear notificación de actualización
+        NotificationService::notifyUpdate(
+            'Expediente Clínico',
+            $clinicalRecord->record_number . ' - ' . $clinicalRecord->first_name . ' ' . $clinicalRecord->first_lastname
+        );
 
         return redirect()->route('clinical-records.index')
             ->with('toast', [
