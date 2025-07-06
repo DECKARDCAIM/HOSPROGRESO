@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\municipality;
+use App\Models\Municipality;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use App\Models\Department;
@@ -103,7 +103,7 @@ class MunicipalityController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(municipality $municipality)
+    public function show(Municipality $municipality)
     {
         //
     }
@@ -111,7 +111,7 @@ class MunicipalityController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(municipality $municipality)
+    public function edit(Municipality $municipality)
     {
         $departments = Department::all();
         $countries = Country::all(); // Carga todos los países desde la tabla `countries`

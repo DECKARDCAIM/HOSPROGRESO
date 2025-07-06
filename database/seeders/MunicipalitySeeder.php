@@ -70,6 +70,7 @@ class MunicipalitySeeder extends Seeder
                     'name' => $municipio,
                     'description' => "Municipio de $municipio",
                     'department_id' => $department->id,
+                    'is_active' => true,
                 ]);
             }
         }
