@@ -173,66 +173,16 @@
     </div>
 </div>
 <script>
+// Datos globales para cascada de ubicación
+window.allDepartments = @json($departments);
+window.allMunicipalities = @json($municipalities);
+
+// Establecer valores antiguos para cascada
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-submit
-    document.querySelectorAll('.auto-submit').forEach(function(el) {
-        el.addEventListener('change', function() {
-            document.getElementById('filtersForm').submit();
-        });
-    });
-
-    // --- UBICACIÓN EN CASCADA ---
-    const allDepartments = @json($departments);
-    const allMunicipalities = @json($municipalities);
     const countrySelect = document.getElementById('country_id');
-    const departmentSelect = document.getElementById('department_id');
-    const municipalitySelect = document.getElementById('municipality_id');
-    const oldDepartment = '{{ request('department_id') }}';
-    const oldMunicipality = '{{ request('municipality_id') }}';
-
-    function filterDepartmentsByCountry(countryId, selectedId = null) {
-        departmentSelect.innerHTML = '<option value="">Todos</option>';
-        let hasDepartments = false;
-        allDepartments.forEach(dep => {
-            if (dep.country_id == countryId) {
-                departmentSelect.innerHTML += `<option value="${dep.id}"${selectedId == dep.id ? ' selected' : ''}>${dep.name}</option>`;
-                hasDepartments = true;
-            }
-        });
-        if (!hasDepartments) departmentSelect.value = '';
-    }
-    function filterMunicipalitiesByDepartment(departmentId, selectedId = null) {
-        municipalitySelect.innerHTML = '<option value="">Todos</option>';
-        let hasMunicipalities = false;
-        allMunicipalities.forEach(mun => {
-            if (mun.department_id == departmentId) {
-                municipalitySelect.innerHTML += `<option value="${mun.id}"${selectedId == mun.id ? ' selected' : ''}>${mun.name}</option>`;
-                hasMunicipalities = true;
-            }
-        });
-        if (!hasMunicipalities) municipalitySelect.value = '';
-    }
-    countrySelect.addEventListener('change', function() {
-        filterDepartmentsByCountry(this.value);
-        departmentSelect.value = '';
-        municipalitySelect.innerHTML = '<option value="">Todos</option>';
-        municipalitySelect.value = '';
-    });
-    departmentSelect.addEventListener('change', function() {
-        filterMunicipalitiesByDepartment(this.value);
-        municipalitySelect.value = '';
-    });
-    // Inicialización automática si ya hay valores
-    if (countrySelect.value) {
-        filterDepartmentsByCountry(countrySelect.value, oldDepartment);
-        if (departmentSelect.value) {
-            filterMunicipalitiesByDepartment(departmentSelect.value, oldMunicipality);
-        } else {
-            municipalitySelect.innerHTML = '<option value="">Todos</option>';
-        }
-    } else {
-        departmentSelect.innerHTML = '<option value="">Todos</option>';
-        municipalitySelect.innerHTML = '<option value="">Todos</option>';
+    if (countrySelect) {
+        countrySelect.dataset.oldDepartment = '{{ request('department_id') }}';
+        countrySelect.dataset.oldMunicipality = '{{ request('municipality_id') }}';
     }
 });
 </script>

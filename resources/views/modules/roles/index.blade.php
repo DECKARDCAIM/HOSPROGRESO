@@ -4,24 +4,6 @@
 @section('breadcrumb', 'Roles')
 
 @section('content')
-   <style>
-    .pagination .page-item.active .page-link,
-    .pagination .active>.page-link,
-    .pagination .page-item.active .page-link:focus,
-    .pagination .active>.page-link:focus,
-    .pagination .page-item.active .page-link:active,
-    .pagination .active>.page-link:active {
-        background: #1976d2 !important;
-        color: #fff !important;
-        border-color: #1976d2 !important;
-        box-shadow: 0 0 0 0.2rem rgba(25, 118, 210, 0.25) !important;
-        outline: none !important;
-    }
-    .pagination .page-link:focus {
-        box-shadow: 0 0 0 0.2rem rgba(25, 118, 210, 0.25) !important;
-        outline: none !important;
-    }
-</style>
     <div class="container-fluid py-4">
         <div class="row">
             <div class="col-12">

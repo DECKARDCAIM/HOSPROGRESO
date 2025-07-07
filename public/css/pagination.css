@@ -1,0 +1,36 @@
+/* Estilos de Paginación Unificados */
+.pagination .page-item.active .page-link,
+.pagination .active>.page-link,
+.pagination .page-item.active .page-link:focus,
+.pagination .active>.page-link:focus,
+.pagination .page-item.active .page-link:active,
+.pagination .active>.page-link:active {
+    background: #1976d2 !important;
+    color: #fff !important;
+    border-color: #1976d2 !important;
+    box-shadow: 0 0 0 0.2rem rgba(25, 118, 210, 0.25) !important;
+    outline: none !important;
+}
+
+.pagination .page-link:focus {
+    box-shadow: 0 0 0 0.2rem rgba(25, 118, 210, 0.25) !important;
+    outline: none !important;
+}
+
+/* Estilos adicionales de paginación */
+.pagination .page-link {
+    color: #1976d2;
+    border-color: #dee2e6;
+}
+
+.pagination .page-link:hover {
+    color: #1565c0;
+    background-color: #e3f2fd;
+    border-color: #1976d2;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d;
+    background-color: #fff;
+    border-color: #dee2e6;
+} 
