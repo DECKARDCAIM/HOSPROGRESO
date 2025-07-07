@@ -1,0 +1,47 @@
+/* Estilos del Sistema de Búsqueda Global */
+
+/* Selección por teclado en resultados de búsqueda */
+.suggestion-item.keyboard-selected {
+    background: linear-gradient(135deg, rgba(25, 118, 210, 0.25) 0%, rgba(25, 118, 210, 0.15) 100%) !important;
+    border-color: #1976d2 !important;
+    color: #1976d2 !important;
+    transform: translateX(5px) !important;
+    box-shadow: 0 5px 15px rgba(25, 118, 210, 0.3) !important;
+}
+
+.suggestion-item.keyboard-selected::before {
+    transform: scaleY(1) !important;
+}
+
+.suggestion-item.keyboard-selected i {
+    transform: scale(1.1) !important;
+    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4) !important;
+}
+
+/* Indicador de tecla de búsqueda */
+.search-key-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 20px rgba(25, 118, 210, 0.3);
+    z-index: 10000;
+    opacity: 0;
+    transform: translateX(100px);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.search-key-indicator.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.search-key-indicator i {
+    margin-right: 8px;
+} 
