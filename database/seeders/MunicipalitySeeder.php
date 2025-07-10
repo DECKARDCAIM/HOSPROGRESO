@@ -54,8 +54,85 @@ class MunicipalitySeeder extends Seeder
                 'Colotenango', 'San Sebastián Huehuetenango', 'Tectitán', 'Concepción Huista',
                 'San Juan Ixcoy', 'San Antonio Huista', 'Aguacatán', 'San Sebastián Coatán',
                 'Barillas', 'Santa Cruz Barillas'
+            ],
+            'Izabal' => [
+                'Puerto Barrios', 'Livingston', 'El Estor', 'Morales', 'Los Amates'
+            ],
+            'Jalapa' => [
+                'Jalapa', 'San Pedro Pinula', 'San Luis Jilotepeque', 'San Manuel Chaparrón',
+                'San Carlos Alzatate', 'Monjas', 'Mataquescuintla'
+            ],
+            'Jutiapa' => [
+                'Jutiapa', 'El Progreso', 'Santa Catarina Mita', 'Agua Blanca', 'Asunción Mita',
+                'Yupiltepeque', 'Atescatempa', 'Jerez', 'El Adelanto', 'Zapotitlán', 'Comapa',
+                'Jalpatagua', 'Conguaco', 'Moyuta', 'Pasaco', 'Quesada'
+            ],
+            'Petén' => [
+                'Flores', 'San José', 'San Benito', 'San Andrés', 'La Libertad', 'San Francisco',
+                'Santa Ana', 'Dolores', 'San Luis', 'Sayaxché', 'Melchor de Mencos',
+                'Poptún', 'Las Cruces', 'El Chal'
+            ],
+            'Quetzaltenango' => [
+                'Quetzaltenango', 'Salcajá', 'Olintepeque', 'San Carlos Sija', 'Sibilia',
+                'Cabricán', 'Cajolá', 'San Miguel Sigüilá', 'San Juan Ostuncalco',
+                'San Mateo', 'Concepción Chiquirichapa', 'San Martín Sacatepéquez',
+                'Almolonga', 'Cantel', 'Huitán', 'Zunil', 'Colomba', 'San Francisco La Unión',
+                'El Palmar', 'Coatepeque', 'Génova', 'Flores Costa Cuca', 'La Esperanza'
+            ],
+            'Quiché' => [
+                'Santa Cruz del Quiché', 'Chiché', 'Chinique', 'Zacualpa', 'Chajul', 'Cunén',
+                'Joyabaj', 'Nebaj', 'Pachalum', 'Patzité', 'Sacapulas', 'San Andrés Sajcabajá',
+                'San Antonio Ilotenango', 'San Bartolomé Jocotenango', 'San Juan Cotzal',
+                'San Pedro Jocopilas', 'Uspantán'
+            ],
+            'Retalhuleu' => [
+                'Retalhuleu', 'San Sebastián', 'Santa Cruz Muluá', 'San Martín Zapotitlán',
+                'San Felipe', 'San Andrés Villa Seca', 'Champerico', 'Nuevo San Carlos',
+                'El Asintal'
+            ],
+            'Sacatepéquez' => [
+                'Antigua Guatemala', 'Jocotenango', 'Pastores', 'Sumpango', 'Santo Domingo Xenacoj',
+                'Santiago Sacatepéquez', 'San Bartolomé Milpas Altas', 'San Lucas Sacatepéquez',
+                'Santa Lucía Milpas Altas', 'Magdalena Milpas Altas', 'Santa María de Jesús',
+                'Ciudad Vieja', 'San Miguel Dueñas', 'San Juan Alotenango'
+            ],
+            'San Marcos' => [
+                'San Marcos', 'San Pedro Sacatepéquez', 'San Antonio Sacatepéquez', 'Comitancillo',
+                'San Miguel Ixtahuacán', 'Concepción Tutuapa', 'Tacaná', 'Sibinal', 'Tajumulco',
+                'Tejutla', 'Ixchiguán', 'San José Ojetenam', 'La Reforma', 'Malacatán',
+                'Catarina', 'Ayutla', 'Ocós', 'San Pablo', 'El Quetzal', 'La Blanca',
+                'El Tumbador', 'Nuevo Progreso', 'Río Blanco', 'San Lorenzo'
+            ],
+            'Santa Rosa' => [
+                'Cuilapa', 'Barberena', 'Santa Rosa de Lima', 'Casillas', 'San Rafael Las Flores',
+                'Oratorio', 'San Juan Tecuaco', 'Chiquimulilla', 'Taxisco', 'Santa María Ixhuatán',
+                'Guazacapán', 'Pueblo Nuevo Viñas', 'Nueva Santa Rosa'
+            ],
+            'Sololá' => [
+                'Sololá', 'San José Chacayá', 'Santa María Visitación', 'Santa Lucía Utatlán',
+                'Nahualá', 'Santa Catarina Ixtahuacán', 'Santa Clara La Laguna', 'Concepción',
+                'San Andrés Semetabaj', 'Panajachel', 'Santa Catarina Palopó', 'San Antonio Palopó',
+                'San Lucas Tolimán', 'Santa Cruz La Laguna', 'San Pablo La Laguna', 'San Marcos La Laguna',
+                'San Juan La Laguna', 'San Pedro La Laguna', 'Santiago Atitlán'
+            ],
+            'Suchitepéquez' => [
+                'Mazatenango', 'Cuyotenango', 'San Francisco Zapotitlán', 'San Bernardino',
+                'San José El Ídolo', 'Santo Domingo Suchitepéquez', 'San Lorenzo', 'Samayac',
+                'San Pablo Jocopilas', 'San Antonio Suchitepéquez', 'San Miguel Panán',
+                'San Gabriel', 'Chicacao', 'Patulul', 'Santa Bárbara', 'Santo Tomás La Unión',
+                'Zunilito'
+            ],
+            'Totonicapán' => [
+                'Totonicapán', 'San Cristóbal Totonicapán', 'San Francisco El Alto',
+                'San Andrés Xecul', 'Momostenango', 'Santa María Chiquimula',
+                'Santa Lucía La Reforma', 'San Bartolo'
+            ],
+            'Zacapa' => [
+                'Zacapa', 'Estanzuela', 'Río Hondo', 'Gualán', 'Teculután',
+                'Usumatlán', 'Cabañas', 'San Diego', 'La Unión', 'Huité'
             ]
         ];
+        
 
         foreach ($data as $departmentName => $municipalities) {
             $department = Department::where('name', $departmentName)->first();

@@ -10,12 +10,8 @@ use Illuminate\Support\Facades\Hash;
 
 class AdminUserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Buscar el rol de Administrador
         $adminRole = Role::where('name', 'Administrador')->first();
         
         if (!$adminRole) {
@@ -23,8 +19,7 @@ class AdminUserSeeder extends Seeder
             return;
         }
 
-        // Crear usuario administrador por defecto si no existe
-        $adminUser = User::where('email', 'administrador@hosprogreso.local')->first();
+        $adminUser = User::where('email', 'falla3235@hotmail.com')->first();
         
         if (!$adminUser) {
             $adminUser = User::create([
@@ -36,12 +31,7 @@ class AdminUserSeeder extends Seeder
                 'email_verified_at' => now(),
             ]);
             
-            $this->command->info('Usuario Cristoffer Alexis Falla Marroquin creado:');
-            $this->command->info('Email: falla3235@hotmail.com');
-            $this->command->info('Contraseña: CAllofduty123@%');
-            $this->command->warn('¡CAMBIE LA CONTRASEÑA POR DEFECTO!');
         } else {
-            // Si existe pero no tiene rol, asignarle el rol de administrador
             if (!$adminUser->role_id) {
                 $adminUser->role_id = $adminRole->id;
                 $adminUser->is_active = true;

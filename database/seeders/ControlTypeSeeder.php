@@ -8,9 +8,6 @@ use App\Models\ControlType;
 
 class ControlTypeSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $controlTypes = [
