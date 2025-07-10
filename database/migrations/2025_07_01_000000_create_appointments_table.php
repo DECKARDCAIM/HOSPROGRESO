@@ -10,25 +10,24 @@ return new class extends Migration
     {
         Schema::create('appointments', function (Blueprint $table) {
             $table->id();
-            $table->string('appointment_number')->unique(); // Número de cita único
+            $table->string('appointment_number')->unique();
             $table->foreignId('clinical_record_id')->constrained('clinical_records');
             $table->foreignId('doctor_id')->constrained('doctors');
             $table->foreignId('specialty_id')->constrained('specialties');
             $table->foreignId('schedule_type_id')->constrained('schedule_types');
             $table->dateTime('appointment_date');
-            $table->integer('slot_number'); // Número de turno dentro del horario
+            $table->integer('slot_number');
             $table->enum('attention_type', ['consulta_externa', 'urgencia', 'emergencia'])->default('consulta_externa');
             $table->enum('status', ['pendiente', 'confirmada', 'atendida', 'perdida', 'cancelada', 'reagendada'])->default('pendiente');
-            $table->text('notes')->nullable(); // Notas adicionales
-            $table->timestamp('confirmed_at')->nullable(); // Cuándo se confirmó
-            $table->timestamp('attended_at')->nullable(); // Cuándo fue atendida
-            $table->timestamp('cancelled_at')->nullable(); // Cuándo se canceló
-            $table->string('cancelled_reason')->nullable(); // Razón de cancelación
-            $table->foreignId('rescheduled_from_id')->nullable()->constrained('appointments'); // Si fue reagendada desde otra cita
-            $table->foreignId('created_by')->constrained('users'); // Usuario que creó la cita
+            $table->text('notes')->nullable();
+            $table->timestamp('confirmed_at')->nullable();
+            $table->timestamp('attended_at')->nullable();
+            $table->timestamp('cancelled_at')->nullable();
+            $table->string('cancelled_reason')->nullable();
+            $table->foreignId('rescheduled_from_id')->nullable()->constrained('appointments');
+            $table->foreignId('created_by')->constrained('users');
             $table->timestamps();
             
-            // Índices para mejorar rendimiento
             $table->index(['appointment_date', 'doctor_id']);
             $table->index(['status', 'appointment_date']);
             $table->index(['clinical_record_id', 'appointment_date']);

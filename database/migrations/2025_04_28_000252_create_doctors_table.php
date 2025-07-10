@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('cui', 13)->unique();
             $table->string('license_number')->unique();
             $table->foreignId('specialty_id')->constrained('specialties');
+            $table->foreignId('schedule_type_id')->nullable()->constrained('schedule_types');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

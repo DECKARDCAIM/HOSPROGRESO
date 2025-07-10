@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('notifications', function (Blueprint $table) {
@@ -16,18 +13,15 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('title');
             $table->text('message');
-            $table->string('type')->default('info'); // success, error, warning, info
+            $table->string('type')->default('info');
             $table->timestamp('read_at')->nullable();
-            $table->json('data')->nullable(); // Para datos adicionales
+            $table->json('data')->nullable();
             $table->timestamps();
             
             $table->index(['user_id', 'read_at']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('notifications');
