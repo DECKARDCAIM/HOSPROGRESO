@@ -1,0 +1,234 @@
+/* DataTables Improved Buttons - Botones más atractivos y modernos */
+
+/* Botones mejorados en DataTables */
+.dataTable-table .btn,
+.table-responsive .dataTable-table .btn {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+    white-space: nowrap !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    padding: 8px 16px !important;
+    margin: 3px !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
+}
+
+/* Botón Editar - Azul moderno */
+.dataTable-table .btn-info,
+.table-responsive .dataTable-table .btn-info {
+    background: linear-gradient(135deg, #17c1e8 0%, #1976d2 100%) !important;
+    border: none !important;
+    color: white !important;
+}
+
+.dataTable-table .btn-info:hover,
+.table-responsive .dataTable-table .btn-info:hover {
+    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(23, 193, 232, 0.4) !important;
+}
+
+/* Botón Eliminar - Rojo moderno */
+.dataTable-table .btn-danger,
+.table-responsive .dataTable-table .btn-danger {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%) !important;
+    border: none !important;
+    color: white !important;
+}
+
+.dataTable-table .btn-danger:hover,
+.table-responsive .dataTable-table .btn-danger:hover {
+    background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4) !important;
+}
+
+/* Botón Reactivar - Verde moderno */
+.dataTable-table .btn-success,
+.table-responsive .dataTable-table .btn-success {
+    background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%) !important;
+    border: none !important;
+    color: white !important;
+}
+
+.dataTable-table .btn-success:hover,
+.table-responsive .dataTable-table .btn-success:hover {
+    background: linear-gradient(135deg, #388e3c 0%, #2e7d32 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4) !important;
+}
+
+/* Botón Ver - Púrpura moderno */
+.dataTable-table .btn-purple,
+.table-responsive .dataTable-table .btn-purple {
+    background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%) !important;
+    border: none !important;
+    color: white !important;
+}
+
+.dataTable-table .btn-purple:hover,
+.table-responsive .dataTable-table .btn-purple:hover {
+    background: linear-gradient(135deg, #7b1fa2 0%, #6a1b9a 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(156, 39, 176, 0.4) !important;
+}
+
+/* Botón Naranja - Para otras acciones */
+.dataTable-table .btn-warning,
+.table-responsive .dataTable-table .btn-warning {
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%) !important;
+    border: none !important;
+    color: white !important;
+}
+
+.dataTable-table .btn-warning:hover,
+.table-responsive .dataTable-table .btn-warning:hover {
+    background: linear-gradient(135deg, #f57c00 0%, #ef6c00 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4) !important;
+}
+
+/* Iconos en botones */
+.dataTable-table .btn i,
+.table-responsive .dataTable-table .btn i {
+    margin-right: 6px !important;
+    font-size: 0.9rem !important;
+}
+
+/* Asegurar que los botones se muestren en las celdas de acciones */
+.dataTable-table td:last-child .btn,
+.table-responsive .dataTable-table td:last-child .btn {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 3px !important;
+    white-space: nowrap !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* Asegurar que los formularios se muestren inline */
+.dataTable-table td:last-child form,
+.table-responsive .dataTable-table td:last-child form {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+    margin: 0 !important;
+}
+
+/* Responsive para dispositivos móviles */
+@media (max-width: 1199px) {
+    .dataTable-table .btn,
+    .table-responsive .dataTable-table .btn {
+        font-size: 0.8rem !important;
+        padding: 6px 12px !important;
+        margin: 2px !important;
+        min-width: 75px !important;
+    }
+    
+    .dataTable-table td:last-child .btn,
+    .table-responsive .dataTable-table td:last-child .btn {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        margin: 2px !important;
+    }
+}
+
+/* Responsive para tablets */
+@media (min-width: 768px) and (max-width: 1199px) {
+    .dataTable-table .btn,
+    .table-responsive .dataTable-table .btn {
+        font-size: 0.85rem !important;
+        padding: 7px 14px !important;
+        margin: 3px !important;
+    }
+}
+
+/* Responsive para móviles pequeños */
+@media (max-width: 576px) {
+    .dataTable-table .btn,
+    .table-responsive .dataTable-table .btn {
+        font-size: 0.75rem !important;
+        padding: 5px 10px !important;
+        margin: 2px !important;
+        min-width: 60px !important;
+    }
+    
+    /* En móviles muy pequeños, mostrar solo iconos */
+    .dataTable-table .btn span,
+    .table-responsive .dataTable-table .btn span {
+        display: none !important;
+    }
+    
+    .dataTable-table .btn i,
+    .table-responsive .dataTable-table .btn i {
+        margin: 0 !important;
+        font-size: 1rem !important;
+    }
+}
+
+/* Asegurar que todos los botones se muestren en cualquier tamaño de pantalla */
+.dataTable-table .btn,
+.table-responsive .dataTable-table .btn,
+.dataTable-container .btn,
+.table-responsive .btn {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* Asegurar que los botones de acción se muestren en las celdas */
+.dataTable-table td:last-child .btn,
+.table-responsive .dataTable-table td:last-child .btn,
+.dataTable-container td:last-child .btn,
+.table-responsive td:last-child .btn {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 3px !important;
+    white-space: nowrap !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* Botones en estado disabled */
+.dataTable-table .btn:disabled,
+.table-responsive .dataTable-table .btn:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
+}
+
+/* Animación suave para todos los botones */
+.dataTable-table .btn,
+.table-responsive .dataTable-table .btn {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Efecto de clic */
+.dataTable-table .btn:active,
+.table-responsive .dataTable-table .btn:active {
+    transform: translateY(1px) !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+}
+
+/* Ajustes específicos para pantallas grandes */
+@media (min-width: 1200px) {
+    .dataTable-table .btn,
+    .table-responsive .dataTable-table .btn {
+        font-size: 0.9rem !important;
+        padding: 9px 18px !important;
+        margin: 4px !important;
+    }
+} 

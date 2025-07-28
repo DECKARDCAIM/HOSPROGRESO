@@ -1,0 +1,235 @@
+/* DataTables Touch Fixes - Deshabilitar animaciones de touch feedback */
+
+/* Deshabilitar animaciones de touch feedback en DataTables */
+.dataTable-wrapper,
+.dataTable-container,
+.dataTable-container *,
+.dataTable-table,
+.dataTable-table * {
+    /* Deshabilitar highlight de touch */
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    
+    /* Deshabilitar transformaciones y animaciones que interfieren con el scroll */
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Permitir selección de texto solo en celdas específicas */
+.dataTable-table td,
+.dataTable-table th {
+    -webkit-user-select: text !important;
+    -khtml-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
+}
+
+/* Deshabilitar efectos de hover en dispositivos touch */
+@media (hover: none) and (pointer: coarse) {
+    .dataTable-container *:hover,
+    .dataTable-wrapper *:hover {
+        transform: none !important;
+        transition: none !important;
+    }
+}
+
+/* Deshabilitar animaciones específicas en botones dentro de DataTables */
+.dataTable-container .btn,
+.dataTable-container .btn * {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Permitir animaciones solo en hover para dispositivos con mouse */
+@media (hover: hover) and (pointer: fine) {
+    .dataTable-container .btn:hover {
+        transform: translateY(-1px) !important;
+        transition: transform 0.2s ease !important;
+    }
+}
+
+/* Deshabilitar efectos de focus que puedan causar animaciones */
+.dataTable-container:focus,
+.dataTable-container *:focus {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Mejorar la experiencia táctil específicamente para scroll */
+.dataTable-container {
+    /* Asegurar que el scroll táctil funcione correctamente */
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+    
+    /* Mantener scroll horizontal habilitado */
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+}
+
+/* Deshabilitar animaciones en indicadores de scroll */
+.scroll-indicator,
+.scroll-indicator * {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    transform: none !important;
+    transition: opacity 0.3s ease !important; /* Solo mantener transición de opacity */
+}
+
+/* Deshabilitar animaciones en mensajes informativos */
+.mobile-scroll-hint,
+.mobile-scroll-hint * {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    transform: none !important;
+    transition: opacity 0.3s ease !important; /* Solo mantener transición de opacity */
+}
+
+/* Asegurar que los botones dentro de las tablas no tengan animaciones de touch */
+.dataTable-table .btn,
+.dataTable-table .btn * {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+}
+
+/* Deshabilitar animaciones en elementos de paginación */
+.dataTable-pagination,
+.dataTable-pagination * {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+}
+
+/* Permitir animaciones solo en elementos específicos que no interfieren con el scroll */
+.dataTable-top,
+.dataTable-bottom {
+    /* Mantener animaciones en elementos de control que no afectan el scroll */
+    transition: opacity 0.3s ease !important;
+}
+
+/* Deshabilitar animaciones en elementos de búsqueda y filtros */
+.dataTable-search,
+.dataTable-search *,
+.dataTable-dropdown,
+.dataTable-dropdown * {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+}
+
+/* Asegurar que los inputs de búsqueda mantengan funcionalidad pero sin animaciones de touch */
+.dataTable-input {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: text !important;
+    user-select: text !important;
+}
+
+/* Deshabilitar animaciones en elementos de información */
+.dataTable-info,
+.dataTable-info * {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+}
+
+/* Asegurar que las celdas de la tabla no tengan animaciones de touch */
+.dataTable-table td,
+.dataTable-table th {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: text !important;
+    user-select: text !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Deshabilitar animaciones en badges y estados */
+.dataTable-table .badge,
+.dataTable-table .badge * {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Asegurar que los iconos no tengan animaciones de touch */
+.dataTable-table i,
+.dataTable-table .fas,
+.dataTable-table .far,
+.dataTable-table .fab {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Deshabilitar animaciones en avatares y elementos de imagen */
+.dataTable-table .avatar,
+.dataTable-table img {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Asegurar que los enlaces dentro de las tablas no tengan animaciones de touch */
+.dataTable-table a,
+.dataTable-table a * {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+}
+
+/* Deshabilitar animaciones en formularios dentro de DataTables */
+.dataTable-container form,
+.dataTable-container form * {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+}
+
+/* Permitir selección de texto en inputs de formularios */
+.dataTable-container input,
+.dataTable-container textarea,
+.dataTable-container select {
+    -webkit-user-select: text !important;
+    user-select: text !important;
+}
+
+/* Deshabilitar animaciones en elementos de estado */
+.dataTable-table .status,
+.dataTable-table .state {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+} 

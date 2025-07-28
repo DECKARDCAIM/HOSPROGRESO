@@ -34,10 +34,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 300);
     }
     
-    // Evento para teclas de búsqueda
+
+
+    // Evento para teclas de búsqueda - ONLY on desktop
     document.addEventListener('keydown', function(e) {
-        // TAB para abrir búsqueda
-        if (e.key === 'Tab' && !e.shiftKey && !e.ctrlKey && !e.altKey) {
+        // TAB para abrir búsqueda - ONLY on desktop (1200px and up)
+        if (window.innerWidth >= 1200 && e.key === 'Tab' && !e.shiftKey && !e.ctrlKey && !e.altKey) {
             // Solo si no estamos en un input o textarea
             if (!['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) && 
                 !e.target.isContentEditable && 
@@ -56,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Ctrl+K o Cmd+K para búsqueda (estándar web)
-        if ((e.ctrlKey || e.metaKey) && e.key === 'k' && !isSearchOpen) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K') && !isSearchOpen) {
             e.preventDefault();
             openSearch();
             return;
@@ -207,22 +209,24 @@ document.addEventListener('DOMContentLoaded', function() {
         searchIcon.addEventListener('click', executeSearch);
     }
     
-    // Mostrar indicador de tecla TAB al cargar
-    setTimeout(() => {
-        const indicator = document.createElement('div');
-        indicator.className = 'search-key-indicator';
-        indicator.innerHTML = '<i class="fas fa-search"></i> TAB o Ctrl+K para buscar';
-        document.body.appendChild(indicator);
-        
+    // Mostrar indicador de tecla TAB al cargar - ONLY on desktop (1200px and up)
+    if (window.innerWidth >= 1200) {
         setTimeout(() => {
-            indicator.classList.add('show');
-        }, 1000);
-        
-        setTimeout(() => {
-            indicator.classList.remove('show');
+            const indicator = document.createElement('div');
+            indicator.className = 'search-key-indicator';
+            indicator.innerHTML = '<i class="fas fa-search"></i> TAB o Ctrl+K para buscar';
+            document.body.appendChild(indicator);
+            
             setTimeout(() => {
-                indicator.remove();
-            }, 300);
-        }, 6000);
-    }, 2000);
+                indicator.classList.add('show');
+            }, 1000);
+            
+            setTimeout(() => {
+                indicator.classList.remove('show');
+                setTimeout(() => {
+                    indicator.remove();
+                }, 300);
+            }, 6000);
+        }, 2000);
+    }
 }); 

@@ -4,6 +4,17 @@
 @section('breadcrumb', 'Expedientes Clínicos')
 
 @section('content')
+
+<style>
+@media (max-width: 1199px) {
+    .card-body .table-responsive { border-radius: 8px; overflow: hidden; }
+    .dataTable-container { border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .btn { margin: 2px; min-width: 80px; }
+    .card-body { padding: 1rem; }
+    .card-body .row { margin-bottom: 1rem; }
+}
+</style>
+
 <div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
@@ -13,7 +24,7 @@
                         <div class="col-md-8">
                             <h6 class="text-white mb-0">Expedientes Clínicos</h6>
                             <p class="text-sm text-white opacity-8 mb-0">
-                                Este módulo permite gestionar los expedientes clínicos de los pacientes.
+                                Este módulo permite gestionar los expedientes clínicos registrados en el sistema.
                             </p>
                         </div>
                         <div class="col-md-4 text-end">
@@ -23,95 +34,47 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body px-0 pt-0 pb-2">
-                    <form method="GET" class="p-3" id="filtersForm">
-                        <div class="row g-2 align-items-end">
-                            <div class="col-md-3">
-                                <label class="form-label">Buscar (Nombre, Apellido, CUI, Número de Expediente, Certificado de Nacimiento, DPI Padre, DPI Madre)</label>
-                                <input type="text" name="q" class="form-control" placeholder="Buscar..." value="{{ request('q') }}">
+
+                <div class="card-body pt-3 pb-2">
+                    <form method="GET" class="mb-0" id="filtersForm">
+                        <div class="row align-items-center">
+                            <div class="col-md-4 col-lg-3 mb-2 mb-md-0">
+                                <input type="text" name="q" class="form-control form-control-lg border border-info" placeholder="Buscar por nombre, CUI, expediente..." value="{{ request('q') }}">
                             </div>
-                            <div class="col-md-2">
-                                <label class="form-label">País</label>
-                                <select name="country_id" id="country_id" class="form-select auto-submit">
-                                    <option value="">Todos</option>
-                                    @foreach($countries as $country)
-                                        <option value="{{ $country->id }}" {{ request('country_id') == $country->id ? 'selected' : '' }}>{{ $country->name }}</option>
-                                    @endforeach
-                                </select>
+                            <div class="col-md-6 col-lg-5 mb-2 mb-md-0">
+                                <div class="input-group input-group-lg">
+                                    <select name="country_id" class="form-select border border-info">
+                                        <option value="">Todos los países</option>
+                                        @foreach($countries as $country)
+                                            <option value="{{ $country->id }}" {{ request('country_id') == $country->id ? 'selected' : '' }}>{{ $country->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button type="submit" class="btn bg-gradient-info text-white">
+                                        <i class="fas fa-filter me-2"></i>Filtrar
+                                    </button>
+                                </div>
                             </div>
-                            <div class="col-md-2">
-                                <label class="form-label">Departamento</label>
-                                <select name="department_id" id="department_id" class="form-select auto-submit">
-                                    <option value="">Todos</option>
-                                    @foreach($departments as $department)
-                                        <option value="{{ $department->id }}" {{ request('department_id') == $department->id ? 'selected' : '' }}>{{ $department->name }}</option>
-                                    @endforeach
-                                </select>
+                            @if(request('q') || request('country_id'))
+                            <div class="col-auto ms-2">
+                                <a href="{{ route('clinical-records.index') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Limpiar búsqueda
+                                </a>
                             </div>
-                            <div class="col-md-2">
-                                <label class="form-label">Municipio</label>
-                                <select name="municipality_id" id="municipality_id" class="form-select auto-submit">
-                                    <option value="">Todos</option>
-                                    @foreach($municipalities as $municipality)
-                                        <option value="{{ $municipality->id }}" {{ request('municipality_id') == $municipality->id ? 'selected' : '' }}>{{ $municipality->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label">Com. Lingüística</label>
-                                <select name="linguistic_community_id" class="form-select auto-submit">
-                                    <option value="">Todas</option>
-                                    @foreach($linguisticCommunities as $community)
-                                        <option value="{{ $community->id }}" {{ request('linguistic_community_id') == $community->id ? 'selected' : '' }}>{{ $community->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label">Etnia</label>
-                                <select name="ethnicity_id" class="form-select auto-submit">
-                                    <option value="">Todas</option>
-                                    @foreach($ethnicities as $ethnicity)
-                                        <option value="{{ $ethnicity->id }}" {{ request('ethnicity_id') == $ethnicity->id ? 'selected' : '' }}>{{ $ethnicity->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label">Sexo</label>
-                                <select name="sex_id" class="form-select auto-submit">
-                                    <option value="">Todos</option>
-                                    @foreach($sexes as $sex)
-                                        <option value="{{ $sex->id }}" {{ request('sex_id') == $sex->id ? 'selected' : '' }}>{{ $sex->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label">Estado Civil</label>
-                                <select name="civil_status_id" class="form-select auto-submit">
-                                    <option value="">Todos</option>
-                                    @foreach($civilStatuses as $status)
-                                        <option value="{{ $status->id }}" {{ request('civil_status_id') == $status->id ? 'selected' : '' }}>{{ $status->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label">Fecha de Nacimiento</label>
-                                <input type="date" name="birth_date" class="form-control auto-submit" value="{{ request('birth_date') }}">
-                            </div>
-                            <div class="col-md-2 d-flex align-items-end gap-2">
-                                <button type="submit" class="btn btn-info w-100"><i class="fas fa-search me-2"></i>Filtrar</button>
-                                <a href="{{ route('clinical-records.index') }}" class="btn btn-secondary w-100">Limpiar</a>
-                            </div>
+                            @endif
                         </div>
                     </form>
+                </div>
+
+                <div class="card-body px-0 pt-0 pb-2">
                     <div class="table-responsive p-0">
-                        <table class="table align-items-center mb-0">
+                        <table class="table align-items-center mb-0 dataTable-table" id="datatable-basic" data-datatable="true">
                             <thead>
                                 <tr>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Número de Expediente</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Nombre Completo</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">CUI</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Edad</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Ubicación</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="width: 35%; min-width: 300px; max-width: 500px;">Ubicación</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3 text-center">Acciones</th>
                                 </tr>
                             </thead>
@@ -137,20 +100,23 @@
                                     <td class="px-3 py-2">
                                         <p class="text-sm text-secondary mb-0">{{ $record->age }} años</p>
                                     </td>
-                                    <td class="px-3 py-2">
-                                        <p class="text-sm text-secondary mb-0">
+                                    <td class="px-3 py-2" style="width: 35%; min-width: 300px; max-width: 500px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        <p class="text-sm text-secondary mb-0 d-flex align-items-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">
                                             {{ $record->municipality->name ?? '-' }}, {{ $record->department->name ?? '-' }}, {{ $record->country->name ?? '-' }}
+                                            <span class="ms-2">
+                                                <i class="fas fa-map-marker-alt text-info" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $record->municipality->name ?? '-' }}, {{ $record->department->name ?? '-' }}, {{ $record->country->name ?? '-' }}"></i>
+                                            </span>
                                         </p>
                                     </td>
                                     <td class="align-middle text-center">
                                         <a href="{{ route('clinical-records.show', $record) }}" class="btn btn-primary rounded-pill px-3 py-2 me-2">
-                                            <i class="fas fa-eye me-1"></i> Ver
-                                        </a>
-                                        <a href="{{ route('clinical-records.print', $record->id) }}" class="btn btn-secondary rounded-pill px-3 py-2" target="_blank">
-                                            <i class="fas fa-print me-1"></i> Imprimir
+                                            <i class="fas fa-eye me-1"></i>Ver
                                         </a>
                                         <a href="{{ route('clinical-records.edit', $record) }}" class="btn btn-info rounded-pill px-3 py-2 me-2">
-                                            <i class="fas fa-edit me-1"></i> Editar
+                                            <i class="fas fa-edit me-1"></i>Editar
+                                        </a>
+                                        <a href="{{ route('clinical-records.print', $record->id) }}" class="btn btn-secondary rounded-pill px-3 py-2" target="_blank">
+                                            <i class="fas fa-print me-1"></i>Imprimir
                                         </a>
                                     </td>
                                 </tr>
@@ -164,7 +130,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="d-flex justify-content-center mt-3">
+                    <div class="d-flex justify-content-center mt-4">
                         {{ $clinicalRecords->links() }}
                     </div>
                 </div>
@@ -172,18 +138,5 @@
         </div>
     </div>
 </div>
-<script>
-// Datos globales para cascada de ubicación
-window.allDepartments = @json($departments);
-window.allMunicipalities = @json($municipalities);
 
-// Establecer valores antiguos para cascada
-document.addEventListener('DOMContentLoaded', function() {
-    const countrySelect = document.getElementById('country_id');
-    if (countrySelect) {
-        countrySelect.dataset.oldDepartment = '{{ request('department_id') }}';
-        countrySelect.dataset.oldMunicipality = '{{ request('municipality_id') }}';
-    }
-});
-</script>
 @endsection 

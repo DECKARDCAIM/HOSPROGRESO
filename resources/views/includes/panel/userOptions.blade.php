@@ -1,23 +1,48 @@
-@if (!request()->routeIs('profile.index') && !request()->routeIs('profile.edit'))
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
-        @if (View::hasSection('breadcrumb'))
-        <li class="breadcrumb-item text-sm">
-            <a class="opacity-5 text-dark" href="{{ url('/panel') }}">Inicio</a>
-        </li>
-        <li class="breadcrumb-item text-sm text-dark active font-weight-bold" aria-current="page">
-            @yield('breadcrumb')
-        </li>
-        @else
-        <li class="breadcrumb-item text-sm text-dark active font-weight-bold" aria-current="page">
-            @yield('title')
-        </li>
-        @endif
-    </ol>
-</nav>
+<!-- Navbar content with proper alignment -->
+<div class="d-flex align-items-center justify-content-between w-100">
+    
+    <!-- Left side: Mobile Menu Button + Breadcrumb -->
+    <div class="d-flex align-items-center">
+        <!-- Mobile Menu Toggle Button -->
+        <button class="navbar-toggler d-lg-none me-3" type="button" id="mobileMenuToggle" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon">
+                <span class="navbar-toggler-bar bar1"></span>
+                <span class="navbar-toggler-bar bar2"></span>
+                <span class="navbar-toggler-bar bar3"></span>
+            </span>
+        </button>
 
-<div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
-    <ul class="navbar-nav align-items-center ms-auto">
+        @if (!request()->routeIs('profile.index') && !request()->routeIs('profile.edit'))
+        <!-- Breadcrumb - hidden on mobile -->
+        <nav aria-label="breadcrumb" class="d-none d-md-block">
+            <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0">
+                @if (View::hasSection('breadcrumb'))
+                <li class="breadcrumb-item text-sm">
+                    <a class="opacity-5 text-dark" href="{{ url('/panel') }}">Inicio</a>
+                </li>
+                <li class="breadcrumb-item text-sm text-dark active font-weight-bold" aria-current="page">
+                    @yield('breadcrumb')
+                </li>
+                @else
+                <li class="breadcrumb-item text-sm text-dark active font-weight-bold" aria-current="page">
+                    @yield('title')
+                </li>
+                @endif
+            </ol>
+        </nav>
+        @endif
+    </div>
+
+    <!-- Right side: User actions -->
+    <div class="d-flex align-items-center">
+        <ul class="navbar-nav align-items-center d-flex flex-row">
+
+        <!-- Global Search Button - Only on mobile/tablet (1199px and below) -->
+        <li class="nav-item d-xl-none">
+            <a class="nav-link text-dark" href="javascript:;" id="mobileGlobalSearch" role="button" title="Buscar" onclick="document.getElementById('globalSearchModal').style.display='flex'; setTimeout(() => { document.getElementById('globalSearchModal').classList.add('show'); document.getElementById('globalSearchInput').focus(); }, 10);">
+                <i class="material-symbols-rounded">search</i>
+            </a>
+        </li>
 
         <!-- Notificaciones -->
         <li class="nav-item dropdown">
@@ -79,9 +104,9 @@
                 </li>
             </ul>
         </li>
-    </ul>
+        </ul>
+    </div>
 </div>
-@endif
 
 <!-- Modal para todas las notificaciones -->
 <div class="modal fade" id="allNotificationsModal" tabindex="-1" aria-labelledby="allNotificationsModalLabel" aria-hidden="true" data-bs-backdrop="static">

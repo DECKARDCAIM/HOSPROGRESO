@@ -4,6 +4,36 @@
 @section('breadcrumb', 'Especialidades')
 
 @section('content')
+
+<style>
+/* Estilos adicionales para mejorar la experiencia en móviles */
+@media (max-width: 1199px) {
+    .card-body .table-responsive {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .dataTable-container {
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    /* Mejorar la visibilidad de los botones en móviles */
+    .btn {
+        margin: 2px;
+        min-width: 80px;
+    }
+    
+    /* Ajustar el espaciado en móviles */
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .card-body .row {
+        margin-bottom: 1rem;
+    }
+}
+</style>
    
     <div class="container-fluid py-4">
         <div class="row">
@@ -59,7 +89,7 @@
 
                     <div class="card-body px-0 pt-0 pb-2">
                         <div class="table-responsive p-0">
-                            <table class="table align-items-center mb-0" id="datatable-basic">
+                            <table class="table align-items-center mb-0 dataTable-table" id="datatable-basic">
                                 <thead>
                                     <tr>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Nombre</th>
@@ -100,21 +130,21 @@
                                                 @if ($status === 'active')
                                                     <a href="{{ url('/especialidades/' . $especialidad->id . '/edit') }}"
                                                         class="btn btn-info rounded-pill px-3 py-2 me-2">
-                                                        <i class="fas fa-edit me-1"></i> Editar
+                                                        <i class="fas fa-edit me-1"></i>Editar
                                                     </a>
                                                     <form action="{{ url('/especialidades/' . $especialidad->id) }}"
                                                         method="POST" class="d-inline">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="btn btn-danger rounded-pill px-3 py-2">
-                                                            <i class="fas fa-trash me-1"></i> Eliminar
+                                                            <i class="fas fa-trash me-1"></i>Eliminar
                                                         </button>
                                                     </form>
                                                 @else
                                                     <form action="{{ route('especialidades.reactivate', $especialidad->id) }}" method="POST" class="d-inline">
                                                         @csrf
                                                         <button type="submit" class="btn btn-success rounded-pill px-3 py-2">
-                                                            <i class="fas fa-power-off me-1"></i> Reactivar
+                                                            <i class="fas fa-power-off me-1"></i>Reactivar
                                                         </button>
                                                     </form>
                                                 @endif

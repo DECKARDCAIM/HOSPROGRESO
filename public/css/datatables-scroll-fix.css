@@ -1,0 +1,249 @@
+/* DataTables Scroll Fix - Asegurar que el scroll horizontal funcione correctamente */
+
+/* Forzar scroll horizontal en DataTables */
+.dataTable-container {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    scroll-behavior: auto !important;
+}
+
+/* Asegurar que la tabla tenga el ancho mínimo necesario */
+.dataTable-container .dataTable-table {
+    min-width: 600px !important;
+    width: 100% !important;
+}
+
+/* Asegurar que las celdas mantengan su ancho mínimo */
+.dataTable-table th,
+.dataTable-table td {
+    white-space: nowrap !important;
+    min-width: 120px !important;
+}
+
+/* Columnas específicas con ancho mínimo */
+.dataTable-table th:first-child,
+.dataTable-table td:first-child {
+    min-width: 150px !important;
+}
+
+.dataTable-table th:nth-child(2),
+.dataTable-table td:nth-child(2) {
+    min-width: 100px !important;
+}
+
+.dataTable-table th:nth-child(3),
+.dataTable-table td:nth-child(3) {
+    min-width: 200px !important;
+}
+
+.dataTable-table th:last-child,
+.dataTable-table td:last-child {
+    min-width: 180px !important;
+}
+
+/* Asegurar que los botones de acción se visualicen correctamente */
+.dataTable-table .btn {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* Asegurar que los botones dentro de las celdas de acciones se muestren */
+.dataTable-table td:last-child .btn {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 2px !important;
+    white-space: nowrap !important;
+}
+
+/* Asegurar que los formularios dentro de las celdas se muestren */
+.dataTable-table td:last-child form {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Asegurar que los botones de acción no se oculten en dispositivos móviles */
+@media (max-width: 1199px) {
+    .dataTable-table .btn {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        min-width: 80px !important;
+        padding: 0.375rem 0.75rem !important;
+        font-size: 0.875rem !important;
+    }
+    
+    .dataTable-table td:last-child .btn {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        margin: 2px !important;
+    }
+}
+
+/* Asegurar que los botones se muestren en pantallas muy pequeñas */
+@media (max-width: 576px) {
+    .dataTable-table .btn {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        padding: 0.25rem 0.5rem !important;
+        font-size: 0.75rem !important;
+    }
+    
+    /* Mostrar solo iconos en pantallas muy pequeñas pero mantener funcionalidad */
+    .dataTable-table .btn span {
+        display: none !important;
+    }
+    
+    .dataTable-table .btn i {
+        margin: 0 !important;
+        display: inline-block !important;
+    }
+}
+
+/* Estilos para la barra de scroll */
+.dataTable-container::-webkit-scrollbar {
+    height: 8px !important;
+}
+
+.dataTable-container::-webkit-scrollbar-track {
+    background: #f1f1f1 !important;
+    border-radius: 4px !important;
+}
+
+.dataTable-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1 !important;
+    border-radius: 4px !important;
+}
+
+.dataTable-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8 !important;
+}
+
+/* Asegurar que el contenedor tenga el ancho correcto */
+.dataTable-wrapper {
+    width: 100% !important;
+    position: relative !important;
+}
+
+/* Asegurar que el contenedor de la tabla tenga el ancho correcto */
+.table-responsive {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+/* Asegurar que la tabla dentro del contenedor responsive tenga el ancho correcto */
+.table-responsive .dataTable-table {
+    min-width: 600px !important;
+    width: 100% !important;
+}
+
+/* Asegurar que las celdas de la tabla responsive mantengan su ancho mínimo */
+.table-responsive .dataTable-table th,
+.table-responsive .dataTable-table td {
+    white-space: nowrap !important;
+    min-width: 120px !important;
+}
+
+/* Columnas específicas con ancho mínimo en contenedor responsive */
+.table-responsive .dataTable-table th:first-child,
+.table-responsive .dataTable-table td:first-child {
+    min-width: 150px !important;
+}
+
+.table-responsive .dataTable-table th:nth-child(2),
+.table-responsive .dataTable-table td:nth-child(2) {
+    min-width: 100px !important;
+}
+
+.table-responsive .dataTable-table th:nth-child(3),
+.table-responsive .dataTable-table td:nth-child(3) {
+    min-width: 200px !important;
+}
+
+.table-responsive .dataTable-table th:last-child,
+.table-responsive .dataTable-table td:last-child {
+    min-width: 180px !important;
+}
+
+/* Asegurar que los botones de acción se muestren en contenedor responsive */
+.table-responsive .dataTable-table .btn {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.table-responsive .dataTable-table td:last-child .btn {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 2px !important;
+}
+
+/* Estilos para la barra de scroll en contenedor responsive */
+.table-responsive::-webkit-scrollbar {
+    height: 8px !important;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1 !important;
+    border-radius: 4px !important;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #c1c1c1 !important;
+    border-radius: 4px !important;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8 !important;
+}
+
+/* Asegurar que el scroll funcione en dispositivos móviles */
+@media (max-width: 1199px) {
+    .dataTable-container,
+    .table-responsive {
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: thin !important;
+        scrollbar-color: #c1c1c1 #f1f1f1 !important;
+    }
+    
+    .dataTable-container .dataTable-table,
+    .table-responsive .dataTable-table {
+        min-width: 600px !important;
+    }
+}
+
+/* Asegurar que el scroll funcione en tablets */
+@media (min-width: 768px) and (max-width: 1199px) {
+    .dataTable-container,
+    .table-responsive {
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+}
+
+/* Asegurar que el scroll funcione en móviles */
+@media (max-width: 767px) {
+    .dataTable-container,
+    .table-responsive {
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    .dataTable-container .dataTable-table,
+    .table-responsive .dataTable-table {
+        min-width: 500px !important;
+    }
+} 

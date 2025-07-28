@@ -18,9 +18,17 @@
     <link href="{{ asset('css/panel.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/search-styles.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/pagination.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/responsive-fixes.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/responsive-datatables.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/datatables-touch-fixes.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/datatables-scroll-fix.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/datatables-buttons-fix.css') }}" rel="stylesheet" />
 </head>
 
 <body class="g-sidenav-show  bg-gray-100">
+
+    <!-- Sidenav Overlay for Mobile -->
+    <div class="sidenav-overlay" id="sidenav-overlay"></div>
 
     <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2 bg-white my-2"
         id="sidenav-main" style="width: 280px !important; min-width: 280px !important;">
@@ -73,7 +81,7 @@
     </aside>
 
     <main class="main-content position-relative border-radius-lg d-flex flex-column"
-        style="height: 100vh; margin-left: 296px !important;">
+        style="height: 100vh;">
         <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl" id="navbarBlur"
             data-scroll="true">
             <div class="container-fluid py-1 px-3">
@@ -97,6 +105,7 @@
     <script src="{{ asset('js/core/bootstrap.min.js') }}"></script>
     <script src="{{ asset('js/plugins/perfect-scrollbar.min.js') }}"></script>
     <script src="{{ asset('js/plugins/smooth-scrollbar.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/datatables.js') }}"></script>
 
     {{-- Panel JS Files --}}
     <script src="{{ asset('js/panel.js') }}"></script>
@@ -105,6 +114,10 @@
     <script src="{{ asset('js/global-search.js') }}"></script>
     <script src="{{ asset('js/common-filters.js') }}"></script>
     <script src="{{ asset('js/appointment-form.js') }}"></script>
+    <script src="{{ asset('js/mobile-sidenav.js') }}"></script>
+    <script src="{{ asset('js/responsive-datatables.js') }}"></script>
+    <script src="{{ asset('js/datatables-init.js') }}"></script>
+    <script src="{{ asset('js/datatables-touch-handler.js') }}"></script>
 
     {{-- Material Dashboard JS --}}
     <script src="{{ asset('js/material-dashboard.min.js?v=3.1.0') }}"></script>

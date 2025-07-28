@@ -1,0 +1,189 @@
+/* DataTables Buttons Fix - Asegurar que los botones de acción se muestren correctamente */
+
+/* Asegurar que los botones de acción se visualicen correctamente */
+.dataTable-table .btn,
+.table-responsive .dataTable-table .btn {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+    white-space: nowrap !important;
+}
+
+/* Asegurar que los botones dentro de las celdas de acciones se muestren */
+.dataTable-table td:last-child .btn,
+.table-responsive .dataTable-table td:last-child .btn {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 2px !important;
+    white-space: nowrap !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* Asegurar que los formularios dentro de las celdas se muestren */
+.dataTable-table td:last-child form,
+.table-responsive .dataTable-table td:last-child form {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* Asegurar que los botones de acción no se oculten en dispositivos móviles */
+@media (max-width: 1199px) {
+    .dataTable-table .btn,
+    .table-responsive .dataTable-table .btn {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        min-width: 80px !important;
+        padding: 0.375rem 0.75rem !important;
+        font-size: 0.875rem !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+    
+    .dataTable-table td:last-child .btn,
+    .table-responsive .dataTable-table td:last-child .btn {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        margin: 2px !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+}
+
+/* Asegurar que los botones se muestren en pantallas muy pequeñas */
+@media (max-width: 576px) {
+    .dataTable-table .btn,
+    .table-responsive .dataTable-table .btn {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        padding: 0.25rem 0.5rem !important;
+        font-size: 0.75rem !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+    
+    /* Mostrar solo iconos en pantallas muy pequeñas pero mantener funcionalidad */
+    .dataTable-table .btn span,
+    .table-responsive .dataTable-table .btn span {
+        display: none !important;
+    }
+    
+    .dataTable-table .btn i,
+    .table-responsive .dataTable-table .btn i {
+        margin: 0 !important;
+        display: inline-block !important;
+    }
+}
+
+/* Asegurar que los botones de acción se muestren en tablets */
+@media (min-width: 768px) and (max-width: 1199px) {
+    .dataTable-table .btn,
+    .table-responsive .dataTable-table .btn {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+    
+    .dataTable-table td:last-child .btn,
+    .table-responsive .dataTable-table td:last-child .btn {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        margin: 2px !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+}
+
+/* Asegurar que los botones de acción se muestren en móviles */
+@media (max-width: 767px) {
+    .dataTable-table .btn,
+    .table-responsive .dataTable-table .btn {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+    
+    .dataTable-table td:last-child .btn,
+    .table-responsive .dataTable-table td:last-child .btn {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        margin: 2px !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+}
+
+/* Asegurar que los botones de acción se muestren en pantallas grandes */
+@media (min-width: 1200px) {
+    .dataTable-table .btn,
+    .table-responsive .dataTable-table .btn {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+    
+    .dataTable-table td:last-child .btn,
+    .table-responsive .dataTable-table td:last-child .btn {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        margin: 2px !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+}
+
+/* Asegurar que los botones de acción se muestren en todos los tamaños de pantalla */
+.dataTable-table .btn,
+.table-responsive .dataTable-table .btn,
+.dataTable-container .btn,
+.table-responsive .btn {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* Asegurar que los botones de acción se muestren en las celdas de acciones */
+.dataTable-table td:last-child .btn,
+.table-responsive .dataTable-table td:last-child .btn,
+.dataTable-container td:last-child .btn,
+.table-responsive td:last-child .btn {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 2px !important;
+    white-space: nowrap !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* Asegurar que los formularios de acciones se muestren */
+.dataTable-table td:last-child form,
+.table-responsive .dataTable-table td:last-child form,
+.dataTable-container td:last-child form,
+.table-responsive td:last-child form {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+} 

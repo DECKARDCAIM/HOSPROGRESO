@@ -1,0 +1,333 @@
+/* Responsive DataTables - Solución para scroll horizontal en móviles y tablets */
+
+/* Contenedor principal de DataTables */
+.dataTable-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+/* Contenedor de la tabla con scroll horizontal */
+.dataTable-container {
+    position: relative;
+    width: 100%;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch; /* Para iOS */
+}
+
+/* Estilos para la tabla dentro del contenedor */
+.dataTable-container .dataTable-table {
+    width: 100%;
+    min-width: 600px; /* Ancho mínimo para asegurar que todas las columnas sean visibles */
+    margin: 0;
+    border-collapse: collapse;
+}
+
+/* Indicador de scroll horizontal */
+.dataTable-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 20px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,1) 100%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+}
+
+/* Mostrar indicador cuando hay scroll horizontal */
+.dataTable-container.has-scroll::after {
+    opacity: 1;
+}
+
+/* DESHABILITAR ANIMACIONES DE TOUCH EN DATATABLES */
+.dataTable-container,
+.dataTable-container *,
+.dataTable-wrapper,
+.dataTable-wrapper * {
+    /* Deshabilitar animaciones de touch feedback */
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    
+    /* Deshabilitar transformaciones y animaciones que interfieren con el scroll */
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Permitir selección de texto solo en celdas específicas */
+.dataTable-table td,
+.dataTable-table th {
+    -webkit-user-select: text !important;
+    -khtml-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
+}
+
+/* Deshabilitar efectos hover en dispositivos touch */
+@media (hover: none) and (pointer: coarse) {
+    .dataTable-container *:hover {
+        transform: none !important;
+        transition: none !important;
+    }
+}
+
+/* Estilos para dispositivos móviles y tablets */
+@media (max-width: 1199px) {
+    /* Asegurar que el contenedor tenga scroll horizontal */
+    .dataTable-container {
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: #c1c1c1 #f1f1f1;
+        
+        /* Deshabilitar completamente las animaciones de touch */
+        -webkit-tap-highlight-color: transparent !important;
+        -webkit-touch-callout: none !important;
+    }
+    
+    /* Estilos para la barra de scroll en WebKit */
+    .dataTable-container::-webkit-scrollbar {
+        height: 8px;
+    }
+    
+    .dataTable-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .dataTable-container::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+    }
+    
+    .dataTable-container::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+    
+    /* Asegurar que las celdas mantengan su ancho mínimo */
+    .dataTable-table th,
+    .dataTable-table td {
+        white-space: nowrap;
+        min-width: 120px; /* Ancho mínimo para cada celda */
+    }
+    
+    /* Columnas específicas con ancho mínimo */
+    .dataTable-table th:first-child,
+    .dataTable-table td:first-child {
+        min-width: 150px; /* Nombre/ID */
+    }
+    
+    .dataTable-table th:nth-child(2),
+    .dataTable-table td:nth-child(2) {
+        min-width: 100px; /* Estado */
+    }
+    
+    .dataTable-table th:nth-child(3),
+    .dataTable-table td:nth-child(3) {
+        min-width: 200px; /* Descripción */
+    }
+    
+    .dataTable-table th:last-child,
+    .dataTable-table td:last-child {
+        min-width: 180px; /* Acciones */
+    }
+    
+    /* Ajustes para botones en dispositivos móviles */
+    .dataTable-table .btn {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        white-space: nowrap;
+        
+        /* Deshabilitar animaciones de touch en botones */
+        -webkit-tap-highlight-color: transparent !important;
+        -webkit-touch-callout: none !important;
+        transform: none !important;
+        transition: none !important;
+    }
+    
+    /* Agrupar botones en dispositivos muy pequeños */
+    @media (max-width: 576px) {
+        .dataTable-table .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        /* Ocultar texto de botones y mostrar solo iconos en pantallas muy pequeñas */
+        .dataTable-table .btn span,
+        .dataTable-table .btn:not(.btn-sm) {
+            display: none;
+        }
+        
+        .dataTable-table .btn i {
+            margin: 0 !important;
+        }
+    }
+}
+
+/* Estilos específicos para tablets (768px - 1199px) */
+@media (min-width: 768px) and (max-width: 1199px) {
+    .dataTable-container {
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    /* Mejorar la visibilidad del scroll */
+    .dataTable-container::before {
+        content: '← Desliza para ver más →';
+        position: absolute;
+        top: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(23, 193, 232, 0.9);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        z-index: 2;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .dataTable-container:hover::before {
+        opacity: 1;
+    }
+}
+
+/* Estilos para móviles (hasta 767px) */
+@media (max-width: 767px) {
+    .dataTable-container {
+        margin: 0 -15px; /* Extender el contenedor */
+        padding: 0 15px;
+    }
+    
+    /* Reducir el ancho mínimo de la tabla */
+    .dataTable-container .dataTable-table {
+        min-width: 500px;
+    }
+    
+    /* Ajustar anchos mínimos de columnas para móviles */
+    .dataTable-table th,
+    .dataTable-table td {
+        min-width: 100px;
+    }
+    
+    .dataTable-table th:first-child,
+    .dataTable-table td:first-child {
+        min-width: 120px;
+    }
+    
+    .dataTable-table th:nth-child(3),
+    .dataTable-table td:nth-child(3) {
+        min-width: 150px;
+    }
+    
+    .dataTable-table th:last-child,
+    .dataTable-table td:last-child {
+        min-width: 140px;
+    }
+    
+    /* Mejorar la legibilidad del texto */
+    .dataTable-table td {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* Ajustar badges y estados */
+    .dataTable-table .badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
+
+/* Animación de scroll suave */
+.dataTable-container {
+    scroll-behavior: smooth;
+}
+
+/* Indicador visual de scroll activo */
+.dataTable-container.scrolling {
+    box-shadow: inset 0 0 0 2px rgba(23, 193, 232, 0.3);
+}
+
+/* Estilos para el mensaje de "no hay datos" */
+.dataTable-empty {
+    text-align: center;
+    padding: 2rem !important;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Mejorar la accesibilidad */
+.dataTable-container:focus-within {
+    outline: 2px solid rgba(23, 193, 232, 0.5);
+    outline-offset: 2px;
+}
+
+/* Estilos para el contenedor de filtros responsivo */
+@media (max-width: 1199px) {
+    .card-body .row.align-items-center {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .card-body .col-md-4,
+    .card-body .col-md-6,
+    .card-body .col-lg-3,
+    .card-body .col-lg-5 {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .card-body .input-group {
+        flex-wrap: wrap;
+    }
+    
+    .card-body .input-group .form-control {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .card-body .input-group .btn {
+        flex-shrink: 0;
+    }
+}
+
+/* Estilos para paginación responsiva */
+@media (max-width: 1199px) {
+    .dataTable-bottom {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+    }
+    
+    .dataTable-info {
+        text-align: center;
+        order: 1;
+    }
+    
+    .dataTable-pagination {
+        order: 2;
+    }
+    
+    .dataTable-pagination-list {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.25rem;
+    }
+    
+    .dataTable-pagination-list li {
+        margin: 0;
+    }
+    
+    .dataTable-pagination-list a {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+    }
+} 
