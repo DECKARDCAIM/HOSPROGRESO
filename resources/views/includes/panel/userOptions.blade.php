@@ -181,12 +181,11 @@
     --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.25);
 }
 
-/* FONDO CON DESENFOQUE SUTIL Y ELEGANTE */
-.modal-backdrop {
-    background: linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(0, 0, 0, 0.2) 100%) !important;
-    backdrop-filter: blur(20px) saturate(150%) brightness(80%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(150%) brightness(80%) !important;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+.notification-backdrop {
+    background: linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(0, 0, 0, 0.3) 100%) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    transition: all 0.3s ease-in-out !important;
 }
 
 .modal-backdrop.show {

@@ -21,9 +21,10 @@
 
 /* ===== MODAL PROFESIONAL ===== */
 .modal-backdrop {
-    background-color: rgba(0, 0, 0, 0.85) !important;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(0, 0, 0, 0.3) 100%) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    transition: all 0.3s ease-in-out !important;
 }
 
 .modal-backdrop.show {

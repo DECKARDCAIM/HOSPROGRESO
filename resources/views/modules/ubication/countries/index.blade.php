@@ -79,60 +79,60 @@
                             </thead>
                             <tbody>
                                 @forelse($countries as $country)
-                                <tr>
-                                    <td>
-                                        <div class="d-flex px-3 py-2">
-                                            <div class="avatar avatar-sm me-3 bg-info rounded-circle">
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex px-3 py-2">
+                                                <div class="avatar avatar-sm me-3 bg-info rounded-circle">
                                                 <span class="text-white font-weight-bold">{{ substr($country->name, 0, 1) }}</span>
-                                            </div>
-                                            <div class="d-flex flex-column justify-content-center">
+                                                </div>
+                                                <div class="d-flex flex-column justify-content-center">
                                                 <h6 class="mb-0 text-sm">{{ $country->name }}</h6>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-3 py-2">
+                                        </td>
+                                        <td class="px-3 py-2">
                                         @if($country->is_active)
-                                            <span class="badge bg-success">Activo</span>
-                                        @else
-                                            <span class="badge bg-secondary">Inactivo</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-3 py-2" style="width: 35%; min-width: 300px; max-width: 500px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                        <p class="text-sm text-secondary mb-0 d-flex align-items-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">
+                                                <span class="badge bg-success">Activo</span>
+                                            @else
+                                                <span class="badge bg-secondary">Inactivo</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-3 py-2" style="width: 35%; min-width: 300px; max-width: 500px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                            <p class="text-sm text-secondary mb-0 d-flex align-items-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">
                                             {{ Str::limit($country->description, 60) }}
-                                            <span class="ms-2">
+                                                <span class="ms-2">
                                                 <i class="fas fa-info-circle text-info" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $country->description }}"></i>
-                                            </span>
-                                        </p>
-                                    </td>
-                                    <td class="align-middle text-center">
-                                        @if ($status === 'active')
+                                                </span>
+                                            </p>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            @if ($status === 'active')
                                             <a href="{{ url('/paises/' . $country->id . '/edit') }}" class="btn btn-info rounded-pill px-3 py-2 me-2">
                                                 <i class="fas fa-edit me-1"></i>Editar
-                                            </a>
+                                                </a>
                                             <form action="{{ url('/paises/' . $country->id) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger rounded-pill px-3 py-2">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger rounded-pill px-3 py-2">
                                                     <i class="fas fa-trash me-1"></i>Eliminar
-                                                </button>
-                                            </form>
-                                        @else
+                                                    </button>
+                                                </form>
+                                            @else
                                             <form action="{{ url('/paises/' . $country->id . '/reactivate') }}" method="POST" class="d-inline">
-                                                @csrf
-                                                <button type="submit" class="btn btn-success rounded-pill px-3 py-2">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-success rounded-pill px-3 py-2">
                                                     <i class="fas fa-power-off me-1"></i>Reactivar
-                                                </button>
-                                            </form>
-                                        @endif
-                                    </td>
-                                </tr>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </td>
+                                    </tr>
                                 @empty
-                                <tr>
-                                    <td colspan="4" class="text-center py-4">
-                                        <span class="text-muted">No hay países registrados.</span>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4">
+                                            <span class="text-muted">No hay países registrados.</span>
+                                        </td>
+                                    </tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -140,10 +140,10 @@
                     <div class="d-flex justify-content-center mt-4">
                         {{ $countries->links() }}
                     </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
+    
 @endsection

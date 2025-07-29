@@ -40,8 +40,9 @@
         left: 0 !important;
         width: 100% !important;
         height: 100% !important;
-        background: rgba(0, 0, 0, 0.5) !important;
-        backdrop-filter: blur(3px) !important;
+        background: linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(0, 0, 0, 0.3) 100%) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
         z-index: 1029 !important;
         opacity: 0 !important;
         visibility: hidden !important;
@@ -66,9 +67,27 @@
         z-index: 1020 !important;
     }
 
+    .sidenav {
+        position: fixed !important;
+        top: 0 !important;
+        left: -280px !important;
+        width: 280px !important;
+        height: 100vh !important;
+        z-index: 1030 !important;
+        transform: translateX(0) !important;
+        background: white !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        transition: all 0.3s ease-in-out !important;
+    }
 
-
-
+    /* Show sidenav when mobile menu is open */
+    body.sidenav-mobile-open .sidenav {
+        transform: translateX(280px) !important;
+        left: -280px !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
 
 
 }

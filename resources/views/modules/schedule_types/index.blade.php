@@ -68,19 +68,23 @@
 
                 <div class="card-body px-0 pt-0 pb-2">
                     <div class="table-responsive p-0">
-                        <table class="table align-items-center mb-0 dataTable-table" id="datatable-basic" data-datatable="true">
+                        <table class="table align-items-center mb-0 dataTable-table" id="datatable-basic" data-datatable="true" style="overflow-x: auto; min-width: 900px;">
                             <thead>
                                 <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Nombre</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Estado</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="width: 35%; min-width: 300px; max-width: 500px;">Descripción</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3 text-center">Acciones</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 160px;">Nombre</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 120px;">Especialidad</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 180px;">Días de la Semana</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 100px;">Hora Inicio</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 100px;">Hora Fin</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 80px;">Cupos</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 80px;">Estado</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3 text-center" style="min-width: 140px;">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($scheduleTypes as $scheduleType)
                                 <tr>
-                                    <td>
+                                    <td style="min-width: 160px;">
                                         <div class="d-flex px-3 py-2">
                                             <div class="avatar avatar-sm me-3 bg-info rounded-circle">
                                                 <span class="text-white font-weight-bold">{{ substr($scheduleType->name, 0, 1) }}</span>
@@ -90,22 +94,85 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-3 py-2">
+                                    <td class="px-3 py-2" style="min-width: 120px;">
+                                        @if($scheduleType->specialty)
+                                            <span class="badge bg-primary">{{ $scheduleType->specialty->name }}</span>
+                                        @else
+                                            <span class="text-muted">Sin especialidad</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2" style="min-width: 180px;">
+                                        @php
+                                            $dayNames = [
+                                                1 => 'Lun',
+                                                2 => 'Mar', 
+                                                3 => 'Mié',
+                                                4 => 'Jue',
+                                                5 => 'Vie',
+                                                6 => 'Sáb',
+                                                7 => 'Dom'
+                                            ];
+                                            
+                                            $selectedDays = [];
+                                            $daysData = $scheduleType->days_of_week;
+                                            
+                                            // Debug temporal - remover después
+                                            // dd($daysData, gettype($daysData), is_array($daysData));
+                                            
+                                            if($daysData) {
+                                                // Si es string JSON, decodificar
+                                                if(is_string($daysData)) {
+                                                    $daysData = json_decode($daysData, true);
+                                                }
+                                                
+                                                // Si ahora es array, procesar
+                                                if(is_array($daysData)) {
+                                                    foreach($daysData as $dayNumber) {
+                                                        $dayNumber = (int) $dayNumber; // Asegurar que es entero
+                                                        if(isset($dayNames[$dayNumber])) {
+                                                            $selectedDays[] = $dayNames[$dayNumber];
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        @endphp
+                                        @if(count($selectedDays) > 0)
+                                            @foreach($selectedDays as $day)
+                                                <span class="badge bg-secondary me-0">{{ $day }}</span>
+                                            @endforeach
+                                        @else
+                                            <span class="text-muted">No especificado</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2" style="min-width: 100px;">
+                                        @if($scheduleType->start_time)
+                                            <span class="text-sm">{{ \Carbon\Carbon::parse($scheduleType->start_time)->format('H:i') }}</span>
+                                        @else
+                                            <span class="text-muted">--:--</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2" style="min-width: 100px;">
+                                        @if($scheduleType->end_time)
+                                            <span class="text-sm">{{ \Carbon\Carbon::parse($scheduleType->end_time)->format('H:i') }}</span>
+                                        @else
+                                            <span class="text-muted">--:--</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2" style="min-width: 80px;">
+                                        @if($scheduleType->max_patients)
+                                            <span class="badge bg-info">{{ $scheduleType->max_patients }}</span>
+                                        @else
+                                            <span class="text-muted">Sin límite</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2" style="min-width: 80px;">
                                         @if($scheduleType->is_active)
                                             <span class="badge bg-success">Activo</span>
                                         @else
                                             <span class="badge bg-secondary">Inactivo</span>
                                         @endif
                                     </td>
-                                    <td class="px-3 py-2" style="width: 35%; min-width: 300px; max-width: 500px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                        <p class="text-sm text-secondary mb-0 d-flex align-items-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">
-                                            {{ Str::limit($scheduleType->description, 60) }}
-                                            <span class="ms-2">
-                                                <i class="fas fa-info-circle text-info" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $scheduleType->description }}"></i>
-                                            </span>
-                                        </p>
-                                    </td>
-                                    <td class="align-middle text-center">
+                                    <td class="align-middle text-center" style="min-width: 140px;">
                                         @if ($status === 'active')
                                             <a href="{{ route('schedule-types.edit', $scheduleType) }}" class="btn btn-info rounded-pill px-3 py-2 me-2">
                                                 <i class="fas fa-edit me-1"></i>Editar

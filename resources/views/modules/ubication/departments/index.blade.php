@@ -38,13 +38,21 @@
                 <div class="card-body pt-3 pb-2">
                     <form action="{{ url('/departamentos') }}" method="GET" class="mb-0">
                         <div class="row align-items-center">
-                            <div class="col-md-4 col-lg-3 mb-2 mb-md-0">
-                                <select name="status" class="form-select form-select-lg border border-info" onchange="this.form.submit()">
+                            <div class="col-md-3 mb-2 mb-md-0">
+                                <select name="status" class="form-select form-select-lg border border-info auto-submit">
                                     <option value="active" {{ $status === 'active' ? 'selected' : '' }}>Activos</option>
                                     <option value="inactive" {{ $status === 'inactive' ? 'selected' : '' }}>Inactivos</option>
                                 </select>
                             </div>
-                            <div class="col-md-6 col-lg-5 mb-2 mb-md-0">
+                            <div class="col-md-3 mb-2 mb-md-0">
+                                <select name="country_id" class="form-select form-select-lg border border-info auto-submit">
+                                    <option value="">Todos los países</option>
+                                    @foreach($countries as $country)
+                                        <option value="{{ $country->id }}" {{ (isset($country_id) && $country_id == $country->id) ? 'selected' : '' }}>{{ $country->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-2 mb-md-0">
                                 <div class="input-group input-group-lg">
                                     <span class="input-group-text bg-info text-white border-info">
                                         <i class="fas fa-search"></i>
@@ -57,7 +65,7 @@
                             </div>
                             @if($search)
                             <div class="col-auto ms-2">
-                                <a href="{{ url('/departamentos?status=' . $status) }}" class="btn btn-outline-secondary">
+                                <a href="{{ url('/departamentos?status=' . $status . ($country_id ? '&country_id=' . $country_id : '')) }}" class="btn btn-outline-secondary">
                                     <i class="fas fa-times me-2"></i>Limpiar búsqueda
                                 </a>
                             </div>
@@ -65,6 +73,29 @@
                         </div>
                     </form>
                 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Filtros dinámicos para elementos auto-submit
+    const autoSubmitElements = document.querySelectorAll('.auto-submit');
+    autoSubmitElements.forEach(element => {
+        element.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+
+    // Permitir buscar con Enter en el campo de búsqueda de texto
+    const searchInput = document.querySelector('input[name="search"]');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.form.submit();
+            }
+        });
+    }
+});
+</script>
 
                 <div class="card-body px-0 pt-0 pb-2">
                     <div class="table-responsive p-0">
@@ -80,63 +111,63 @@
                             </thead>
                             <tbody>
                                 @forelse($departments as $department)
-                                <tr>
-                                    <td>
-                                        <div class="d-flex px-3 py-2">
-                                            <div class="avatar avatar-sm me-3 bg-info rounded-circle">
-                                                <span class="text-white font-weight-bold">{{ substr($department->name, 0, 1) }}</span>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex px-3 py-2">
+                                                <div class="avatar avatar-sm me-3 bg-info rounded-circle">
+                                                    <span class="text-white font-weight-bold">{{ substr($department->name, 0, 1) }}</span>
+                                                </div>
+                                                <div class="d-flex flex-column justify-content-center">
+                                                    <h6 class="mb-0 text-sm">{{ $department->name }}</h6>
+                                                </div>
                                             </div>
-                                            <div class="d-flex flex-column justify-content-center">
-                                                <h6 class="mb-0 text-sm">{{ $department->name }}</h6>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-3 py-2">
+                                        </td>
+                                        <td class="px-3 py-2">
                                         <span class="text-sm text-secondary">{{ $department->country->name ?? 'Sin país' }}</span>
-                                    </td>
-                                    <td class="px-3 py-2">
-                                        @if($department->is_active)
-                                            <span class="badge bg-success">Activo</span>
-                                        @else
-                                            <span class="badge bg-secondary">Inactivo</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-3 py-2" style="width: 35%; min-width: 300px; max-width: 500px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                        <p class="text-sm text-secondary mb-0 d-flex align-items-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">
-                                            {{ Str::limit($department->description, 60) }}
-                                            <span class="ms-2">
-                                                <i class="fas fa-info-circle text-info" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $department->description }}"></i>
-                                            </span>
-                                        </p>
-                                    </td>
-                                    <td class="align-middle text-center">
-                                        @if ($status === 'active')
-                                            <a href="{{ url('/departamentos/' . $department->id . '/edit') }}" class="btn btn-info rounded-pill px-3 py-2 me-2">
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            @if($department->is_active)
+                                                <span class="badge bg-success">Activo</span>
+                                            @else
+                                                <span class="badge bg-secondary">Inactivo</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-3 py-2" style="width: 35%; min-width: 300px; max-width: 500px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                            <p class="text-sm text-secondary mb-0 d-flex align-items-center" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">
+                                                {{ Str::limit($department->description, 60) }}
+                                                <span class="ms-2">
+                                                    <i class="fas fa-info-circle text-info" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $department->description }}"></i>
+                                                </span>
+                                            </p>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            @if ($status === 'active')
+                                                <a href="{{ url('/departamentos/' . $department->id . '/edit') }}" class="btn btn-info rounded-pill px-3 py-2 me-2">
                                                 <i class="fas fa-edit me-1"></i>Editar
-                                            </a>
-                                            <form action="{{ url('/departamentos/' . $department->id) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger rounded-pill px-3 py-2">
+                                                </a>
+                                                <form action="{{ url('/departamentos/' . $department->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger rounded-pill px-3 py-2">
                                                     <i class="fas fa-trash me-1"></i>Eliminar
-                                                </button>
-                                            </form>
-                                        @else
+                                                    </button>
+                                                </form>
+                                            @else
                                             <form action="{{ url('/departamentos/' . $department->id . '/reactivate') }}" method="POST" class="d-inline">
-                                                @csrf
-                                                <button type="submit" class="btn btn-success rounded-pill px-3 py-2">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-success rounded-pill px-3 py-2">
                                                     <i class="fas fa-power-off me-1"></i>Reactivar
-                                                </button>
-                                            </form>
-                                        @endif
-                                    </td>
-                                </tr>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </td>
+                                    </tr>
                                 @empty
-                                <tr>
-                                    <td colspan="5" class="text-center py-4">
-                                        <span class="text-muted">No hay departamentos registrados.</span>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">
+                                            <span class="text-muted">No hay departamentos registrados.</span>
+                                        </td>
+                                    </tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -144,10 +175,10 @@
                     <div class="d-flex justify-content-center mt-4">
                         {{ $departments->links() }}
                     </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
+    
 @endsection

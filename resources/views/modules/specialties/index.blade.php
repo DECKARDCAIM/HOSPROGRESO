@@ -4,7 +4,7 @@
 @section('breadcrumb', 'Especialidades')
 
 @section('content')
-
+   
 <style>
 /* Estilos adicionales para mejorar la experiencia en móviles */
 @media (max-width: 1199px) {

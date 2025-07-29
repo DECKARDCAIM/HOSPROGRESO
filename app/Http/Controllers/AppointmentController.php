@@ -174,6 +174,18 @@ class AppointmentController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
+        // Validación adicional: verificar que el doctor pertenezca a la especialidad
+        $doctor = Doctor::find($request->doctor_id);
+        if ($doctor->specialty_id != $request->specialty_id) {
+            return back()->withErrors(['doctor_id' => 'El doctor seleccionado no pertenece a la especialidad elegida.'])
+                        ->withInput()
+                        ->with('toast', [
+                            'type' => 'error',
+                            'title' => 'Error de Validación',
+                            'message' => 'El doctor seleccionado no pertenece a la especialidad elegida.'
+                        ]);
+        }
+
         try {
             DB::beginTransaction();
             
@@ -181,7 +193,13 @@ class AppointmentController extends Controller
             $slot = Appointment::getNextAvailableSlot($request->doctor_id);
             
             if (!$slot) {
-                return back()->withErrors(['appointment_date' => 'No hay cupos disponibles para este doctor en los próximos 90 días.'])->withInput();
+                return back()->withErrors(['appointment_date' => 'No hay cupos disponibles para este doctor en los próximos 90 días.'])
+                            ->withInput()
+                            ->with('toast', [
+                                'type' => 'error',
+                                'title' => 'Sin Cupos Disponibles',
+                                'message' => 'No hay cupos disponibles para este doctor en los próximos 90 días.'
+                            ]);
             }
             
             // NUEVA VALIDACIÓN: Verificar que la fecha del slot no sea en el pasado
@@ -189,7 +207,13 @@ class AppointmentController extends Controller
             $now = now();
             
             if ($slotDateTime->lessThanOrEqualTo($now)) {
-                return back()->withErrors(['appointment_date' => 'No se pueden agendar citas en horarios que ya pasaron. El sistema encontró un error de programación.'])->withInput();
+                return back()->withErrors(['appointment_date' => 'No se pueden agendar citas en horarios que ya pasaron.'])
+                            ->withInput()
+                            ->with('toast', [
+                                'type' => 'error',
+                                'title' => 'Error de Programación',
+                                'message' => 'No se pueden agendar citas en horarios que ya pasaron.'
+                            ]);
             }
             
             // Verificar que si es el día de hoy, la hora no haya pasado (validación adicional)
@@ -198,7 +222,13 @@ class AppointmentController extends Controller
                 if ($doctorSchedule) {
                     $scheduleTime = $slotDateTime->copy()->setTimeFromTimeString($doctorSchedule->start_time);
                     if ($now->greaterThan($scheduleTime->addMinutes(30))) {
-                        return back()->withErrors(['appointment_date' => 'La hora de atención del doctor ya pasó. No se puede agendar para hoy.'])->withInput();
+                        return back()->withErrors(['appointment_date' => 'La hora de atención del doctor ya pasó.'])
+                                    ->withInput()
+                                    ->with('toast', [
+                                        'type' => 'error',
+                                        'title' => 'Horario No Disponible',
+                                        'message' => 'La hora de atención del doctor ya pasó. No se puede agendar para hoy.'
+                                    ]);
                     }
                 }
             }
@@ -232,12 +262,18 @@ class AppointmentController extends Controller
                            ->with('success', $message)
                            ->with('toast', [
                                'type' => 'success',
-                               'title' => 'Cita Creada',
+                               'title' => 'Cita Creada Exitosamente',
                                'message' => $message
                            ]);
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->withErrors(['general' => 'Error al crear la cita: ' . $e->getMessage()])->withInput();
+            return back()->withErrors(['general' => 'Error al crear la cita: ' . $e->getMessage()])
+                        ->withInput()
+                        ->with('toast', [
+                            'type' => 'error',
+                            'title' => 'Error del Sistema',
+                            'message' => 'Error al crear la cita: ' . $e->getMessage()
+                        ]);
         }
     }
 

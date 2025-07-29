@@ -113,7 +113,7 @@
     <script src="{{ asset('js/menu-manager.js') }}"></script>
     <script src="{{ asset('js/global-search.js') }}"></script>
     <script src="{{ asset('js/common-filters.js') }}"></script>
-    <script src="{{ asset('js/appointment-form.js') }}"></script>
+    {{-- <script src="{{ asset('js/appointment-form.js') }}"></script> --}}
     <script src="{{ asset('js/mobile-sidenav.js') }}"></script>
     <script src="{{ asset('js/responsive-datatables.js') }}"></script>
     <script src="{{ asset('js/datatables-init.js') }}"></script>
@@ -126,7 +126,6 @@
 
     @if (session('toast'))
         <script>
-            // Pasar datos del toast de Laravel a JavaScript
             window.laravelToastData = @json(session('toast'));
         </script>
     @endif

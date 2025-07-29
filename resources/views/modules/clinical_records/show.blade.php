@@ -25,7 +25,7 @@
                 </div>
                 <div class="card-body">
                     <!-- Pestañas -->
-                    <ul class="nav nav-tabs" id="recordTabs" role="tablist">
+                    <ul class="nav nav-tabs mb-3" id="recordTabs" role="tablist">
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="histories-tab" data-bs-toggle="tab" data-bs-target="#histories" type="button" role="tab" aria-controls="histories" aria-selected="true">
                                 <i class="fas fa-notes-medical me-2"></i>Historias Clínicas
@@ -47,35 +47,35 @@
                                 </a>
                             </div>
                             <div class="table-responsive p-0">
-                                <table class="table align-items-center mb-0">
+                                <table class="table align-items-center mb-0 dataTable-table" id="histories-table" data-datatable="true" style="overflow-x: auto; min-width: 1000px;">
                                     <thead>
                                         <tr>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Fecha</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Médico</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Especialidad</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Motivo</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Tipo de Atención</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Estado</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Estado Final</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3 text-center">Acciones</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 120px;">Fecha</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 180px;">Médico</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 150px;">Especialidad</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 200px;">Motivo</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 140px;">Tipo de Atención</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 100px;">Estado</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 120px;">Estado Final</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3 text-center" style="min-width: 200px;">Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @forelse($clinicalRecord->medicalConsultations->sortByDesc('consultation_date') as $history)
                                         <tr>
-                                            <td class="px-3 py-2">
+                                            <td class="px-3 py-2" style="min-width: 120px;">
                                                 <span class="text-sm text-secondary mb-0">{{ $history->consultation_date->format('d/m/Y H:i') }}</span>
                                             </td>
-                                            <td class="px-3 py-2">
+                                            <td class="px-3 py-2" style="min-width: 180px;">
                                                 <span class="text-sm text-secondary mb-0">{{ $history->doctor->full_name ?? '-' }}</span>
                                             </td>
-                                            <td class="px-3 py-2">
+                                            <td class="px-3 py-2" style="min-width: 150px;">
                                                 <span class="text-sm text-secondary mb-0">{{ $history->specialty->name ?? '-' }}</span>
                                             </td>
-                                            <td class="px-3 py-2">
+                                            <td class="px-3 py-2" style="min-width: 200px;">
                                                 <span class="text-sm text-secondary mb-0">{{ $history->consultation_reason }}</span>
                                             </td>
-                                            <td class="px-3 py-2">
+                                            <td class="px-3 py-2" style="min-width: 140px;">
                                                 @php
                                                     $attentionType = strtolower($history->attention_type ?? '');
                                                     $badgeClass = match($attentionType) {
@@ -86,7 +86,7 @@
                                                 @endphp
                                                 <span class="badge {{ $badgeClass }}">{{ $history->getAttentionTypeLabel() }}</span>
                                             </td>
-                                            <td class="px-3 py-2">
+                                            <td class="px-3 py-2" style="min-width: 100px;">
                                                 @php
                                                     $status = strtolower($history->status ?? '');
                                                     $badgeClass = match($status) {
@@ -99,7 +99,7 @@
                                                 @endphp
                                                 <span class="badge {{ $badgeClass }}">{{ ucfirst($history->status ?? '-') }}</span>
                                             </td>
-                                            <td class="px-3 py-2">
+                                            <td class="px-3 py-2" style="min-width: 120px;">
                                                 @if($history->final_status)
                                                     @php
                                                         $finalStatus = strtolower($history->final_status ?? '');
@@ -114,7 +114,7 @@
                                                     <span class="text-muted">-</span>
                                                 @endif
                                             </td>
-                                            <td class="align-middle text-center">
+                                            <td class="align-middle text-center" style="min-width: 200px;">
                                                 <a href="{{ route('medical-consultations.show', $history->id) }}" class="btn btn-info btn-sm rounded-pill px-3 py-2 me-2">
                                                     <i class="fas fa-eye me-1"></i> Ver Detalle
                                                 </a>
@@ -143,34 +143,34 @@
                                 </a>
                             </div>
                             <div class="table-responsive p-0">
-                                <table class="table align-items-center mb-0">
+                                <table class="table align-items-center mb-0 dataTable-table" id="appointments-table" data-datatable="true" style="overflow-x: auto; min-width: 1000px;">
                                     <thead>
                                         <tr>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">N° Cita</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Fecha</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Médico</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Especialidad</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Tipo</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Estado</th>
-                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3 text-center">Acciones</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 120px;">N° Cita</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 180px;">Fecha</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 150px;">Médico</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 150px;">Especialidad</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 140px;">Tipo</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="min-width: 100px;">Estado</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3 text-center" style="min-width: 160px;">Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @forelse($clinicalRecord->appointments->sortByDesc('appointment_date') as $appointment)
                                         <tr>
-                                            <td class="px-3 py-2">
+                                            <td class="px-3 py-2" style="min-width: 120px;">
                                                 <span class="text-sm font-weight-bold">{{ $appointment->appointment_number }}</span>
                                             </td>
-                                            <td class="px-3 py-2">
+                                            <td class="px-3 py-2" style="min-width: 180px;">
                                                 <span class="text-sm text-secondary mb-0">{{ $appointment->appointment_date->format('d/m/Y H:i') }}</span>
                                             </td>
-                                            <td class="px-3 py-2">
+                                            <td class="px-3 py-2" style="min-width: 150px;">
                                                 <span class="text-sm text-secondary mb-0">{{ $appointment->doctor->full_name ?? '-' }}</span>
                                             </td>
-                                            <td class="px-3 py-2">
+                                            <td class="px-3 py-2" style="min-width: 150px;">
                                                 <span class="text-sm text-secondary mb-0">{{ $appointment->specialty->name ?? '-' }}</span>
                                             </td>
-                                            <td class="px-3 py-2">
+                                            <td class="px-3 py-2" style="min-width: 140px;">
                                                 @php
                                                     $attentionType = strtolower($appointment->attention_type ?? '');
                                                     $badgeClass = match($attentionType) {
@@ -182,10 +182,10 @@
                                                 @endphp
                                                 <span class="badge {{ $badgeClass }}">{{ ucwords(str_replace('_', ' ', $appointment->attention_type)) }}</span>
                                             </td>
-                                            <td class="px-3 py-2">
+                                            <td class="px-3 py-2" style="min-width: 100px;">
                                                 <span class="badge {{ $appointment->status_badge }}">{{ $appointment->status_text }}</span>
                                             </td>
-                                                                                         <td class="align-middle text-center">
+                                            <td class="align-middle text-center" style="min-width: 160px;">
                                                 <a href="{{ route('appointments.show', $appointment->id) }}" class="btn btn-info btn-sm rounded-pill px-3 py-2">
                                                     <i class="fas fa-eye me-1"></i> Ver Detalles
                                                 </a>
