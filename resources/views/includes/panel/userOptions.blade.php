@@ -40,7 +40,7 @@
         <!-- Global Search Button - Only on mobile/tablet (1199px and below) -->
         <li class="nav-item d-xl-none">
             <a class="nav-link text-dark" href="javascript:;" id="mobileGlobalSearch" role="button" title="Buscar" onclick="document.getElementById('globalSearchModal').style.display='flex'; setTimeout(() => { document.getElementById('globalSearchModal').classList.add('show'); document.getElementById('globalSearchInput').focus(); }, 10);">
-                <i class="material-symbols-rounded">search</i>
+                <i class="bi bi-search"></i>
             </a>
         </li>
 
@@ -48,14 +48,14 @@
         <li class="nav-item dropdown">
             <a class="nav-link text-dark position-relative notification-trigger" href="javascript:;" id="notificationDropdown" role="button"
                 data-bs-toggle="dropdown" data-bs-strategy="fixed" aria-expanded="false">
-                <i class="material-symbols-rounded notification-bell">notifications</i>
+                <i class="bi bi-bell notification-bell"></i>
                 <span class="notification-badge" id="notification-count" style="display: none;"></span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end professional-dropdown" aria-labelledby="notificationDropdown">
                 <li class="dropdown-header-professional">
                     <div class="header-content">
                         <div class="header-icon">
-                            <i class="material-symbols-rounded">notifications</i>
+                            <i class="bi bi-bell"></i>
                         </div>
                         <div class="header-text">
                             <h6>Notificaciones</h6>
@@ -63,7 +63,7 @@
                         </div>
                     </div>
                     <button class="btn-mini-professional" id="mark-all-read" title="Marcar todas como leídas">
-                        <i class="material-symbols-rounded">done_all</i>
+                        <i class="bi bi-check-all"></i>
                     </button>
                 </li>
                 <li class="dropdown-divider-professional"></li>
@@ -73,7 +73,7 @@
                 <li class="dropdown-divider-professional"></li>
                 <li class="dropdown-footer-professional">
                     <button class="btn-view-all-professional" id="view-all-notifications">
-                        <i class="material-symbols-rounded me-2">open_in_full</i>
+                        <i class="bi bi-arrows-fullscreen me-2"></i>
                         <span>Ver Centro de Notificaciones</span>
                     </button>
                 </li>
@@ -90,13 +90,13 @@
             <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="ProfileDropdown">
                 <li>
                     <a class="dropdown-item d-flex align-items-center" href="{{ route('profile.index') }}">
-                        <i class="material-symbols-rounded me-2">account_circle</i> Mi Perfil
+                        <i class="bi bi-person-circle me-2"></i> Mi Perfil
                     </a>
                 </li>
                 <li>
                     <a class="dropdown-item d-flex align-items-center" href="{{ route('logout') }}"
                         onclick="event.preventDefault(); document.getElementById('formlogout').submit();">
-                        <i class="material-symbols-rounded me-2">logout</i> Cerrar Sesión
+                        <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
                     </a>
                     <form method="POST" action="{{ route('logout') }}" style="display: none;" id="formlogout">
                         @csrf
@@ -115,7 +115,7 @@
             <div class="modal-header professional-header">
                 <div class="d-flex align-items-center">
                     <div class="notification-icon-header">
-                        <i class="material-symbols-rounded">notifications</i>
+                        <i class="bi bi-bell"></i>
                     </div>
                     <div class="ms-3">
                         <h5 class="modal-title mb-0" id="allNotificationsModalLabel">Centro de Notificaciones</h5>
@@ -123,7 +123,7 @@
                     </div>
                 </div>
                 <button type="button" class="btn-close-professional" data-bs-dismiss="modal" aria-label="Close">
-                    <i class="material-symbols-rounded">close</i>
+                    <i class="bi bi-x"></i>
                 </button>
             </div>
             <div class="modal-body professional-body">
@@ -131,12 +131,12 @@
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div class="notification-stats">
                             <div class="stat-item">
-                                <i class="material-symbols-rounded">mark_email_read</i>
+                                <i class="bi bi-envelope-open"></i>
                                 <span>Mostrando las últimas 30 notificaciones</span>
                             </div>
                         </div>
                         <button class="btn btn-professional-primary" id="modal-mark-all-read">
-                            <i class="material-symbols-rounded me-2">done_all</i>
+                            <i class="bi bi-check-all me-2"></i>
                             Marcar todas como leídas
                         </button>
                     </div>
@@ -147,7 +147,7 @@
             </div>
             <div class="modal-footer professional-footer">
                 <button type="button" class="btn btn-professional-secondary" data-bs-dismiss="modal">
-                    <i class="material-symbols-rounded me-2">close</i>
+                    <i class="bi bi-x me-2"></i>
                     Cerrar
                 </button>
             </div>
@@ -598,7 +598,7 @@
 /* TRIGGER DE NOTIFICACIONES */
 .notification-trigger {
     transition: all 0.3s ease !important;
-    padding: 8px 12px !important;
+    padding: 6px 10px !important;
     border-radius: 8px !important;
     position: relative !important;
 }
@@ -610,7 +610,7 @@
 }
 
 .notification-bell {
-    font-size: 24px !important;
+    font-size: 20px !important;
     transition: all 0.3s ease !important;
 }
 
@@ -1398,7 +1398,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         notificationsList.innerHTML = `
                             <div class="no-notifications-preview">
                                 <div class="no-notifications-icon-small">
-                                    <i class="material-symbols-rounded">notifications_off</i>
+                                    <i class="bi bi-bell-slash"></i>
                                 </div>
                                 <p>No hay notificaciones nuevas</p>
                             </div>
@@ -1408,7 +1408,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="notification-preview-item ${notification.read_at ? 'read' : 'unread'} ${notification.type}">
                                 <div class="notification-preview-content">
                                     <div class="notification-preview-icon">
-                                        <i class="material-symbols-rounded">${getNotificationIcon(notification.type)}</i>
+                                        <i class="bi ${getNotificationIcon(notification.type)}"></i>
                                     </div>
                                     <div class="notification-preview-details">
                                         <div class="notification-preview-header">
@@ -1423,11 +1423,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                             <button class="btn-mini-action mark-read-btn" 
                                                     data-notification-id="${notification.id}"
                                                     title="Marcar como leída">
-                                                <i class="material-symbols-rounded">check</i>
+                                                <i class="bi bi-check"></i>
                                             </button>
                                         ` : `
                                             <div class="mini-read-status">
-                                                <i class="material-symbols-rounded">done</i>
+                                                <i class="bi bi-check-circle"></i>
                                             </div>
                                         `}
                                     </div>
@@ -1452,7 +1452,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         allNotificationsList.innerHTML = `
                             <div class="no-notifications-state">
                                 <div class="no-notifications-icon">
-                                    <i class="material-symbols-rounded">notifications_off</i>
+                                    <i class="bi bi-bell-slash"></i>
                                 </div>
                                 <h6>No tienes notificaciones</h6>
                                 <p class="text-muted">Cuando recibas notificaciones, aparecerán aquí</p>
@@ -1463,7 +1463,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="professional-notification-card ${notification.read_at ? 'read' : 'unread'} ${notification.type}">
                                 <div class="notification-card-content">
                                     <div class="notification-icon-type">
-                                        <i class="material-symbols-rounded">${getNotificationIcon(notification.type)}</i>
+                                        <i class="bi ${getNotificationIcon(notification.type)}"></i>
                                     </div>
                                     <div class="notification-details">
                                         <div class="notification-header">
@@ -1478,11 +1478,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                             <button class="btn-professional-action mark-read-btn" 
                                                     data-notification-id="${notification.id}"
                                                     title="Marcar como leída">
-                                                <i class="material-symbols-rounded">check</i>
+                                                <i class="bi bi-check"></i>
                                             </button>
                                         ` : `
                                             <div class="read-status">
-                                                <i class="material-symbols-rounded">done</i>
+                                                <i class="bi bi-check-circle"></i>
                                             </div>
                                         `}
                                     </div>
@@ -1613,10 +1613,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para obtener icono según tipo de notificación
     function getNotificationIcon(type) {
         switch (type) {
-            case 'success': return 'check_circle';
-            case 'error': return 'error';
-            case 'warning': return 'warning';
-            default: return 'info';
+            case 'success': return 'bi-check-circle';
+            case 'error': return 'bi-exclamation-triangle';
+            case 'warning': return 'bi-exclamation-triangle';
+            default: return 'bi-info-circle';
         }
     }
     

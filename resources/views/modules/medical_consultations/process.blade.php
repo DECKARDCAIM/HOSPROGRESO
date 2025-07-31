@@ -503,15 +503,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const toastContainer = document.querySelector('.toast-container');
             if (toastContainer) {
                 const icons = {
-                    success: 'check_circle',
-                    error: 'error',
-                    info: 'info',
-                    warning: 'warning'
+                    success: 'bi-check-circle-fill',
+                    error: 'bi-exclamation-triangle-fill',
+                    info: 'bi-info-circle-fill',
+                    warning: 'bi-exclamation-triangle-fill'
                 };
                 const toastHTML = `
                     <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
                         <div class="toast-header bg-${type} text-white">
-                            <i class="material-symbols-rounded me-2">${icons[type] ?? 'info'}</i>
+                            <i class="bi ${icons[type] ?? 'bi-info-circle'} me-2"></i>
                             <strong class="me-auto">${title}</strong>
                             <small>Ahora</small>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>

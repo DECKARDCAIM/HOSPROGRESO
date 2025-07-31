@@ -57,7 +57,7 @@
                         </div>
                         <div class="col-4 text-end">
                             <div class="icon icon-shape bg-primary shadow text-center border-radius-md">
-                                <i class="fas fa-calendar-alt text-lg opacity-10"></i>
+                                <i class="bi bi-calendar-date text-lg opacity-10"></i>
                             </div>
                         </div>
                     </div>
@@ -76,7 +76,7 @@
                         </div>
                         <div class="col-4 text-end">
                             <div class="icon icon-shape bg-warning shadow text-center border-radius-md">
-                                <i class="fas fa-clock text-lg opacity-10"></i>
+                                <i class="bi bi-clock text-lg opacity-10"></i>
                             </div>
                         </div>
                     </div>
@@ -95,7 +95,7 @@
                         </div>
                         <div class="col-4 text-end">
                             <div class="icon icon-shape bg-info shadow text-center border-radius-md">
-                                <i class="fas fa-check-circle text-lg opacity-10"></i>
+                                <i class="bi bi-check-circle text-lg opacity-10"></i>
                             </div>
                         </div>
                     </div>
@@ -114,7 +114,7 @@
                         </div>
                         <div class="col-4 text-end">
                             <div class="icon icon-shape bg-success shadow text-center border-radius-md">
-                                <i class="fas fa-user-check text-lg opacity-10"></i>
+                                <i class="bi bi-person-check text-lg opacity-10"></i>
                             </div>
                         </div>
                     </div>
@@ -133,7 +133,7 @@
                         </div>
                         <div class="col-4 text-end">
                             <div class="icon icon-shape bg-secondary shadow text-center border-radius-md">
-                                <i class="fas fa-user-slash text-lg opacity-10"></i>
+                                <i class="bi bi-person-x text-lg opacity-10"></i>
                             </div>
                         </div>
                     </div>
@@ -152,7 +152,7 @@
                         </div>
                         <div class="col-4 text-end">
                             <div class="icon icon-shape bg-danger shadow text-center border-radius-md">
-                                <i class="fas fa-times-circle text-lg opacity-10"></i>
+                                <i class="bi bi-x-circle text-lg opacity-10"></i>
                             </div>
                         </div>
                     </div>
@@ -174,7 +174,7 @@
                         </div>
                         <div class="col-md-4 text-end">
                             <a href="{{ route('appointments.create') }}" class="btn btn-sm btn-white">
-                                <i class="fas fa-plus me-2"></i>Nueva Cita
+                                <i class="bi bi-plus me-2"></i>Nueva Cita
                             </a>
                         </div>
                         </div>
@@ -224,14 +224,14 @@
                         <div class="row g-2 align-items-end mt-2">
                             <div class="col-md-12 d-flex align-items-end gap-2">
                                 <button type="submit" class="btn bg-gradient-info text-white btn-lg">
-                                    <i class="fas fa-filter me-2"></i>Filtrar
+                                    <i class="bi bi-funnel me-2"></i>Filtrar
                                 </button>
                                 @php
                                     $hasFilters = !empty(request('q')) || !empty(request('status')) || !empty(request('date')) || !empty(request('specialty_id')) || !empty(request('doctor_id'));
                                 @endphp
                                 @if($hasFilters)
                                     <a href="{{ route('appointments.index') }}" class="btn btn-outline-secondary btn-lg">
-                                        <i class="fas fa-times me-2"></i>Limpiar filtros
+                                        <i class="bi bi-x me-2"></i>Limpiar filtros
                                     </a>
                                 @endif
                             </div>
@@ -310,10 +310,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                         </td>
                                         <td class="align-middle text-center">
                                             <a href="{{ route('appointments.show', $appointment) }}" class="btn btn-primary rounded-pill px-3 py-2 me-2">
-                                            <i class="fas fa-eye me-1"></i>Ver
+                                            <i class="bi bi-search me-1"></i>Ver
                                             </a>
                                             <a href="{{ route('appointments.print', $appointment) }}" class="btn btn-secondary rounded-pill px-3 py-2" target="_blank">
-                                            <i class="fas fa-print me-1"></i>Imprimir
+                                            <i class="bi bi-file-earmark-text me-1"></i>Imprimir
                                             </a>
                                         </td>
                                     </tr>

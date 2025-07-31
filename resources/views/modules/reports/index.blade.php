@@ -27,7 +27,7 @@
                         </div>
                         <div class="col-4 text-end">
                             <div class="icon icon-shape bg-gradient-dark shadow text-center border-radius-md">
-                                <i class="fas fa-users text-lg opacity-10"></i>
+                                <i class="bi bi-people text-lg opacity-10"></i>
                             </div>
                         </div>
                     </div>
@@ -46,7 +46,7 @@
                         </div>
                         <div class="col-4 text-end">
                             <div class="icon icon-shape bg-gradient-danger shadow text-center border-radius-md">
-                                <i class="fas fa-ambulance text-lg opacity-10"></i>
+                                <i class="bi bi-heart-pulse text-lg opacity-10"></i>
                             </div>
                         </div>
                     </div>
@@ -65,7 +65,7 @@
                         </div>
                         <div class="col-4 text-end">
                             <div class="icon icon-shape bg-gradient-success shadow text-center border-radius-md">
-                                <i class="fas fa-stethoscope text-lg opacity-10"></i>
+                                <i class="bi bi-heart-pulse text-lg opacity-10"></i>
                             </div>
                         </div>
                     </div>
@@ -84,7 +84,7 @@
                         </div>
                         <div class="col-4 text-end">
                             <div class="icon icon-shape bg-gradient-info shadow text-center border-radius-md">
-                                <i class="fas fa-user-plus text-lg opacity-10"></i>
+                                <i class="bi bi-person-plus text-lg opacity-10"></i>
                             </div>
                         </div>
                     </div>
@@ -111,7 +111,7 @@
                     <div class="px-3 pt-4 pb-3">
                         <div class="card border border-info">
                             <div class="card-header bg-light">
-                                <h6 class="mb-0 text-info">🔍 Filtros para Reporte SIGSA 3H</h6>
+                                <h6 class="mb-0 text-info"><i class="bi bi-search me-2"></i>Filtros para Reporte SIGSA 3H</h6>
                             </div>
                             <div class="card-body">
                                 <form method="POST" action="{{ route('reports.generate-sigsa') }}" id="reportForm">
@@ -121,7 +121,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group mb-3">
                                                 <label class="form-control-label mb-2">
-                                                    <i class="fas fa-calendar text-info me-2"></i>Fecha Inicio
+                                                    <i class="bi bi-calendar text-info me-2"></i>Fecha Inicio
                                                 </label>
                                                 <input type="date" name="start_date" class="form-control border border-info" required 
                                                        value="{{ old('start_date', now()->startOfMonth()->format('Y-m-d')) }}">
@@ -130,7 +130,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group mb-3">
                                                 <label class="form-control-label mb-2">
-                                                    <i class="fas fa-calendar text-info me-2"></i>Fecha Fin
+                                                    <i class="bi bi-calendar text-info me-2"></i>Fecha Fin
                                                 </label>
                                                 <input type="date" name="end_date" class="form-control border border-info" required
                                                        value="{{ old('end_date', now()->format('Y-m-d')) }}">
@@ -271,7 +271,7 @@ function showValidationToast(message, type = 'warning') {
         <div class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true" id="${toastId}">
             <div class="d-flex">
                 <div class="toast-body">
-                    <strong><i class="fas fa-exclamation-triangle me-2"></i>Validación</strong><br>
+                    <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Validación</strong><br>
                     ${message}
                 </div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>

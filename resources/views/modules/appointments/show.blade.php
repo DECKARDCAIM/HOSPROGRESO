@@ -100,7 +100,7 @@
                         <div class="col-lg-4">
                             <div class="card">
                                 <div class="card-header">
-                                    <h6><i class="fas fa-cogs me-2"></i>Acciones Disponibles</h6>
+                                    <h6><i class="bi bi-gear me-2"></i>Acciones Disponibles</h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="d-grid gap-2">
@@ -108,50 +108,50 @@
                                             {{-- Citas pendientes o confirmadas - Acciones normales --}}
                                             @if($appointment->status === 'pendiente')
                                                 <button class="btn btn-info" onclick="updateStatus('{{ $appointment->id }}', 'confirmada')">
-                                                    <i class="fas fa-check me-2"></i>Confirmar Cita
+                                                    <i class="bi bi-check me-2"></i>Confirmar Cita
                                                 </button>
                                             @endif
                                             
                                             <button class="btn btn-success" onclick="updateStatus('{{ $appointment->id }}', 'atendida')">
-                                                <i class="fas fa-user-check me-2"></i>Marcar como Atendida
+                                                <i class="bi bi-person-check me-2"></i>Marcar como Atendida
                                             </button>
                                             
                                             <button class="btn btn-secondary" onclick="updateStatus('{{ $appointment->id }}', 'perdida')">
-                                                <i class="fas fa-user-slash me-2"></i>Marcar como Perdida
+                                                <i class="bi bi-person-x me-2"></i>Marcar como Perdida
                                             </button>
                                             
                                             <a href="{{ route('appointments.create', ['clinical_record_id' => $appointment->clinical_record_id]) }}" class="btn btn-warning">
-                                                <i class="fas fa-calendar-alt me-2"></i>Reagendar Cita
+                                                <i class="bi bi-calendar-date me-2"></i>Reagendar Cita
                                             </a>
                                             
                                             <button class="btn btn-danger" onclick="updateStatus('{{ $appointment->id }}', 'cancelada')">
-                                                <i class="fas fa-times me-2"></i>Cancelar Cita
+                                                <i class="bi bi-x me-2"></i>Cancelar Cita
                                             </button>
 
                                         @elseif($appointment->status === 'perdida')
                                             {{-- Cita perdida - Solo reagendar --}}
                                             <div class="alert alert-warning">
-                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
                                                 <strong>Cita Perdida:</strong> El paciente no se presentó a la cita.
                                             </div>
                                             <a href="{{ route('appointments.create', ['clinical_record_id' => $appointment->clinical_record_id]) }}" class="btn btn-warning btn-lg">
-                                                <i class="fas fa-calendar-alt me-2"></i>Reagendar Cita
+                                                <i class="bi bi-calendar-date me-2"></i>Reagendar Cita
                                             </a>
 
                                         @elseif($appointment->status === 'atendida')
                                             {{-- Cita atendida - Agendar nueva --}}
                                             <div class="alert alert-success">
-                                                <i class="fas fa-check-circle me-2"></i>
+                                                <i class="bi bi-check-circle-fill me-2"></i>
                                                 <strong>Cita Atendida:</strong> El paciente fue atendido exitosamente.
                                             </div>
                                             <a href="{{ route('appointments.create', ['clinical_record_id' => $appointment->clinical_record_id]) }}" class="btn btn-success btn-lg">
-                                                <i class="fas fa-plus-circle me-2"></i>Agendar Nueva Cita
+                                                <i class="bi bi-plus-circle me-2"></i>Agendar Nueva Cita
                                             </a>
 
                                         @elseif($appointment->status === 'cancelada')
                                             {{-- Cita cancelada - Agendar nueva --}}
                                             <div class="alert alert-danger">
-                                                <i class="fas fa-times-circle me-2"></i>
+                                                <i class="bi bi-x-circle-fill me-2"></i>
                                                 <strong>Cita Cancelada:</strong> 
                                                 @if($appointment->cancelled_reason)
                                                     {{ $appointment->cancelled_reason }}
@@ -160,7 +160,7 @@
                                                 @endif
                                             </div>
                                             <a href="{{ route('appointments.create', ['clinical_record_id' => $appointment->clinical_record_id]) }}" class="btn btn-info btn-lg">
-                                                <i class="fas fa-plus-circle me-2"></i>Agendar Nueva Cita
+                                                <i class="bi bi-plus-circle me-2"></i>Agendar Nueva Cita
                                             </a>
                                         @endif
                                     </div>
@@ -169,13 +169,13 @@
                                     
                                     <div class="d-grid gap-2">
                                         <a href="{{ route('appointments.print', $appointment) }}" class="btn btn-outline-primary" target="_blank">
-                                            <i class="fas fa-print me-2"></i>Imprimir PDF
+                                            <i class="bi bi-printer me-2"></i>Imprimir PDF
                                         </a>
                                         
                                         @if($appointment->status !== 'atendida')
                                             {{-- Mostrar botón para ver expediente completo si no está atendida --}}
                                             <a href="{{ route('clinical-records.show', $appointment->clinicalRecord) }}" class="btn btn-outline-info">
-                                                <i class="fas fa-folder-medical me-2"></i>Ver Expediente Completo
+                                                <i class="bi bi-folder2-open me-2"></i>Ver Expediente Completo
                                             </a>
                                         @endif
                                     </div>

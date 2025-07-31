@@ -15,10 +15,10 @@
                         </div>
                         <div class="col-md-4 text-end">
                             <a href="{{ route('usuarios.edit', $user->id) }}" class="btn btn-sm btn-white me-2">
-                                <i class="fas fa-edit me-2"></i>Editar
+                                <i class="bi bi-pencil me-2"></i>Editar
                             </a>
                             <a href="{{ route('usuarios.index') }}" class="btn btn-sm btn-white">
-                                <i class="fas fa-chevron-left me-2"></i>Regresar
+                                <i class="bi bi-chevron-left me-2"></i>Regresar
                             </a>
                         </div>
                     </div>
@@ -42,16 +42,16 @@
                                 @if($user->is_active)
                                     @if($user->canAccess())
                                         <span class="badge bg-success p-2">
-                                            <i class="fas fa-check-circle me-1"></i>Usuario Activo
+                                            <i class="bi bi-check-circle me-1"></i>Usuario Activo
                                         </span>
                                     @else
                                         <span class="badge bg-warning p-2">
-                                            <i class="fas fa-exclamation-triangle me-1"></i>Activo (Sin acceso)
+                                            <i class="bi bi-exclamation-triangle me-1"></i>Activo (Sin acceso)
                                         </span>
                                     @endif
                                 @else
                                     <span class="badge bg-secondary p-2">
-                                        <i class="fas fa-times-circle me-1"></i>Usuario Inactivo
+                                        <i class="bi bi-x-circle me-1"></i>Usuario Inactivo
                                     </span>
                                 @endif
                             </div>
@@ -63,7 +63,7 @@
                                 <!-- Información Personal -->
                                 <div class="col-12 mb-4">
                                     <h6 class="text-info border-bottom pb-2 mb-3">
-                                        <i class="fas fa-user me-2"></i>Información Personal
+                                        <i class="bi bi-person me-2"></i>Información Personal
                                     </h6>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
@@ -89,9 +89,9 @@
                                             <label class="text-sm font-weight-bold text-secondary">Género:</label>
                                             <p class="text-sm mb-0">
                                                 @if($user->gender === 'M')
-                                                    <i class="fas fa-mars text-primary me-1"></i>Masculino
+                                                    <i class="bi bi-gender-male text-primary me-1"></i>Masculino
                                                 @elseif($user->gender === 'F')
-                                                    <i class="fas fa-venus text-pink me-1"></i>Femenino
+                                                    <i class="bi bi-gender-female text-pink me-1"></i>Femenino
                                                 @else
                                                     No especificado
                                                 @endif
@@ -107,13 +107,13 @@
                                 <!-- Información de Contacto -->
                                 <div class="col-12 mb-4">
                                     <h6 class="text-info border-bottom pb-2 mb-3">
-                                        <i class="fas fa-address-book me-2"></i>Información de Contacto
+                                        <i class="bi bi-telephone-book me-2"></i>Información de Contacto
                                     </h6>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
                                             <label class="text-sm font-weight-bold text-secondary">Correo electrónico:</label>
                                             <p class="text-sm mb-0">
-                                                <i class="fas fa-envelope text-info me-1"></i>
+                                                <i class="bi bi-envelope text-info me-1"></i>
                                                 {{ $user->email }}
                                             </p>
                                         </div>
@@ -121,7 +121,7 @@
                                             <label class="text-sm font-weight-bold text-secondary">Teléfono:</label>
                                             <p class="text-sm mb-0">
                                                 @if($user->phone)
-                                                    <i class="fas fa-phone text-info me-1"></i>
+                                                    <i class="bi bi-telephone text-info me-1"></i>
                                                     {{ $user->phone }}
                                                 @else
                                                     No registrado
@@ -134,7 +134,7 @@
                                 <!-- Información del Sistema -->
                                 <div class="col-12 mb-4">
                                     <h6 class="text-info border-bottom pb-2 mb-3">
-                                        <i class="fas fa-cogs me-2"></i>Información del Sistema
+                                        <i class="bi bi-gear me-2"></i>Información del Sistema
                                     </h6>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
@@ -168,14 +168,14 @@
                                         <div class="col-md-6 mb-3">
                                             <label class="text-sm font-weight-bold text-secondary">Fecha de registro:</label>
                                             <p class="text-sm mb-0">
-                                                <i class="fas fa-calendar text-info me-1"></i>
+                                                <i class="bi bi-calendar text-info me-1"></i>
                                                 {{ $user->created_at->format('d/m/Y H:i') }}
                                             </p>
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label class="text-sm font-weight-bold text-secondary">Última actualización:</label>
                                             <p class="text-sm mb-0">
-                                                <i class="fas fa-clock text-info me-1"></i>
+                                                <i class="bi bi-clock text-info me-1"></i>
                                                 {{ $user->updated_at->format('d/m/Y H:i') }}
                                             </p>
                                         </div>
@@ -190,12 +190,12 @@
                         <div class="col-12">
                             <div class="card border border-light">
                                 <div class="card-header bg-light">
-                                    <h6 class="mb-0"><i class="fas fa-tools me-2"></i>Acciones Administrativas</h6>
+                                    <h6 class="mb-0"><i class="bi bi-tools me-2"></i>Acciones Administrativas</h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="d-flex flex-wrap gap-2">
                                         <a href="{{ route('usuarios.edit', $user->id) }}" class="btn btn-info">
-                                            <i class="fas fa-edit me-1"></i>Editar información
+                                            <i class="bi bi-pencil me-1"></i>Editar información
                                         </a>
                                         
                                         @if($user->is_active)
@@ -204,7 +204,7 @@
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="btn btn-warning">
-                                                        <i class="fas fa-user-times me-1"></i>Desactivar usuario
+                                                        <i class="bi bi-person-x me-1"></i>Desactivar usuario
                                                     </button>
                                                 </form>
                                             @endif
@@ -212,7 +212,7 @@
                                             <form action="{{ route('usuarios.reactivate', $user->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 <button type="submit" class="btn btn-success">
-                                                    <i class="fas fa-user-check me-1"></i>Reactivar usuario
+                                                    <i class="bi bi-person-check me-1"></i>Reactivar usuario
                                                 </button>
                                             </form>
                                         @endif

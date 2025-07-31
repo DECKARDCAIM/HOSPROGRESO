@@ -35,10 +35,10 @@
                         </div>
                         <div class="col-md-6 text-end">
                             <a href="{{ route('clinical-records.create') }}" class="btn btn-sm btn-white me-2" target="_blank">
-                                <i class="fas fa-plus me-2"></i>Crear Nuevo Paciente
+                                <i class="bi bi-plus me-2"></i>Crear Nuevo Paciente
                             </a>
                             <a href="{{ route('appointments.index') }}" class="btn btn-sm btn-white">
-                                <i class="fas fa-arrow-left me-2"></i>Volver al listado
+                                <i class="bi bi-arrow-left me-2"></i>Volver al listado
                             </a>
                         </div>
                     </div>
@@ -48,7 +48,7 @@
                     <!-- Paso 1: Búsqueda y selección de paciente -->
                     <div class="step-section" id="step1">
                         <h5 class="text-info mb-3">
-                            <i class="fas fa-user-search me-2"></i>Paso 1: Buscar y Seleccionar Paciente
+                            <i class="bi bi-search me-2"></i>Paso 1: Buscar y Seleccionar Paciente
                         </h5>
 
                         <!-- Búsqueda completa de pacientes con filtros avanzados -->
@@ -181,7 +181,7 @@
                                                 data-patient-country="{{ $record->country->name ?? '' }}"
                                                 style="cursor: pointer;">
                                                 <td class="text-center">
-                                                    <input type="radio" name="clinical_record_id" value="{{ $record->id }}" class="form-check-input" 
+                                                    <input type="radio" name="clinical_record_id" value="{{ $record->id }}" 
                                                            {{ $selectedClinicalRecord && $selectedClinicalRecord->id == $record->id ? 'checked' : '' }}>
                                                 </td>
                                                 <td class="align-middle">
