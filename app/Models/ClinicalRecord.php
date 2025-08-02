@@ -12,6 +12,7 @@ class ClinicalRecord extends Model
 
     protected $fillable = [
         'record_number',
+        'old_registration_number',
         'first_name',
         'second_name',
         'third_name',
@@ -131,5 +132,11 @@ class ClinicalRecord extends Model
     public function getTotalConsultationsAttribute()
     {
         return $this->medicalConsultations()->count();
+    }
+
+    // Relación con seguimiento de archivo clínico
+    public function clinicalFileTracking()
+    {
+        return $this->hasOne(ClinicalFileTracking::class);
     }
 } 

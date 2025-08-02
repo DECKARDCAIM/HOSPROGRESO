@@ -29,6 +29,8 @@ use App\Http\Controllers\ScheduleTypeController;
 use App\Http\Controllers\SexController;
 use App\Http\Controllers\SpecialtyController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ImportController;
+use App\Http\Controllers\ClinicalFileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -256,6 +258,37 @@ Route::middleware('auth')->group(function () {
     
     Route::put('usuarios/{user}/reset-password', [UserController::class, 'resetPassword'])
         ->name('usuarios.reset-password');
+    
+    /*
+    |--------------------------------------------------------------------------
+    | RUTAS DE IMPORTACIÓN DE DATOS
+    |--------------------------------------------------------------------------
+    */
+    
+    // Módulo de importación y backup
+    Route::prefix('import')->name('import.')->group(function () {
+        Route::get('/', [ImportController::class, 'index'])->name('index');
+        Route::post('/process', [ImportController::class, 'import'])->name('process');
+        
+        // Ruta de backup
+        Route::get('/backup/full', [ImportController::class, 'generateFullBackup'])->name('backup.full');
+    });
+    
+    /*
+    |--------------------------------------------------------------------------
+    | RUTAS DE ARCHIVO CLÍNICO
+    |--------------------------------------------------------------------------
+    */
+    
+    // Módulo de archivo clínico
+    Route::prefix('clinical-file')->name('clinical-file.')->group(function () {
+        Route::get('/', [ClinicalFileController::class, 'index'])->name('index');
+        Route::get('/archived', [ClinicalFileController::class, 'archived'])->name('archived');
+        Route::get('/{id}', [ClinicalFileController::class, 'show'])->name('show');
+        Route::post('/{id}/mark-printed', [ClinicalFileController::class, 'markAsPrinted'])->name('mark-printed');
+        Route::post('/{id}/archive', [ClinicalFileController::class, 'markAsArchived'])->name('archive');
+        Route::post('/{id}/reactivate', [ClinicalFileController::class, 'reactivate'])->name('reactivate');
+    });
 });
 
 /*

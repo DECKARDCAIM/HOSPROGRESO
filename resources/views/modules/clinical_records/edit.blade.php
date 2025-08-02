@@ -241,7 +241,9 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="country_id" class="form-control-label">País *</label>
-                                    <select class="form-control @error('country_id') is-invalid @enderror" id="country_id" name="country_id" required>
+                                    <select class="form-control @error('country_id') is-invalid @enderror" id="country_id" name="country_id" required 
+                                            data-old-department="{{ $clinicalRecord->department_id }}" 
+                                            data-old-municipality="{{ $clinicalRecord->municipality_id }}">
                                         <option value="">Seleccionar...</option>
                                         @foreach($countries as $country)
                                             <option value="{{ $country->id }}" {{ old('country_id', $clinicalRecord->country_id) == $country->id ? 'selected' : '' }}>{{ $country->name }}</option>
@@ -255,7 +257,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="department_id" class="form-control-label">Departamento *</label>
-                                    <select class="form-control @error('department_id') is-invalid @enderror" id="department_id" name="department_id" required>
+                                    <select class="form-control @error('department_id') is-invalid @enderror" id="department_id" name="department_id" required data-depends="country_id">
                                         <option value="">Seleccionar...</option>
                                         @foreach($departments as $department)
                                             <option value="{{ $department->id }}" {{ old('department_id', $clinicalRecord->department_id) == $department->id ? 'selected' : '' }}>{{ $department->name }}</option>
@@ -269,7 +271,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="municipality_id" class="form-control-label">Municipio *</label>
-                                    <select class="form-control @error('municipality_id') is-invalid @enderror" id="municipality_id" name="municipality_id" required>
+                                    <select class="form-control @error('municipality_id') is-invalid @enderror" id="municipality_id" name="municipality_id" required data-depends="department_id">
                                         <option value="">Seleccionar...</option>
                                         @foreach($municipalities as $municipality)
                                             <option value="{{ $municipality->id }}" {{ old('municipality_id', $clinicalRecord->municipality_id) == $municipality->id ? 'selected' : '' }}>{{ $municipality->name }}</option>
@@ -332,6 +334,73 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     setupMultiSelect('disability_id');
     setupMultiSelect('allergy_id');
+
+    // Cascada de ubicación geográfica
+    function initializeLocationCascade() {
+        const countrySelect = document.getElementById('country_id');
+        const departmentSelect = document.getElementById('department_id');
+        const municipalitySelect = document.getElementById('municipality_id');
+        
+        if (!countrySelect || !departmentSelect || !municipalitySelect) {
+            return;
+        }
+
+        const oldDepartment = countrySelect.dataset.oldDepartment || '';
+        const oldMunicipality = countrySelect.dataset.oldMunicipality || '';
+
+        function filterDepartmentsByCountry(countryId, selectedId = null) {
+            departmentSelect.innerHTML = '<option value="">Seleccionar...</option>';
+            let hasDepartments = false;
+            window.allDepartments.forEach(dep => {
+                if (dep.country_id == countryId) {
+                    departmentSelect.innerHTML += `<option value="${dep.id}"${selectedId == dep.id ? ' selected' : ''}>${dep.name}</option>`;
+                    hasDepartments = true;
+                }
+            });
+            if (!hasDepartments) departmentSelect.value = '';
+        }
+
+        function filterMunicipalitiesByDepartment(departmentId, selectedId = null) {
+            municipalitySelect.innerHTML = '<option value="">Seleccionar...</option>';
+            let hasMunicipalities = false;
+            window.allMunicipalities.forEach(mun => {
+                if (mun.department_id == departmentId) {
+                    municipalitySelect.innerHTML += `<option value="${mun.id}"${selectedId == mun.id ? ' selected' : ''}>${mun.name}</option>`;
+                    hasMunicipalities = true;
+                }
+            });
+            if (!hasMunicipalities) municipalitySelect.value = '';
+        }
+
+        // Event listeners
+        countrySelect.addEventListener('change', function() {
+            filterDepartmentsByCountry(this.value);
+            departmentSelect.value = '';
+            municipalitySelect.innerHTML = '<option value="">Seleccionar...</option>';
+            municipalitySelect.value = '';
+        });
+
+        departmentSelect.addEventListener('change', function() {
+            filterMunicipalitiesByDepartment(this.value);
+            municipalitySelect.value = '';
+        });
+
+        // Inicialización automática si ya hay valores
+        if (countrySelect.value) {
+            filterDepartmentsByCountry(countrySelect.value, oldDepartment);
+            if (departmentSelect.value) {
+                filterMunicipalitiesByDepartment(departmentSelect.value, oldMunicipality);
+            } else {
+                municipalitySelect.innerHTML = '<option value="">Seleccionar...</option>';
+            }
+        } else {
+            departmentSelect.innerHTML = '<option value="">Seleccionar...</option>';
+            municipalitySelect.innerHTML = '<option value="">Seleccionar...</option>';
+        }
+    }
+
+    // Inicializar cascada de ubicación
+    initializeLocationCascade();
 
     // Establecer valores antiguos para cascada
     const countrySelect = document.getElementById('country_id');

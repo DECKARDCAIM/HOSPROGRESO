@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\ClinicalRecord;
+use App\Models\TemporaryPatient;
+use App\Models\ClinicalFileTracking;
 use App\Models\Sex;
 use App\Models\CivilStatus;
 use App\Models\LinguisticCommunity;
@@ -15,6 +17,7 @@ use App\Models\Municipality;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class ClinicalRecordController extends Controller
@@ -29,32 +32,200 @@ class ClinicalRecordController extends Controller
         $sexes = Sex::orderBy('name')->get();
         $civilStatuses = CivilStatus::orderBy('name')->get();
 
-        $clinicalRecords = ClinicalRecord::with(['sex', 'civilStatus', 'country', 'department', 'municipality'])
-            ->when($request->q, function ($query, $q) {
-                $query->where(function($q2) use ($q) {
-                    $q2->where('record_number', 'like', "%$q%")
-                        ->orWhere('first_name', 'like', "%$q%")
-                        ->orWhere('second_name', 'like', "%$q%")
-                        ->orWhere('third_name', 'like', "%$q%")
-                        ->orWhere('first_lastname', 'like', "%$q%")
-                        ->orWhere('second_lastname', 'like', "%$q%")
-                        ->orWhere('married_lastname', 'like', "%$q%")
-                        ->orWhere('cui', 'like', "%$q%")
-                    ;
-                });
-            })
-            ->when($request->country_id, fn($q, $id) => $q->where('country_id', $id))
-            ->when($request->department_id, fn($q, $id) => $q->where('department_id', $id))
-            ->when($request->municipality_id, fn($q, $id) => $q->where('municipality_id', $id))
-            ->when($request->linguistic_community_id, fn($q, $id) => $q->where('linguistic_community_id', $id))
-            ->when($request->ethnicity_id, fn($q, $id) => $q->where('ethnicity_id', $id))
-            ->when($request->sex_id, fn($q, $id) => $q->where('sex_id', $id))
-            ->when($request->civil_status_id, fn($q, $id) => $q->where('civil_status_id', $id))
-            ->when($request->birth_date, fn($q, $date) => $q->whereDate('birth_date', $date))
-            ->distinct()
+        // Obtener registros permanentes
+        $permanentRecords = ClinicalRecord::select([
+            'id',
+            'record_number',
+            'first_name',
+            'second_name',
+            'third_name',
+            'first_lastname',
+            'second_lastname',
+            'married_lastname',
+            'cui',
+            'sex_id',
+            'civil_status_id',
+            'birth_date',
+            'country_id',
+            'department_id',
+            'municipality_id',
+            'specific_residence',
+            'created_at',
+            DB::raw("'permanent' as record_type"),
+            DB::raw("null as old_registration_number")
+        ])
+        ->when($request->q, function ($query, $q) {
+            // Dividir la búsqueda en términos individuales
+            $terms = array_filter(explode(' ', trim($q)));
+            
+            $query->where(function($q2) use ($q, $terms) {
+                // Búsqueda exacta por número de expediente, CUI, registro antiguo y dirección
+                $q2->where('record_number', 'like', "%$q%")
+                   ->orWhere('cui', 'like', "%$q%")
+                   ->orWhere('old_registration_number', 'like', "%$q%")
+                   ->orWhere('specific_residence', 'like', "%$q%");
+                
+                // Si hay múltiples términos, buscar que TODOS los términos estén presentes
+                if (count($terms) > 1) {
+                    $q2->orWhere(function($q3) use ($terms) {
+                        foreach ($terms as $term) {
+                            $q3->where(function($q4) use ($term) {
+                                $q4->where('first_name', 'like', "%$term%")
+                                   ->orWhere('second_name', 'like', "%$term%")
+                                   ->orWhere('third_name', 'like', "%$term%")
+                                   ->orWhere('first_lastname', 'like', "%$term%")
+                                   ->orWhere('second_lastname', 'like', "%$term%")
+                                   ->orWhere('married_lastname', 'like', "%$term%")
+                                   ->orWhere('specific_residence', 'like', "%$term%");
+                            });
+                        }
+                    });
+                } else {
+                    // Si es un solo término, buscar en todos los campos incluida dirección
+                    $q2->orWhere('first_name', 'like', "%$q%")
+                       ->orWhere('second_name', 'like', "%$q%")
+                       ->orWhere('third_name', 'like', "%$q%")
+                       ->orWhere('first_lastname', 'like', "%$q%")
+                       ->orWhere('second_lastname', 'like', "%$q%")
+                       ->orWhere('married_lastname', 'like', "%$q%")
+                       ->orWhere('specific_residence', 'like', "%$q%");
+                }
+            });
+        })
+        ->when($request->sex_id, function ($query, $sexId) {
+            $query->where('sex_id', $sexId);
+        })
+        ->when($request->civil_status_id, function ($query, $civilStatusId) {
+            $query->where('civil_status_id', $civilStatusId);
+        })
+        ->when($request->linguistic_community_id, function ($query, $linguisticCommunityId) {
+            $query->where('linguistic_community_id', $linguisticCommunityId);
+        })
+        ->when($request->ethnicity_id, function ($query, $ethnicityId) {
+            $query->where('ethnicity_id', $ethnicityId);
+        })
+        ->when($request->country_id, function ($query, $countryId) {
+            $query->where('country_id', $countryId);
+        })
+        ->when($request->department_id, function ($query, $departmentId) {
+            $query->where('department_id', $departmentId);
+        })
+        ->when($request->municipality_id, function ($query, $municipalityId) {
+            $query->where('municipality_id', $municipalityId);
+        })
+        ->when($request->birth_date, function ($query, $birthDate) {
+            $query->whereDate('birth_date', $birthDate);
+        });
+
+        // Obtener registros temporales
+        $temporaryRecords = TemporaryPatient::select([
+            'id',
+            'registration_number as record_number',
+            'first_name',
+            'second_name',
+            'third_name',
+            'first_lastname',
+            'second_lastname',
+            'married_lastname',
+            'cui',
+            'sex_id',
+            'civil_status_id',
+            'birth_date',
+            'country_id',
+            'department_id',
+            'municipality_id',
+            'specific_residence',
+            'created_at',
+            DB::raw("'temporary' as record_type"),
+            'registration_number as old_registration_number'
+        ])
+        ->where('is_processed', false)
+        ->when($request->q, function ($query, $q) {
+            // Dividir la búsqueda en términos individuales
+            $terms = array_filter(explode(' ', trim($q)));
+            
+            $query->where(function($q2) use ($q, $terms) {
+                // Búsqueda exacta por número de registro y dirección
+                $q2->where('registration_number', 'like', "%$q%")
+                   ->orWhere('specific_residence', 'like', "%$q%");
+                
+                // Si hay múltiples términos, buscar que TODOS los términos estén presentes
+                if (count($terms) > 1) {
+                    $q2->orWhere(function($q3) use ($terms) {
+                        foreach ($terms as $term) {
+                            $q3->where(function($q4) use ($term) {
+                                $q4->where('first_name', 'like', "%$term%")
+                                   ->orWhere('second_name', 'like', "%$term%")
+                                   ->orWhere('third_name', 'like', "%$term%")
+                                   ->orWhere('first_lastname', 'like', "%$term%")
+                                   ->orWhere('second_lastname', 'like', "%$term%")
+                                   ->orWhere('married_lastname', 'like', "%$term%")
+                                   ->orWhere('specific_residence', 'like', "%$term%");
+                            });
+                        }
+                    });
+                } else {
+                    // Si es un solo término, buscar en todos los campos incluida dirección
+                    $q2->orWhere('first_name', 'like', "%$q%")
+                       ->orWhere('second_name', 'like', "%$q%")
+                       ->orWhere('third_name', 'like', "%$q%")
+                       ->orWhere('first_lastname', 'like', "%$q%")
+                       ->orWhere('second_lastname', 'like', "%$q%")
+                       ->orWhere('married_lastname', 'like', "%$q%")
+                       ->orWhere('specific_residence', 'like', "%$q%");
+                }
+            });
+        })
+        ->when($request->sex_id, function ($query, $sexId) {
+            $query->where('sex_id', $sexId);
+        })
+        ->when($request->civil_status_id, function ($query, $civilStatusId) {
+            $query->where('civil_status_id', $civilStatusId);
+        })
+        ->when($request->linguistic_community_id, function ($query, $linguisticCommunityId) {
+            $query->where('linguistic_community_id', $linguisticCommunityId);
+        })
+        ->when($request->ethnicity_id, function ($query, $ethnicityId) {
+            $query->where('ethnicity_id', $ethnicityId);
+        })
+        ->when($request->country_id, function ($query, $countryId) {
+            $query->where('country_id', $countryId);
+        })
+        ->when($request->department_id, function ($query, $departmentId) {
+            $query->where('department_id', $departmentId);
+        })
+        ->when($request->municipality_id, function ($query, $municipalityId) {
+            $query->where('municipality_id', $municipalityId);
+        })
+        ->when($request->birth_date, function ($query, $birthDate) {
+            $query->whereDate('birth_date', $birthDate);
+        });
+
+        // Filtro por tipo de registro
+        if ($request->record_type === 'permanent') {
+            $combinedRecords = $permanentRecords;
+        } elseif ($request->record_type === 'temporary') {
+            $combinedRecords = $temporaryRecords;
+        } else {
+            // Combinar ambos tipos - ahora ambos soportan filtros
+            $combinedRecords = $permanentRecords->union($temporaryRecords);
+        }
+
+        $clinicalRecords = $combinedRecords
             ->orderBy('created_at', 'desc')
             ->paginate(25)
             ->appends($request->all());
+
+        // Estadísticas
+        $stats = [
+            'total_permanent' => ClinicalRecord::count(),
+            'total_temporary' => TemporaryPatient::notProcessed()->count(),
+            'total_combined' => ClinicalRecord::count() + TemporaryPatient::notProcessed()->count()
+        ];
+
+        // Datos para la cascada de ubicación
+        $allDepartments = Department::orderBy('name')->get();
+        $allMunicipalities = Municipality::orderBy('name')->get();
 
         return view('modules.clinical_records.index', compact(
             'clinicalRecords',
@@ -64,11 +235,14 @@ class ClinicalRecordController extends Controller
             'linguisticCommunities',
             'ethnicities',
             'sexes',
-            'civilStatuses'
+            'civilStatuses',
+            'stats',
+            'allDepartments',
+            'allMunicipalities'
         ));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $sexes = Sex::where('is_active', true)->orderBy('name')->get();
         $civilStatuses = CivilStatus::where('is_active', true)->orderBy('name')->get();
@@ -80,9 +254,18 @@ class ClinicalRecordController extends Controller
         $departments = Department::where('is_active', true)->orderBy('name')->get();
         $municipalities = Municipality::where('is_active', true)->orderBy('name')->get();
 
+        // Buscar paciente temporal si se proporciona ID en la URL
+        $temporaryPatient = null;
+        if ($request->has('temporary_id') && !empty($request->temporary_id)) {
+            $temporaryPatient = TemporaryPatient::where('id', $request->temporary_id)
+                                               ->where('is_processed', false)
+                                               ->first();
+        }
+
         return view('modules.clinical_records.create', compact(
             'sexes', 'civilStatuses', 'linguisticCommunities', 'ethnicities',
-            'disabilities', 'allergies', 'countries', 'departments', 'municipalities'
+            'disabilities', 'allergies', 'countries', 'departments', 'municipalities',
+            'temporaryPatient'
         ));
     }
 
@@ -107,29 +290,70 @@ class ClinicalRecordController extends Controller
             'department_id' => 'required|exists:departments,id',
             'municipality_id' => 'required|exists:municipalities,id',
             'specific_residence' => 'nullable|string',
+            'temporary_patient_id' => 'nullable|exists:temporary_patients,id'
         ]);
 
-        // Generar número de expediente único
-        $recordNumber = 'EXP-' . date('Y') . '-' . str_pad(ClinicalRecord::count() + 1, 6, '0', STR_PAD_LEFT);
-        $data = $request->except(['disability_id', 'allergy_id']);
-        $data['record_number'] = $recordNumber;
+        DB::beginTransaction();
+        try {
+            // Generar número de expediente único
+            $recordNumber = 'EXP-' . date('Y') . '-' . str_pad(ClinicalRecord::count() + 1, 6, '0', STR_PAD_LEFT);
+            $data = $request->except(['disability_id', 'allergy_id', 'temporary_patient_id']);
+            $data['record_number'] = $recordNumber;
+            
+            // Guardar el antiguo número de registro si viene de un paciente temporal
+            if ($request->has('temporary_patient_id') && !empty($request->temporary_patient_id)) {
+                $temporaryPatient = TemporaryPatient::find($request->temporary_patient_id);
+                if ($temporaryPatient) {
+                    $data['old_registration_number'] = $temporaryPatient->registration_number;
+                }
+            }
 
-        $clinicalRecord = ClinicalRecord::create($data);
-        $clinicalRecord->disabilities()->sync($request->disability_id ?? []);
-        $clinicalRecord->allergies()->sync($request->allergy_id ?? []);
+            $clinicalRecord = ClinicalRecord::create($data);
+            $clinicalRecord->disabilities()->sync($request->disability_id ?? []);
+            $clinicalRecord->allergies()->sync($request->allergy_id ?? []);
 
-        // Crear notificación
-        NotificationService::notifyCreate(
-            'Expediente Clínico',
-            $clinicalRecord->record_number . ' - ' . $clinicalRecord->first_name . ' ' . $clinicalRecord->first_lastname
-        );
+            // Si viene de un paciente temporal, procesar migración
+            $migratedMessage = '';
+            if ($request->has('temporary_patient_id') && !empty($request->temporary_patient_id)) {
+                $temporaryPatient = TemporaryPatient::find($request->temporary_patient_id);
+                if ($temporaryPatient) {
+                    // Marcar como procesado y eliminar
+                    $temporaryPatient->markAsProcessed();
+                    $temporaryPatient->delete();
+                    $migratedMessage = ' Los datos temporales han sido migrados exitosamente.';
+                }
+            }
 
-        return redirect()->route('clinical-records.index')
-            ->with('toast', [
-                'type' => 'success',
-                'title' => 'Creación Éxitosa',
-                'message' => 'El expediente clínico ' . $clinicalRecord->record_number . ' se ha creado correctamente.'
+            // Crear registro de seguimiento para archivo clínico
+            ClinicalFileTracking::create([
+                'clinical_record_id' => $clinicalRecord->id
             ]);
+
+            // Crear notificación
+            NotificationService::notifyCreate(
+                'Expediente Clínico',
+                $clinicalRecord->record_number . ' - ' . $clinicalRecord->first_name . ' ' . $clinicalRecord->first_lastname
+            );
+
+            DB::commit();
+
+            return redirect()->route('clinical-records.index')
+                ->with('toast', [
+                    'type' => 'success',
+                    'title' => 'Creación Éxitosa',
+                    'message' => 'El expediente clínico ' . $clinicalRecord->record_number . ' se ha creado correctamente.' . $migratedMessage
+                ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withInput()
+                ->with('toast', [
+                    'type' => 'error',
+                    'title' => 'Error',
+                    'message' => 'Error al crear el expediente: ' . $e->getMessage()
+                ]);
+        }
     }
 
     public function edit(ClinicalRecord $clinicalRecord)

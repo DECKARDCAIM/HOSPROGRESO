@@ -224,6 +224,31 @@
         </div>
     </li>
 
+    <!-- Archivo Clínico -->
+    <li class="nav-item">
+        <a data-bs-toggle="collapse" href="#menuArchivo" class="nav-link text-dark mobile-menu-item"
+            aria-controls="menuArchivo" role="button" aria-expanded="false">
+            <i class="bi bi-archive opacity-5"></i>
+            <span class="nav-link-text ms-1 ps-1">Archivo Clínico</span>
+        </a>
+        <div class="collapse" id="menuArchivo">
+            <ul class="nav mobile-submenu">
+                <li class="nav-item">
+                    <a class="nav-link text-dark mobile-submenu-item" href="{{ route('clinical-file.index') }}">
+                        <i class="bi bi-file-medical opacity-5 me-2"></i>
+                        <span class="sidenav-normal">Expedientes Recientes</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark mobile-submenu-item" href="{{ route('clinical-file.archived') }}">
+                        <i class="bi bi-archive-fill opacity-5 me-2"></i>
+                        <span class="sidenav-normal">Expedientes Archivados</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </li>
+
     <!-- Administración del Sistema (Solo para administradores) -->
     @if(auth()->check() && auth()->user()->isAdmin())
     <li class="nav-item">
@@ -244,6 +269,12 @@
                     <a class="nav-link text-dark mobile-submenu-item" href="{{ route('roles.index') }}">
                         <i class="bi bi-shield-lock opacity-5 me-2"></i>
                         <span class="sidenav-normal">Roles de Usuario</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark mobile-submenu-item" href="{{ route('import.index') }}">
+                        <i class="bi bi-database-fill opacity-5 me-2"></i>
+                        <span class="sidenav-normal">Base de Datos</span>
                     </a>
                 </li>
             </ul>

@@ -65,19 +65,19 @@ document.addEventListener('DOMContentLoaded', function() {
     window.showWarningToast = function(message, title = 'Advertencia') {
         return showToast('warning', title, message);
     };
-});
 
-// Procesamiento de toasts desde sesión de Laravel
-function processLaravelToasts() {
-    if (window.laravelToastData) {
-        showToast(
-            window.laravelToastData.type ?? 'info',
-            window.laravelToastData.title ?? 'Notificación',
-            window.laravelToastData.message ?? '',
-            5000
-        );
+    // Procesamiento de toasts desde sesión de Laravel
+    function processLaravelToasts() {
+        if (window.laravelToastData) {
+            showToast(
+                window.laravelToastData.type ?? 'info',
+                window.laravelToastData.title ?? 'Notificación',
+                window.laravelToastData.message ?? '',
+                5000
+            );
+        }
     }
-}
 
-// Ejecutar al cargar la página
-document.addEventListener('DOMContentLoaded', processLaravelToasts); 
+    // Ejecutar al cargar la página
+    processLaravelToasts();
+}); 

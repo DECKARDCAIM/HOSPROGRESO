@@ -3,6 +3,15 @@
 @section('title', 'Crear Expediente Clínico')
 @section('breadcrumb', 'Expedientes Clínicos / Crear')
 
+@push('styles')
+<style>
+.bg-warning-light {
+    background-color: #fff3cd !important;
+    border-color: #ffeaa7 !important;
+}
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid py-4">
     <div class="row">
@@ -35,8 +44,38 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                     @endif
+
+                    <!-- Alerta de Paciente Temporal Encontrado -->
+                    @if(isset($temporaryPatient) && $temporaryPatient)
+                        <div class="alert alert-warning border-warning" role="alert">
+                            <div class="alert-icon">
+                                <i class="fas fa-exclamation-triangle fa-2x"></i>
+                            </div>
+                            <div class="alert-text">
+                                <h5 class="alert-heading text-warning">
+                                    <i class="fas fa-user-clock me-2"></i>
+                                    Paciente Temporal Encontrado
+                                </h5>
+                                <p class="mb-2">
+                                    Se encontró un registro temporal con número: <strong>{{ $temporaryPatient->registration_number }}</strong>
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Nombre:</strong> {{ $temporaryPatient->full_name }}
+                                </p>
+                                <p class="mb-0">
+                                    Los datos han sido prellenados automáticamente. Al guardar el expediente, los datos temporales serán migrados.
+                                </p>
+                            </div>
+                        </div>
+                    @endif
+
                     <form action="{{ route('clinical-records.store') }}" method="POST">
                         @csrf
+                        
+                        <!-- Campo oculto para paciente temporal -->
+                        @if(isset($temporaryPatient) && $temporaryPatient)
+                            <input type="hidden" name="temporary_patient_id" value="{{ $temporaryPatient->id }}">
+                        @endif
                         
                         <!-- Datos Personales -->
                         <h6 class="text-uppercase text-body text-xs font-weight-bolder mb-3">Datos Personales</h6>
@@ -44,7 +83,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="first_name" class="form-control-label">Primer Nombre *</label>
-                                    <input type="text" class="form-control @error('first_name') is-invalid @enderror" id="first_name" name="first_name" value="{{ old('first_name') }}" required>
+                                    <input type="text" class="form-control @error('first_name') is-invalid @enderror {{ isset($temporaryPatient) ? 'bg-warning-light' : '' }}" id="first_name" name="first_name" value="{{ old('first_name', $temporaryPatient->first_name ?? '') }}" required>
                                     @error('first_name')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -53,7 +92,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="second_name" class="form-control-label">Segundo Nombre</label>
-                                    <input type="text" class="form-control @error('second_name') is-invalid @enderror" id="second_name" name="second_name" value="{{ old('second_name') }}">
+                                    <input type="text" class="form-control @error('second_name') is-invalid @enderror {{ isset($temporaryPatient) ? 'bg-warning-light' : '' }}" id="second_name" name="second_name" value="{{ old('second_name', $temporaryPatient->second_name ?? '') }}">
                                     @error('second_name')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -62,7 +101,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="third_name" class="form-control-label">Tercer Nombre</label>
-                                    <input type="text" class="form-control @error('third_name') is-invalid @enderror" id="third_name" name="third_name" value="{{ old('third_name') }}">
+                                    <input type="text" class="form-control @error('third_name') is-invalid @enderror {{ isset($temporaryPatient) ? 'bg-warning-light' : '' }}" id="third_name" name="third_name" value="{{ old('third_name', $temporaryPatient->third_name ?? '') }}">
                                     @error('third_name')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -74,7 +113,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="first_lastname" class="form-control-label">Primer Apellido *</label>
-                                    <input type="text" class="form-control @error('first_lastname') is-invalid @enderror" id="first_lastname" name="first_lastname" value="{{ old('first_lastname') }}" required>
+                                    <input type="text" class="form-control @error('first_lastname') is-invalid @enderror {{ isset($temporaryPatient) ? 'bg-warning-light' : '' }}" id="first_lastname" name="first_lastname" value="{{ old('first_lastname', $temporaryPatient->first_lastname ?? '') }}" required>
                                     @error('first_lastname')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -83,7 +122,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="second_lastname" class="form-control-label">Segundo Apellido</label>
-                                    <input type="text" class="form-control @error('second_lastname') is-invalid @enderror" id="second_lastname" name="second_lastname" value="{{ old('second_lastname') }}">
+                                    <input type="text" class="form-control @error('second_lastname') is-invalid @enderror {{ isset($temporaryPatient) ? 'bg-warning-light' : '' }}" id="second_lastname" name="second_lastname" value="{{ old('second_lastname', $temporaryPatient->second_lastname ?? '') }}">
                                     @error('second_lastname')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -113,7 +152,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="birth_date" class="form-control-label">Fecha de Nacimiento *</label>
-                                    <input type="date" class="form-control @error('birth_date') is-invalid @enderror" id="birth_date" name="birth_date" value="{{ old('birth_date') }}" required>
+                                    <input type="date" class="form-control @error('birth_date') is-invalid @enderror {{ isset($temporaryPatient) ? 'bg-warning-light' : '' }}" id="birth_date" name="birth_date" value="{{ old('birth_date', $temporaryPatient && $temporaryPatient->birth_date ? $temporaryPatient->birth_date->format('Y-m-d') : '') }}" required>
                                     @error('birth_date')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -339,5 +378,7 @@ document.addEventListener('DOMContentLoaded', function() {
         countrySelect.dataset.oldMunicipality = '{{ old('municipality_id') }}';
     }
 });
+
+
 </script>
 @endpush 

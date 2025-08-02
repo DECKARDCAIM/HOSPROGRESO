@@ -253,13 +253,12 @@ npm run build
 
 ## 🕒 Configuración de Tareas Programadas (Cron Jobs)
 
-El sistema incluye tareas automatizadas para el marcado de citas perdidas. Ver el archivo `CONFIGURACION_CRON_JOB.md` para instrucciones detalladas.
+El sistema incluye tareas automatizadas para el marcado de citas perdidas.
 
 ### Configuración Rápida en Windows
 ```bash
-# El sistema incluye scripts pre-configurados
-run-scheduler.bat
-schedule-runner.ps1
+# Ejecutar el scheduler manualmente
+php artisan schedule:run
 ```
 
 ---
