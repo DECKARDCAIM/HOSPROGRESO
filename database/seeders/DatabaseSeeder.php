@@ -24,6 +24,9 @@ class DatabaseSeeder extends Seeder
             ControlTypeSeeder::class,
             RoleSeeder::class,
             AdminUserSeeder::class,
+            PatientStatusSeeder::class,
+            CompanionRelationshipSeeder::class,
+            ContraceptiveMethodSeeder::class,
         ]);
     }
 }
