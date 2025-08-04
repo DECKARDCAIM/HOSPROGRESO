@@ -196,7 +196,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="4" class="text-center py-4">
+                                    <td colspan="8" class="text-center py-4">
                                         <span class="text-muted">No hay tipos de horario registrados.</span>
                                     </td>
                                 </tr>
