@@ -44,10 +44,14 @@ class MedicalConsultationController extends Controller
 
         $clinicalRecord = ClinicalRecord::findOrFail($request->clinical_record_id);
         
-        // Determinar el tipo de atención basado en el rol del usuario
-        $attentionType = auth()->user()->isEmergency() ? 'emergencia' : 'consulta_externa';
+        // Obtener doctores y especialidades para los modales
+        $doctors = Doctor::with('specialty')->where('is_active', true)
+            ->orderBy('first_name')
+            ->orderBy('first_lastname')
+            ->get();
+        $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
 
-        return view('modules.medical_consultations.create', compact('clinicalRecord', 'attentionType'));
+        return view('modules.medical_consultations.create', compact('clinicalRecord', 'doctors', 'specialties'));
     }
 
     public function store(Request $request)
@@ -55,27 +59,52 @@ class MedicalConsultationController extends Controller
         $request->validate([
             'clinical_record_id' => 'required|exists:clinical_records,id',
             'attention_type' => 'required|in:emergencia,consulta_externa',
+            'professional_type' => 'required|in:doctor,nurse',
+            'specialty_id' => 'required_if:professional_type,doctor|exists:specialties,id',
+            'doctor_id' => 'required_if:professional_type,doctor|exists:doctors,id',
         ]);
 
-        // Crear solo la historia básica inicial
+        // Validaciones específicas por sexo y edad
+        if ($request->professional_type === 'doctor' && $request->specialty_id) {
+            $clinicalRecord = ClinicalRecord::with('sex')->findOrFail($request->clinical_record_id);
+            $specialty = Specialty::findOrFail($request->specialty_id);
+            
+            // Validar especialidades ginecológicas
+            if (stripos($specialty->name, 'ginec') !== false || stripos($specialty->name, 'obstet') !== false) {
+                // Si es hombre, no puede acceder a ginecología
+                if ($clinicalRecord->sex && strtolower($clinicalRecord->sex->name) === 'masculino') {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', [
+                            'title' => 'Especialidad No Válida',
+                            'message' => 'Los pacientes masculinos no pueden ser atendidos en ' . $specialty->name . '. Por favor, selecciona otra especialidad.'
+                        ]);
+                }
+            }
+        }
+
+        // Crear la consulta médica
         $data = [
             'clinical_record_id' => $request->clinical_record_id,
             'attention_type' => $request->attention_type,
             'status' => 'abierta',
             'consultation_date' => now(),
             'consultation_reason' => 'Pendiente de completar',
-            'doctor_id' => null, // Se asignará en el proceso
-            'specialty_id' => null, // Se asignará en el proceso
+            'doctor_id' => $request->professional_type === 'doctor' ? $request->doctor_id : null,
+            'specialty_id' => $request->professional_type === 'doctor' ? $request->specialty_id : null,
         ];
 
         $medicalConsultation = MedicalConsultation::create($data);
 
-        NotificationService::notifyCreate('Historia Clínica', 'Historia #' . $medicalConsultation->id);
+        NotificationService::notifyCreate('Consulta Médica', 'Consulta #' . $medicalConsultation->id);
 
-        return redirect()->route('medical-consultations.process', $medicalConsultation->id)
+        // Determinar a qué vista de process redirigir
+        $processRoute = $this->determineProcessRoute($medicalConsultation);
+
+        return redirect()->route($processRoute, $medicalConsultation->id)
             ->with('success', [
-                'title' => 'Historia Clínica Creada',
-                'message' => 'La historia clínica se ha creado correctamente. Continúe con el proceso.'
+                'title' => 'Consulta Creada',
+                'message' => 'La consulta se ha creado correctamente. Continúe con el proceso.'
             ]);
     }
 
@@ -87,7 +116,22 @@ class MedicalConsultationController extends Controller
                 ->with('error', 'Esta historia clínica ya ha sido finalizada.');
         }
 
-        $doctors = Doctor::where('is_active', true)
+        // Determinar automáticamente la ruta correcta según el tipo de consulta
+        $processRoute = $this->determineProcessRoute($medicalConsultation);
+        
+        // Redirigir a la vista específica correspondiente
+        return redirect()->route($processRoute, $medicalConsultation->id);
+    }
+
+    public function processAdult(MedicalConsultation $medicalConsultation)
+    {
+        // Verificar que la consulta esté abierta o en proceso
+        if (!in_array($medicalConsultation->status, ['abierta', 'en_proceso'])) {
+            return redirect()->route('clinical-records.show', $medicalConsultation->clinical_record_id)
+                ->with('error', 'Esta consulta ya ha sido finalizada.');
+        }
+
+        $doctors = Doctor::with('specialty')->where('is_active', true)
             ->orderBy('first_name')
             ->orderBy('first_lastname')
             ->get();
@@ -96,228 +140,87 @@ class MedicalConsultationController extends Controller
         $exams = Exam::where('is_active', true)->orderBy('name')->get();
         $medications = Medication::where('is_active', true)->orderBy('name')->get();
         $controlTypes = ControlType::where('is_active', true)->orderBy('name')->get();
+        $companionRelationships = \App\Models\CompanionRelationship::active()->orderBy('name')->get();
 
-        return view('modules.medical_consultations.process', compact(
-            'medicalConsultation', 'doctors', 'specialties', 'laboratoryTests', 'exams', 'medications', 'controlTypes'
+        return view('modules.medical_consultations.process_adult', compact(
+            'medicalConsultation', 'doctors', 'specialties', 'laboratoryTests', 'exams', 'medications', 'controlTypes', 'companionRelationships'
         ));
     }
 
-    public function updateProcess(Request $request, MedicalConsultation $medicalConsultation)
+    public function processNursing(MedicalConsultation $medicalConsultation)
     {
-        // Verificar que la historia esté abierta o en proceso
+        // Verificar que la consulta esté abierta o en proceso
         if (!in_array($medicalConsultation->status, ['abierta', 'en_proceso'])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Esta historia clínica ya ha sido finalizada.'
-            ], 400);
+            return redirect()->route('clinical-records.show', $medicalConsultation->clinical_record_id)
+                ->with('error', 'Esta consulta ya ha sido finalizada.');
         }
 
-        $step = $request->input('step');
-        $rules = [];
-        
-        switch ($step) {
-            case 1:
-                $rules = [
-            'doctor_id' => 'required|exists:doctors,id',
-            'specialty_id' => 'required|exists:specialties,id',
-            'consultation_reason' => 'required|string',
-            'control_type_id' => 'nullable|exists:control_types,id',
-            'is_new_patient' => 'nullable|boolean',
-            'has_igss' => 'nullable|boolean',
-                ];
-                break;
-            case 2:
-                $rules = [
-            'medical_diagnosis' => 'nullable|string',
-            'nursing_note' => 'nullable|string',
-            'admission_note' => 'nullable|string',
-            'diagnosis_cie10_code' => 'nullable|string|max:10',
-            'gestation_weeks' => 'nullable|integer|min:1|max:42',
-            'prescribed_treatment' => 'nullable|string',
-                ];
-                if ($medicalConsultation->isEmergency()) {
-                    $rules = array_merge($rules, [
-                        'emergency_vital_signs' => 'nullable|string',
-                        'emergency_trauma_assessment' => 'nullable|string',
-                        'emergency_treatment_plan' => 'nullable|string',
-                    ]);
-                } else {
-                    $rules = array_merge($rules, [
-                        'consultation_physical_exam' => 'nullable|string',
-                        'consultation_treatment_plan' => 'nullable|string',
-                    ]);
-                }
-                break;
-            case 3:
-                $rules = [
-            'laboratory_test_ids' => 'nullable|array',
-            'laboratory_test_ids.*' => 'exists:laboratory_tests,id',
-            'exam_ids' => 'nullable|array',
-            'exam_ids.*' => 'exists:exams,id',
-                ];
-                break;
-            case 4:
-                $rules = [
-            'medication_ids' => 'nullable|array',
-            'medication_ids.*' => 'exists:medications,id',
-                    'reference_contrareference' => 'nullable|string',
-                    'was_referred' => 'nullable|boolean',
-                    'comes_counter_referred' => 'nullable|boolean',
-                    'comes_referred' => 'nullable|boolean',
-                    'was_counter_referred' => 'nullable|boolean',
-                    'reference_destination' => 'nullable|string',
-                    'reference_reason' => 'nullable|string',
-                    'sigsa_observations' => 'nullable|string',
-                ];
-                break;
-            case 5:
-                $rules = [
-                    'final_status' => 'required|in:hospitalizado,egresado',
-                ];
-                break;
-        }
-        
-        try {
-            $request->validate($rules);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            $allErrors = collect($e->errors())->flatten()->implode(' ');
-            return response()->json([
-                'success' => false,
-                'message' => 'Error de validación: ' . $allErrors,
-            ], 422);
-        }
+        $doctors = Doctor::with('specialty')->where('is_active', true)
+            ->orderBy('first_name')
+            ->orderBy('first_lastname')
+            ->get();
+        $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
+        $laboratoryTests = LaboratoryTest::where('is_active', true)->orderBy('name')->get();
+        $exams = Exam::where('is_active', true)->orderBy('name')->get();
+        $medications = Medication::where('is_active', true)->orderBy('name')->get();
+        $controlTypes = ControlType::where('is_active', true)->orderBy('name')->get();
+        $companionRelationships = \App\Models\CompanionRelationship::active()->orderBy('name')->get();
 
-        // Actualizar campos según el paso
-        $data = [];
-        switch ($step) {
-            case 1:
-                $data = [
-                    'doctor_id' => $request->doctor_id,
-                    'specialty_id' => $request->specialty_id,
-                    'consultation_reason' => $request->consultation_reason,
-                    'control_type_id' => $request->control_type_id,
-                    'is_new_patient' => $request->has('is_new_patient'),
-                    'has_igss' => $request->has('has_igss'),
-                ];
-                break;
-            case 2:
-                $data = [
-                    'medical_diagnosis' => $request->medical_diagnosis,
-                    'nursing_note' => $request->nursing_note,
-                    'admission_note' => $request->admission_note,
-                    'diagnosis_cie10_code' => $request->diagnosis_cie10_code,
-                    'gestation_weeks' => $request->gestation_weeks,
-                    'prescribed_treatment' => $request->prescribed_treatment,
-                ];
-                if ($medicalConsultation->isEmergency()) {
-                    $data = array_merge($data, [
-                        'emergency_vital_signs' => $request->emergency_vital_signs,
-                        'emergency_trauma_assessment' => $request->emergency_trauma_assessment,
-                        'emergency_treatment_plan' => $request->emergency_treatment_plan,
-                    ]);
-                } else {
-                    $data = array_merge($data, [
-                        'consultation_physical_exam' => $request->consultation_physical_exam,
-                        'consultation_treatment_plan' => $request->consultation_treatment_plan,
-                    ]);
-                }
-                break;
-            case 3:
-                // Solo relaciones
-                break;
-            case 4:
-                $data = [
-                    'reference_contrareference' => $request->reference_contrareference,
-                    'was_referred' => $request->has('was_referred'),
-                    'comes_counter_referred' => $request->has('comes_counter_referred'),
-                    'comes_referred' => $request->has('comes_referred'),
-                    'was_counter_referred' => $request->has('was_counter_referred'),
-                    'reference_destination' => $request->reference_destination,
-                    'reference_reason' => $request->reference_reason,
-                    'sigsa_observations' => $request->sigsa_observations,
-                ];
-                break;
-            case 5:
-                // Solo finalización
-                break;
-        }
-        
-        if ($step < 5) {
-            $data['status'] = 'en_proceso';
-        }
-        
-        if (!empty($data)) {
-            $medicalConsultation->update($data);
-        }
-
-        // Sincronizar relaciones
-        if ($step == 3) {
-            $medicalConsultation->laboratoryTests()->sync($request->laboratory_test_ids ?? []);
-            $medicalConsultation->exams()->sync($request->exam_ids ?? []);
-        }
-        if ($step == 4) {
-            $medicalConsultation->medications()->sync($request->medication_ids ?? []);
-        }
-
-        // Si es el paso final, finalizar la historia
-        if ($step == 5 && $request->has('final_status')) {
-            $medicalConsultation->status = 'finalizada';
-            $medicalConsultation->final_status = $request->final_status;
-            $medicalConsultation->save();
-            
-            NotificationService::notifyUpdate('Historia Clínica', 'Historia #' . $medicalConsultation->id . ' finalizada');
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Historia clínica finalizada correctamente.',
-                'final_status' => $request->final_status,
-                'redirect_url' => route('clinical-records.show', $medicalConsultation->clinical_record_id),
-                'toast' => [
-                    'type' => 'success',
-                    'title' => 'Historia Clínica Finalizada',
-                    'message' => 'La historia clínica ha sido finalizada correctamente. Estado: ' . ucfirst($request->final_status)
-                ]
-            ]);
-        }
-
-        // Determinar el mensaje según el paso
-        $stepMessages = [
-            1 => 'Información básica guardada correctamente',
-            2 => 'Evaluación médica guardada correctamente',
-            3 => 'Pruebas y exámenes guardados correctamente',
-            4 => 'Tratamiento guardado correctamente'
-        ];
-
-        return response()->json([
-            'success' => true,
-            'message' => $stepMessages[$step] ?? 'Paso ' . $step . ' guardado correctamente.',
-            'next_step' => $step + 1,
-            'toast' => [
-                'type' => 'success',
-                'title' => 'Guardado Exitoso',
-                'message' => $stepMessages[$step] ?? 'Paso ' . $step . ' guardado correctamente.'
-            ]
-        ]);
+        return view('modules.medical_consultations.process_nursing', compact(
+            'medicalConsultation', 'doctors', 'specialties', 'laboratoryTests', 'exams', 'medications', 'controlTypes', 'companionRelationships'
+        ));
     }
 
-    public function finalize(Request $request, MedicalConsultation $medicalConsultation)
+    public function processGynecological(MedicalConsultation $medicalConsultation)
     {
-        $request->validate([
-            'final_status' => 'required|in:hospitalizado,egresado',
-        ]);
+        // Verificar que la consulta esté abierta o en proceso
+        if (!in_array($medicalConsultation->status, ['abierta', 'en_proceso'])) {
+            return redirect()->route('clinical-records.show', $medicalConsultation->clinical_record_id)
+                ->with('error', 'Esta consulta ya ha sido finalizada.');
+        }
 
-        $medicalConsultation->status = 'finalizada';
-        $medicalConsultation->final_status = $request->final_status;
-        $medicalConsultation->save();
+        $doctors = Doctor::with('specialty')->where('is_active', true)
+            ->orderBy('first_name')
+            ->orderBy('first_lastname')
+            ->get();
+        $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
+        $laboratoryTests = LaboratoryTest::where('is_active', true)->orderBy('name')->get();
+        $exams = Exam::where('is_active', true)->orderBy('name')->get();
+        $medications = Medication::where('is_active', true)->orderBy('name')->get();
+        $controlTypes = ControlType::where('is_active', true)->orderBy('name')->get();
+        $companionRelationships = \App\Models\CompanionRelationship::active()->orderBy('name')->get();
+        $contraceptiveMethods = \App\Models\ContraceptiveMethod::active()->orderBy('type')->orderBy('name')->get();
 
-        NotificationService::notifyUpdate('Historia Clínica', 'Historia #' . $medicalConsultation->id . ' finalizada');
-
-        return redirect()->route('clinical-records.show', $medicalConsultation->clinical_record_id)
-            ->with('success', [
-                'title' => 'Historia Clínica Finalizada',
-                'message' => 'La historia clínica se ha finalizado correctamente. Estado: ' . ucfirst($request->final_status)
-            ]);
+        return view('modules.medical_consultations.process_gynecological', compact(
+            'medicalConsultation', 'doctors', 'specialties', 'laboratoryTests', 'exams', 'medications', 'controlTypes', 'companionRelationships', 'contraceptiveMethods'
+        ));
     }
+
+    public function processPediatric(MedicalConsultation $medicalConsultation)
+    {
+        // Verificar que la consulta esté abierta o en proceso
+        if (!in_array($medicalConsultation->status, ['abierta', 'en_proceso'])) {
+        return redirect()->route('clinical-records.show', $medicalConsultation->clinical_record_id)
+                ->with('error', 'Esta consulta ya ha sido finalizada.');
+        }
+
+        $doctors = Doctor::with('specialty')->where('is_active', true)
+            ->orderBy('first_name')
+            ->orderBy('first_lastname')
+            ->get();
+        $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
+        $laboratoryTests = LaboratoryTest::where('is_active', true)->orderBy('name')->get();
+        $exams = Exam::where('is_active', true)->orderBy('name')->get();
+        $medications = Medication::where('is_active', true)->orderBy('name')->get();
+        $controlTypes = ControlType::where('is_active', true)->orderBy('name')->get();
+        $companionRelationships = \App\Models\CompanionRelationship::active()->orderBy('name')->get();
+
+        return view('modules.medical_consultations.process_pediatric', compact(
+            'medicalConsultation', 'doctors', 'specialties', 'laboratoryTests', 'exams', 'medications', 'controlTypes', 'companionRelationships'
+        ));
+    }
+
+
 
     public function show(MedicalConsultation $medicalConsultation)
     {
@@ -353,12 +256,23 @@ class MedicalConsultationController extends Controller
                 ->with('error', 'No se puede editar una historia clínica finalizada.');
         }
 
-        $request->validate([
-            'doctor_id' => 'required|exists:doctors,id',
-            'specialty_id' => 'required|exists:specialties,id',
+        // Validaciones condicionales para consultas de enfermería vs doctor
+        $rules = [
             'consultation_date' => 'required|date',
             'consultation_reason' => 'required|string',
+            'final_status' => 'required|in:egresado,hospitalizado,referido,fallecido',
+        ];
+
+        // Si tiene doctor_id, validar doctor y especialidad
+        if ($medicalConsultation->doctor_id) {
+            $rules['doctor_id'] = 'required|exists:doctors,id';
+            $rules['specialty_id'] = 'required|exists:specialties,id';
+        }
+
+        $request->validate($rules + [
             'medical_diagnosis' => 'nullable|string',
+            'diagnosis_cie10_code' => 'nullable|string|max:10',
+            'prescribed_treatment' => 'nullable|string',
             'nursing_note' => 'nullable|string',
             'admission_note' => 'nullable|string',
             'emergency_vital_signs' => 'nullable|string',
@@ -367,6 +281,17 @@ class MedicalConsultationController extends Controller
             'consultation_physical_exam' => 'nullable|string',
             'consultation_treatment_plan' => 'nullable|string',
             'reference_contrareference' => 'nullable|string',
+            'control_type_id' => 'nullable|exists:control_types,id',
+            'is_new_patient' => 'nullable|boolean',
+            'has_igss' => 'nullable|boolean',
+            'gestation_weeks' => 'nullable|integer|min:1|max:42',
+            'was_referred' => 'nullable|boolean',
+            'comes_counter_referred' => 'nullable|boolean',
+            'comes_referred' => 'nullable|boolean',
+            'was_counter_referred' => 'nullable|boolean',
+            'reference_destination' => 'nullable|string',
+            'reference_reason' => 'nullable|string',
+            'sigsa_observations' => 'nullable|string',
             'laboratory_test_ids' => 'nullable|array',
             'laboratory_test_ids.*' => 'exists:laboratory_tests,id',
             'exam_ids' => 'nullable|array',
@@ -377,6 +302,17 @@ class MedicalConsultationController extends Controller
 
         $data = $request->except(['laboratory_test_ids', 'exam_ids', 'medication_ids']);
         $data['consultation_date'] = \Carbon\Carbon::parse($request->consultation_date);
+        
+        // Convertir checkboxes
+        $data['is_new_patient'] = $request->has('is_new_patient');
+        $data['has_igss'] = $request->has('has_igss');
+        $data['was_referred'] = $request->has('was_referred');
+        $data['comes_counter_referred'] = $request->has('comes_counter_referred');
+        $data['comes_referred'] = $request->has('comes_referred');
+        $data['was_counter_referred'] = $request->has('was_counter_referred');
+        
+        // Finalizar la historia clínica
+        $data['status'] = 'finalizada';
 
         $medicalConsultation->update($data);
 
@@ -389,12 +325,12 @@ class MedicalConsultationController extends Controller
         // Sincronizar medicamentos
         $medicalConsultation->medications()->sync($request->medication_ids ?? []);
 
-        NotificationService::notifyUpdate('Historia Clínica', 'Historia #' . $medicalConsultation->id);
+        NotificationService::notifyUpdate('Historia Clínica', 'Historia #' . $medicalConsultation->id . ' finalizada');
 
         return redirect()->route('clinical-records.show', $medicalConsultation->clinical_record_id)
             ->with('success', [
-                'title' => 'Historia Clínica Actualizada',
-                'message' => 'La historia clínica se ha actualizado correctamente.'
+                'title' => 'Historia Clínica Finalizada',
+                'message' => 'La historia clínica se ha finalizado correctamente. Estado: ' . ucfirst($request->final_status)
             ]);
     }
 
@@ -439,5 +375,71 @@ class MedicalConsultationController extends Controller
                   ->setOption('no-stop-slow-scripts', true);
         
         return $pdf->stream('historia_clinica_'.$medicalConsultation->id.'.pdf');
+    }
+
+    /**
+     * Determina a qué ruta de process redirigir según la especialidad y edad del paciente
+     */
+    private function determineProcessRoute(MedicalConsultation $medicalConsultation)
+    {
+        // Si no tiene doctor (enfermería), usa process de enfermería
+        if (!$medicalConsultation->doctor_id) {
+            return 'medical-consultations.process-nursing';
+        }
+
+        $clinicalRecord = $medicalConsultation->clinicalRecord;
+        $specialty = $medicalConsultation->specialty;
+
+        // Calcular edad del paciente
+        $age = $clinicalRecord->birth_date ? $clinicalRecord->birth_date->age : 0;
+
+        // Prioridad 1: Especialidades gineco-obstétricas (independiente de la edad)
+        if ($specialty && (
+            stripos($specialty->name, 'ginec') !== false || 
+            stripos($specialty->name, 'obstet') !== false ||
+            strtolower($specialty->name) === 'ginecoobstetricia'
+        )) {
+            // Mujeres con especialidad ginecológica van a vista ginecológica (cualquier edad)
+            return 'medical-consultations.process-gynecological';
+        }
+        
+        // Prioridad 2: Edad menor de 18 años para otras especialidades
+        if ($age < 18) {
+            // Menores de 18 años con especialidades no ginecológicas -> Pediatría
+            return 'medical-consultations.process-pediatric';
+        }
+
+        // Prioridad 3: Adultos con otras especialidades
+        return 'medical-consultations.process-adult';
+    }
+
+    /**
+     * Determina automáticamente el servicio de hospitalización
+     */
+    private function determineHospitalService(MedicalConsultation $medicalConsultation)
+    {
+        $clinicalRecord = $medicalConsultation->clinicalRecord;
+        $specialty = $medicalConsultation->specialty;
+        
+        // Calcular edad
+        $age = $clinicalRecord->birth_date ? $clinicalRecord->birth_date->age : 0;
+        
+        if ($age < 18) {
+            return 'Pediatría';
+        }
+        
+        if ($specialty && (
+            stripos($specialty->name, 'ginec') !== false || 
+            stripos($specialty->name, 'obstet') !== false ||
+            strtolower($specialty->name) === 'ginecoobstetricia'
+        )) {
+            return 'Ginecología';
+        }
+        
+        if ($clinicalRecord->sex && strtolower($clinicalRecord->sex->name) === 'masculino') {
+            return 'Encamamiento Hombre';
+        }
+        
+        return 'Encamamiento Mujer';
     }
 } 
