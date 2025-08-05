@@ -37,7 +37,16 @@ class MedicalConsultationController extends Controller
 
     public function create(Request $request)
     {
-        // Validar que se proporcione el ID del expediente clínico
+        // Verificar si se proporciona el ID del expediente clínico
+        if (!$request->has('clinical_record_id')) {
+            return redirect()->route('clinical-records.index')
+                ->with('error', [
+                    'title' => 'Acceso No Válido',
+                    'message' => 'Para crear una consulta médica debe acceder desde un expediente clínico específico. Seleccione un expediente de la lista.'
+                ]);
+        }
+
+        // Validar que el ID del expediente clínico sea válido
         $request->validate([
             'clinical_record_id' => 'required|exists:clinical_records,id'
         ]);
