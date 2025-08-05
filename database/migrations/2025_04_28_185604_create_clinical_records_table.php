@@ -18,7 +18,9 @@ return new class extends Migration
             $table->string('first_lastname');
             $table->string('second_lastname')->nullable();
             $table->string('married_lastname')->nullable();
-            $table->string('cui', 13)->unique();
+            $table->string('cui', 13)->nullable()->unique();
+            $table->string('phone', 20)->nullable();
+            $table->string('email', 100)->nullable();
             $table->foreignId('sex_id')->constrained('sexes');
             $table->foreignId('civil_status_id')->constrained('civil_statuses');
             $table->foreignId('linguistic_community_id')->constrained('linguistic_communities');

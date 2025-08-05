@@ -140,15 +140,36 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="cui" class="form-control-label">CUI *</label>
-                                    <input type="text" class="form-control @error('cui') is-invalid @enderror" id="cui" name="cui" value="{{ old('cui') }}" maxlength="13" required>
+                                    <label for="cui" class="form-control-label">DPI (Opcional)</label>
+                                    <input type="text" class="form-control @error('cui') is-invalid @enderror {{ isset($temporaryPatient) ? 'bg-warning-light' : '' }}" id="cui" name="cui" value="{{ old('cui', $temporaryPatient->cui ?? '') }}" maxlength="13">
                                     @error('cui')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="phone" class="form-control-label">Teléfono</label>
+                                    <input type="tel" class="form-control @error('phone') is-invalid @enderror {{ isset($temporaryPatient) ? 'bg-warning-light' : '' }}" id="phone" name="phone" value="{{ old('phone', $temporaryPatient->phone ?? '') }}" placeholder="Ej: 12345678" maxlength="8">
+                                    @error('phone')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="email" class="form-control-label">Email</label>
+                                    <input type="email" class="form-control @error('email') is-invalid @enderror {{ isset($temporaryPatient) ? 'bg-warning-light' : '' }}" id="email" name="email" value="{{ old('email', $temporaryPatient->email ?? '') }}" placeholder="correo@ejemplo.com">
+                                    @error('email')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="birth_date" class="form-control-label">Fecha de Nacimiento *</label>
@@ -349,28 +370,14 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/plugins/choices.min.js') }}"></script>
 <script>
 // Datos globales para cascada de ubicación
 window.allDepartments = @json($departments);
 window.allMunicipalities = @json($municipalities);
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Configurar multi-select para discapacidades y alergias
-    function setupMultiSelect(selectId) {
-        const select = document.getElementById(selectId);
-        new Choices(select, {
-            removeItemButton: true,
-            placeholder: true,
-            placeholderValue: 'Seleccionar...',
-            searchEnabled: true,
-            shouldSort: false,
-            itemSelectText: '',
-        });
-    }
-    setupMultiSelect('disability_id');
-    setupMultiSelect('allergy_id');
-
+    // Los multi-selects se configuran automáticamente por el archivo global multi-select-init.js
+    
     // Establecer valores antiguos para cascada
     const countrySelect = document.getElementById('country_id');
     if (countrySelect) {
@@ -378,7 +385,5 @@ document.addEventListener('DOMContentLoaded', function() {
         countrySelect.dataset.oldMunicipality = '{{ old('municipality_id') }}';
     }
 });
-
-
 </script>
 @endpush 

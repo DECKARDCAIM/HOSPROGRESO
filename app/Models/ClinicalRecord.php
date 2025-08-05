@@ -19,7 +19,9 @@ class ClinicalRecord extends Model
         'first_lastname',
         'second_lastname',
         'married_lastname',
-        'cui',
+        'cui', // DPI - Campo opcional
+        'phone',
+        'email',
         'sex_id',
         'civil_status_id',
         'linguistic_community_id',
