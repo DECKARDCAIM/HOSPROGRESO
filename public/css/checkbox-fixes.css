@@ -1,0 +1,19 @@
+/* Estilos para quitar el símbolo del checkbox */
+.form-check-input:checked {
+    background-image: none !important;
+}
+
+.form-check-input:checked[type="checkbox"] {
+    background-image: none !important;
+}
+
+/* Asegurar que no aparezca ningún ícono dentro del checkbox */
+.form-check-input:checked::before,
+.form-check-input:checked::after {
+    display: none !important;
+}
+
+/* Para checkboxes inline específicamente */
+.form-check-inline .form-check-input:checked {
+    background-image: none !important;
+} 
