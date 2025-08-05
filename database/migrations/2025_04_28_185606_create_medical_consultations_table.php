@@ -27,7 +27,7 @@ return new class extends Migration
             $table->text('emergency_treatment_plan')->nullable();
             $table->text('consultation_physical_exam')->nullable();
             $table->text('consultation_treatment_plan')->nullable();
-            $table->enum('final_status', ['hospitalizado', 'egresado'])->nullable();
+            $table->enum('final_status', ['egresado', 'hospitalizado', 'referido', 'fallecido'])->nullable();
             
             // Campos específicos para SIGSA 3H
             $table->foreignId('control_type_id')->nullable()->constrained('control_types')->comment('Tipo de control médico');
@@ -43,6 +43,49 @@ return new class extends Migration
             $table->text('reference_reason')->nullable()->comment('Motivo de referencia');
             $table->integer('gestation_weeks')->nullable()->comment('Semanas de gestación (si aplica)');
             $table->text('sigsa_observations')->nullable()->comment('Observaciones adicionales para SIGSA');
+            
+            // Campos de Acompañante (Adultos)
+            $table->string('companion_name', 100)->nullable();
+            $table->string('companion_phone', 20)->nullable();
+            $table->string('companion_email', 100)->nullable();
+            $table->string('companion_dpi', 20)->nullable();
+            $table->string('companion_relationship', 50)->nullable();
+            
+            // Campos de Tutor/Padre/Madre (Pediatría)
+            $table->string('guardian_name', 100)->nullable();
+            $table->string('guardian_phone', 20)->nullable();
+            $table->string('guardian_email', 100)->nullable();
+            $table->string('guardian_dpi', 20)->nullable();
+            $table->string('guardian_relationship', 50)->nullable();
+            $table->string('guardian_address', 200)->nullable();
+            $table->string('emergency_contact', 20)->nullable();
+            
+            // Campos Gineco-Obstétricos
+            $table->boolean('is_pregnant')->nullable();
+            $table->date('last_menstrual_period')->nullable();
+            $table->integer('menstrual_cycle')->nullable();
+            $table->integer('pregnancies_count')->nullable();
+            $table->integer('births_count')->nullable();
+            $table->integer('abortions_count')->nullable();
+            $table->integer('cesareans_count')->nullable();
+            $table->string('contraceptive_method', 50)->nullable();
+            $table->text('gynecological_history')->nullable();
+            
+            // Campos Pediátricos
+            $table->decimal('birth_weight', 5, 2)->nullable();
+            $table->decimal('current_weight', 5, 2)->nullable();
+            $table->decimal('current_height', 5, 1)->nullable();
+            $table->decimal('head_circumference', 4, 1)->nullable();
+            $table->string('vaccination_status', 50)->nullable();
+            $table->string('feeding_type', 50)->nullable();
+            $table->string('development_milestones', 50)->nullable();
+            $table->text('pediatric_history')->nullable();
+            $table->text('parent_instructions')->nullable();
+            
+            // Campos de Estados Finales Extendidos
+            $table->string('hospital_service', 100)->nullable();
+            $table->datetime('death_date')->nullable();
+            $table->string('death_cause', 200)->nullable();
             
             $table->timestamps();
             

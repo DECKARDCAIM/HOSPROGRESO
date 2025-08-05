@@ -141,9 +141,10 @@ class MedicalConsultationController extends Controller
         $medications = Medication::where('is_active', true)->orderBy('name')->get();
         $controlTypes = ControlType::where('is_active', true)->orderBy('name')->get();
         $companionRelationships = \App\Models\CompanionRelationship::active()->orderBy('name')->get();
+        $patientStatuses = \App\Models\PatientStatus::active()->orderBy('name')->get();
 
         return view('modules.medical_consultations.process_adult', compact(
-            'medicalConsultation', 'doctors', 'specialties', 'laboratoryTests', 'exams', 'medications', 'controlTypes', 'companionRelationships'
+            'medicalConsultation', 'doctors', 'specialties', 'laboratoryTests', 'exams', 'medications', 'controlTypes', 'companionRelationships', 'patientStatuses'
         ));
     }
 
@@ -165,9 +166,10 @@ class MedicalConsultationController extends Controller
         $medications = Medication::where('is_active', true)->orderBy('name')->get();
         $controlTypes = ControlType::where('is_active', true)->orderBy('name')->get();
         $companionRelationships = \App\Models\CompanionRelationship::active()->orderBy('name')->get();
+        $patientStatuses = \App\Models\PatientStatus::active()->orderBy('name')->get();
 
         return view('modules.medical_consultations.process_nursing', compact(
-            'medicalConsultation', 'doctors', 'specialties', 'laboratoryTests', 'exams', 'medications', 'controlTypes', 'companionRelationships'
+            'medicalConsultation', 'doctors', 'specialties', 'laboratoryTests', 'exams', 'medications', 'controlTypes', 'companionRelationships', 'patientStatuses'
         ));
     }
 
@@ -190,9 +192,10 @@ class MedicalConsultationController extends Controller
         $controlTypes = ControlType::where('is_active', true)->orderBy('name')->get();
         $companionRelationships = \App\Models\CompanionRelationship::active()->orderBy('name')->get();
         $contraceptiveMethods = \App\Models\ContraceptiveMethod::active()->orderBy('type')->orderBy('name')->get();
+        $patientStatuses = \App\Models\PatientStatus::active()->orderBy('name')->get();
 
         return view('modules.medical_consultations.process_gynecological', compact(
-            'medicalConsultation', 'doctors', 'specialties', 'laboratoryTests', 'exams', 'medications', 'controlTypes', 'companionRelationships', 'contraceptiveMethods'
+            'medicalConsultation', 'doctors', 'specialties', 'laboratoryTests', 'exams', 'medications', 'controlTypes', 'companionRelationships', 'contraceptiveMethods', 'patientStatuses'
         ));
     }
 
@@ -214,9 +217,10 @@ class MedicalConsultationController extends Controller
         $medications = Medication::where('is_active', true)->orderBy('name')->get();
         $controlTypes = ControlType::where('is_active', true)->orderBy('name')->get();
         $companionRelationships = \App\Models\CompanionRelationship::active()->orderBy('name')->get();
+        $patientStatuses = \App\Models\PatientStatus::active()->orderBy('name')->get();
 
         return view('modules.medical_consultations.process_pediatric', compact(
-            'medicalConsultation', 'doctors', 'specialties', 'laboratoryTests', 'exams', 'medications', 'controlTypes', 'companionRelationships'
+            'medicalConsultation', 'doctors', 'specialties', 'laboratoryTests', 'exams', 'medications', 'controlTypes', 'companionRelationships', 'patientStatuses'
         ));
     }
 
@@ -224,7 +228,10 @@ class MedicalConsultationController extends Controller
 
     public function show(MedicalConsultation $medicalConsultation)
     {
-        $medicalConsultation->load(['clinicalRecord', 'doctor', 'specialty', 'laboratoryTests', 'exams', 'medications']);
+        $medicalConsultation->load([
+            'clinicalRecord', 'doctor', 'specialty', 'laboratoryTests', 'exams', 'medications',
+            'companionRelationship', 'guardianRelationship', 'contraceptiveMethod', 'patientStatus'
+        ]);
         
         return view('modules.medical_consultations.show', compact('medicalConsultation'));
     }
@@ -298,10 +305,70 @@ class MedicalConsultationController extends Controller
             'exam_ids.*' => 'exists:exams,id',
             'medication_ids' => 'nullable|array',
             'medication_ids.*' => 'exists:medications,id',
+            // Validaciones para campos de relaciones
+            'companion_name' => 'nullable|string|max:100',
+            'companion_phone' => 'nullable|string|max:8',
+            'companion_email' => 'nullable|email|max:100',
+            'companion_dpi' => 'nullable|string|max:13',
+            'companion_relationship_id' => 'required_with:companion_name|exists:companion_relationships,id',
+            'guardian_name' => 'nullable|string|max:100',
+            'guardian_phone' => 'nullable|string|max:8',
+            'guardian_email' => 'nullable|email|max:100',
+            'guardian_dpi' => 'nullable|string|max:13',
+            'guardian_relationship_id' => 'required_with:guardian_name|exists:companion_relationships,id',
+            'guardian_address' => 'nullable|string|max:200',
+            'emergency_contact' => 'nullable|string|max:8',
+            // Validaciones para campos gineco-obstétricos
+            'is_pregnant' => 'nullable|boolean',
+            'last_menstrual_period' => 'nullable|date',
+            'menstrual_cycle' => 'nullable|integer|min:20|max:35',
+            'pregnancies_count' => 'nullable|integer|min:0',
+            'births_count' => 'nullable|integer|min:0',
+            'abortions_count' => 'nullable|integer|min:0',
+            'cesareans_count' => 'nullable|integer|min:0',
+            'contraceptive_method_id' => 'nullable|exists:contraceptive_methods,id',
+            'gynecological_history' => 'nullable|string',
+            // Validaciones para campos pediátricos
+            'birth_weight' => 'nullable|numeric|min:0.5|max:10',
+            'current_weight' => 'nullable|numeric|min:0.5|max:200',
+            'current_height' => 'nullable|numeric|min:30|max:250',
+            'head_circumference' => 'nullable|numeric|min:20|max:70',
+            'vaccination_status' => 'nullable|string|max:50',
+            'feeding_type' => 'nullable|string|max:50',
+            'development_milestones' => 'nullable|string|max:50',
+            'pediatric_history' => 'nullable|string',
+            'parent_instructions' => 'nullable|string',
+            // Validaciones para estados finales
+            'hospital_service' => 'nullable|string|max:100',
+            'death_date' => 'nullable|date',
+            'death_cause' => 'nullable|string|max:200',
+            // Validaciones para nuevos campos
+            'patient_status_id' => 'required|exists:patient_statuses,id',
+            'admission_note' => 'nullable|string|max:500',
+        ], [
+            // Mensajes personalizados
+            'companion_relationship_id.required_with' => 'Debe seleccionar la relación del acompañante cuando se especifica el nombre.',
+            'guardian_relationship_id.required_with' => 'Debe seleccionar la relación del tutor/guardián cuando se especifica el nombre.',
+            'companion_phone.max' => 'El teléfono del acompañante no puede tener más de 8 caracteres.',
+            'companion_dpi.max' => 'El DPI del acompañante no puede tener más de 13 caracteres.',
+            'guardian_phone.max' => 'El teléfono del tutor/guardián no puede tener más de 8 caracteres.',
+            'guardian_dpi.max' => 'El DPI del tutor/guardián no puede tener más de 13 caracteres.',
+            'emergency_contact.max' => 'El contacto de emergencia no puede tener más de 8 caracteres.',
+            'final_status.required' => 'Debe seleccionar un estado final para la consulta.',
+            'patient_status_id.required' => 'Debe seleccionar un estado del paciente.',
+            'admission_note.max' => 'La nota de admisión no puede tener más de 500 caracteres.',
         ]);
 
         $data = $request->except(['laboratory_test_ids', 'exam_ids', 'medication_ids']);
         $data['consultation_date'] = \Carbon\Carbon::parse($request->consultation_date);
+        
+        // Lógica automática: Si el estado del paciente es "Fallecido", establecer final_status como "fallecido"
+        if ($request->patient_status_id) {
+            $patientStatus = \App\Models\PatientStatus::find($request->patient_status_id);
+            if ($patientStatus && strtolower($patientStatus->name) === 'fallecido') {
+                $data['final_status'] = 'fallecido';
+            }
+        }
         
         // Convertir checkboxes
         $data['is_new_patient'] = $request->has('is_new_patient');
@@ -358,7 +425,10 @@ class MedicalConsultationController extends Controller
 
     public function print(MedicalConsultation $medicalConsultation)
     {
-        $medicalConsultation->load(['clinicalRecord.sex', 'clinicalRecord', 'doctor', 'specialty', 'laboratoryTests', 'exams', 'medications']);
+        $medicalConsultation->load([
+            'clinicalRecord.sex', 'clinicalRecord', 'doctor', 'specialty', 'laboratoryTests', 'exams', 'medications',
+            'companionRelationship', 'guardianRelationship', 'contraceptiveMethod', 'patientStatus'
+        ]);
         
         $pdf = Pdf::loadView('modules.medical_consultations.print_pdf', compact('medicalConsultation'))
                   ->setPaper('A4', 'portrait')
