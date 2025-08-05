@@ -155,6 +155,24 @@
                                     <span class="sidenav-normal">Tipos de Control</span>
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark mobile-submenu-item" href="{{ route('companion-relationships.index') }}">
+                                    <i class="bi bi-people opacity-5 me-2"></i>
+                                    <span class="sidenav-normal">Relaciones de Acompañantes</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark mobile-submenu-item" href="{{ route('contraceptive-methods.index') }}">
+                                    <i class="bi bi-shield-check opacity-5 me-2"></i>
+                                    <span class="sidenav-normal">Métodos Anticonceptivos</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark mobile-submenu-item" href="{{ route('patient-statuses.index') }}">
+                                    <i class="bi bi-activity opacity-5 me-2"></i>
+                                    <span class="sidenav-normal">Estados del Paciente</span>
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </li>

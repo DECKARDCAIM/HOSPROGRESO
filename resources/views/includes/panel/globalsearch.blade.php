@@ -111,6 +111,21 @@
                         <i class="bi bi-list-check"></i>
                         <span>Tipos de Control</span>
                     </a>
+                    <a href="{{ route('patient-statuses.index') }}" class="suggestion-item"
+                        data-search="estado paciente gestion status">
+                        <i class="bi bi-person-check"></i>
+                        <span>Gestión de Estado de Paciente</span>
+                    </a>
+                    <a href="{{ route('companion-relationships.index') }}" class="suggestion-item"
+                        data-search="acompañante relaciones familiar">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Acompañantes</span>
+                    </a>
+                    <a href="{{ route('contraceptive-methods.index') }}" class="suggestion-item"
+                        data-search="metodos anticonceptivos planificacion familiar">
+                        <i class="bi bi-shield-check"></i>
+                        <span>Métodos Anticonceptivos</span>
+                    </a>
                 </div>
 
                 <div class="suggestion-group">

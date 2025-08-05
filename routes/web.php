@@ -8,6 +8,8 @@ use App\Http\Controllers\AllergyController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\CivilStatusController;
 use App\Http\Controllers\ClinicalRecordController;
+use App\Http\Controllers\CompanionRelationshipController;
+use App\Http\Controllers\ContraceptiveMethodController;
 use App\Http\Controllers\ControlTypeController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\DepartmentController;
@@ -22,6 +24,7 @@ use App\Http\Controllers\MedicalConsultationController;
 use App\Http\Controllers\MedicationController;
 use App\Http\Controllers\MunicipalityController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PatientStatusController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
@@ -155,6 +158,29 @@ Route::middleware('auth')->group(function () {
     // Medicamentos
     Route::resource('medications', MedicationController::class)
         ->parameters(['medications' => 'medication']);
+    
+    // Relaciones de acompañantes
+    Route::resource('companion-relationships', CompanionRelationshipController::class)
+        ->parameters(['companion-relationships' => 'companionRelationship']);
+    
+    // Ruta adicional para reactivar relaciones
+    Route::post('companion-relationships/{id}/reactivate', [CompanionRelationshipController::class, 'reactivate'])
+        ->name('companion-relationships.reactivate');
+    
+    // Métodos anticonceptivos
+    Route::resource('contraceptive-methods', ContraceptiveMethodController::class)
+        ->parameters(['contraceptive-methods' => 'contraceptiveMethod']);
+    
+    // Ruta adicional para reactivar métodos anticonceptivos
+    Route::post('contraceptive-methods/{id}/reactivate', [ContraceptiveMethodController::class, 'reactivate'])
+        ->name('contraceptive-methods.reactivate');
+    
+    // Estados del paciente
+    Route::resource('patient-statuses', PatientStatusController::class)
+        ->parameters(['patient-statuses' => 'patientStatus']);
+    // Ruta adicional para reactivar estados del paciente
+    Route::post('patient-statuses/{id}/reactivate', [PatientStatusController::class, 'reactivate'])
+        ->name('patient-statuses.reactivate');
 });
 
 /*
@@ -175,6 +201,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('medical-consultations', MedicalConsultationController::class)
         ->parameters(['medical-consultations' => 'medicalConsultation']);
     
+    
     // Citas médicas
     Route::resource('appointments', AppointmentController::class);
 });
@@ -185,15 +212,22 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
-    // Sistema de pasos para consultas médicas
+    // Proceso general (redirector automático)
     Route::get('medical-consultations/{medicalConsultation}/process', [MedicalConsultationController::class, 'process'])
         ->name('medical-consultations.process');
     
-    Route::post('medical-consultations/{medicalConsultation}/update-process', [MedicalConsultationController::class, 'updateProcess'])
-        ->name('medical-consultations.update-process');
+    // Procesos específicos por tipo de paciente/especialidad
+    Route::get('medical-consultations/{medicalConsultation}/process-nursing', [MedicalConsultationController::class, 'processNursing'])
+        ->name('medical-consultations.process-nursing');
     
-    Route::post('medical-consultations/{medicalConsultation}/finalize', [MedicalConsultationController::class, 'finalize'])
-        ->name('medical-consultations.finalize');
+    Route::get('medical-consultations/{medicalConsultation}/process-adult', [MedicalConsultationController::class, 'processAdult'])
+        ->name('medical-consultations.process-adult');
+    
+    Route::get('medical-consultations/{medicalConsultation}/process-gynecological', [MedicalConsultationController::class, 'processGynecological'])
+        ->name('medical-consultations.process-gynecological');
+    
+    Route::get('medical-consultations/{medicalConsultation}/process-pediatric', [MedicalConsultationController::class, 'processPediatric'])
+        ->name('medical-consultations.process-pediatric');
     
     Route::get('medical-consultations/{medicalConsultation}/print', [MedicalConsultationController::class, 'print'])
         ->name('medical-consultations.print');

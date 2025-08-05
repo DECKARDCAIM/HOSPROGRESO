@@ -23,6 +23,7 @@
     <link href="{{ asset('css/datatables-touch-fixes.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/datatables-scroll-fix.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/datatables-buttons-fix.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/checkbox-fixes.css') }}" rel="stylesheet" />
 </head>
 
 <body class="g-sidenav-show  bg-gray-100">
@@ -118,6 +119,10 @@
     <script src="{{ asset('js/responsive-datatables.js') }}"></script>
     <script src="{{ asset('js/datatables-init.js') }}"></script>
     <script src="{{ asset('js/datatables-touch-handler.js') }}"></script>
+    
+    {{-- Choices.js for Multi-Select Enhancement --}}
+    <script src="{{ asset('js/plugins/choices.min.js') }}"></script>
+    <script src="{{ asset('js/multi-select-init.js') }}"></script>
 
     {{-- Material Dashboard JS --}}
     <script src="{{ asset('js/material-dashboard.min.js?v=3.1.0') }}"></script>
