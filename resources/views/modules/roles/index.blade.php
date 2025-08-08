@@ -107,6 +107,9 @@
                                             </td>
                                             <td class="align-middle text-center">
                                                 @if ($status === 'active')
+                                                    <a href="{{ route('roles.permissions.edit', $role->id) }}" class="btn btn-outline-primary rounded-pill px-3 py-2 me-2" data-bs-toggle="tooltip" title="Gestionar permisos">
+                                                        <i class="fas fa-key me-1"></i>Permisos
+                                                    </a>
                                             <a href="{{ route('roles.edit', $role) }}" class="btn btn-info rounded-pill px-3 py-2 me-2">
                                                 <i class="fas fa-edit me-1"></i>Editar
                                                     </a>
