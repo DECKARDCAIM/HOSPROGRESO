@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             PatientStatusSeeder::class,
             CompanionRelationshipSeeder::class,
             ContraceptiveMethodSeeder::class,
+            PermissionSeeder::class,
         ]);
     }
 }
