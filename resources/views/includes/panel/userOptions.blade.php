@@ -43,7 +43,6 @@
                 <i class="bi bi-search"></i>
             </a>
         </li>
-
         <!-- Notificaciones -->
         <li class="nav-item dropdown">
             <a class="nav-link text-dark position-relative notification-trigger" href="javascript:;" id="notificationDropdown" role="button"

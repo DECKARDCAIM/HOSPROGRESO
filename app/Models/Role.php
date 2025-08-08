@@ -34,6 +34,15 @@ class Role extends Model
     }
 
     /**
+     * Relación con permisos
+     */
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'permission_role')
+                    ->withTimestamps();
+    }
+
+    /**
      * Roles predefinidos del sistema
      */
     public static function getSystemRoles()
