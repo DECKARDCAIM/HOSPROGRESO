@@ -6,134 +6,198 @@ use App\Models\TemporaryPatient;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Exception;
 
 class ImportController extends Controller
 {
-    /**
-     * Mostrar la vista de importación
-     */
     public function index()
     {
         return view('modules.import.index');
     }
 
-    /**
-     * Procesar el archivo Excel
-     */
+    public function getProgress(Request $request)
+    {
+        $sessionId = $request->input('session_id');
+        if (! $sessionId) {
+            return response()->json(['error' => 'Session ID requerido'], 400);
+        }
+
+        $key = "import_progress_{$sessionId}";
+        $progressFile = storage_path('app/progress/' . $key . '.json');
+
+        if (file_exists($progressFile)) {
+            $data = json_decode(file_get_contents($progressFile), true);
+            if (is_array($data)) {
+                return response()->json($data);
+            }
+        }
+
+        $data = Cache::get($key, [
+            'current'    => 0,
+            'total'      => 0,
+            'percentage' => 0,
+            'status'     => 'not_started',
+            'message'    => 'Iniciando...'
+        ]);
+
+        return response()->json($data);
+    }
+
     public function import(Request $request)
     {
         $request->validate([
             'excel_file' => 'required|file|mimes:xlsx,xls|max:50000'
         ]);
 
+        $sessionId   = $request->input('session_id', uniqid('import_', true));
+        $progressKey = "import_progress_{$sessionId}";
+
+        // Iniciar progreso
+        $this->updateProgress($progressKey, 0, 0, 0, 'loading', 'Cargando archivo...', true);
+
         try {
-            DB::beginTransaction();
+            $file     = $request->file('excel_file');
+            $reader   = IOFactory::createReaderForFile($file->getPathname());
+            $reader->setReadDataOnly(true);
+            $spreadsheet = $reader->load($file->getPathname());
 
-            $file = $request->file('excel_file');
-            
-            // Verificar que el archivo existe y es válido
-            if (!$file || !$file->isValid()) {
-                throw new Exception('El archivo no es válido o no se pudo cargar correctamente.');
-            }
-            
-            $spreadsheet = IOFactory::load($file->getPathname());
-            $worksheet = $spreadsheet->getActiveSheet();
-            $rows = $worksheet->toArray();
-
-            // Remover la primera fila (headers)
+            $rows    = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
             $headers = array_shift($rows);
-            
-            $imported = 0;
-            $errors = [];
-            $duplicates = [];
-            $processedNumbers = []; // Para controlar duplicados en el mismo archivo
+            $validRows = array_filter($rows, fn($r) => !empty(trim($r[0] ?? '')));
+            $totalRows = count($validRows);
 
-            foreach ($rows as $index => $row) {
-                $rowNumber = $index + 2;
-                
-                // Validar que la fila no esté vacía
-                if (empty(array_filter($row))) {
-                    continue;
+            $this->updateProgress(
+                $progressKey,
+                0,
+                $totalRows,
+                0,
+                'processing',
+                'Iniciando procesamiento...',
+                true
+            );
+
+            $existing      = TemporaryPatient::pluck('registration_number')->toArray();
+            $processedSet  = [];
+            $imported      = 0;
+            $duplicates    = [];
+            $errors        = [];
+            $processedCount = 0;
+
+            $batchSize = 100;
+            $chunks    = array_chunk($validRows, $batchSize, true);
+
+            foreach ($chunks as $chunk) {
+                $batchInsert = [];
+
+                foreach ($chunk as $idx => $row) {
+                    $processedCount++;
+                    $rowNumber = $idx + 2;
+
+                    $data = $this->mapExcelData($row, $headers);
+                    $validation = $this->validateRowData($data, $rowNumber);
+                    if (! $validation['valid']) {
+                        $errors = array_merge($errors, $validation['errors']);
+                        continue;
+                    }
+
+                    $regNo = $data['registration_number'];
+                    if (in_array($regNo, $existing) || in_array($regNo, $processedSet)) {
+                        $duplicates[] = "Fila {$rowNumber} duplicada: {$regNo}";
+                    } else {
+                        $processedSet[]  = $regNo;
+                        $batchInsert[]   = $data;
+                    }
                 }
 
-                // Mapear datos del Excel
-                $data = $this->mapExcelData($row, $headers);
-                
-                // Saltar filas sin número de registro válido
-                if (empty($data['registration_number'])) {
-                    continue;
-                }
-                
-                // Validar datos requeridos
-                $validation = $this->validateRowData($data, $rowNumber);
-                if (!$validation['valid']) {
-                    $errors[] = $validation['errors'];
-                    continue;
+                if (!empty($batchInsert)) {
+                    DB::transaction(fn() => DB::table('temporary_patients')->insert($batchInsert));
+                    $imported += count($batchInsert);
                 }
 
-                // Verificar duplicados en el mismo archivo
-                if (in_array($data['registration_number'], $processedNumbers)) {
-                    $duplicates[] = "Fila {$rowNumber}: Número de registro {$data['registration_number']} está duplicado en el archivo";
-                    continue;
-                }
-                
-                // Verificar duplicados en la base de datos
-                if (TemporaryPatient::where('registration_number', $data['registration_number'])->exists()) {
-                    $duplicates[] = "Fila {$rowNumber}: Número de registro {$data['registration_number']} está duplicado en el archivo";
-                    continue;
-                }
-
-                // Agregar a la lista de procesados
-                $processedNumbers[] = $data['registration_number'];
-
-                // Crear registro temporal
-                TemporaryPatient::create($data);
-                $imported++;
+                // Actualizar progreso usando processedCount para incluir duplicados
+                $pct = $totalRows > 0 ? round(($processedCount / $totalRows) * 100, 1) : 0;
+                $this->updateProgress(
+                    $progressKey,
+                    $processedCount,
+                    $totalRows,
+                    $pct,
+                    'processing',
+                    "Procesados {$processedCount} de {$totalRows} registros...",
+                    true
+                );
             }
 
-            DB::commit();
+            // Finalizar progreso
+            $this->updateProgress(
+                $progressKey,
+                $totalRows,
+                $totalRows,
+                100,
+                'completed',
+                "¡Importación completada! {$imported} registros.",
+                true
+            );
 
-            // Crear notificación
             $this->createImportNotification($imported, count($errors), count($duplicates));
-            
-            // Manejar respuesta
-            return $this->handleImportResponse($imported, count($errors), count($duplicates));
+
+            return response()->json([
+                'status'     => 'completed',
+                'current'    => $totalRows,
+                'total'      => $totalRows,
+                'percentage' => 100,
+                'message'    => "¡Importación completada! {$imported} registros.",
+                'session_id' => $sessionId
+            ]);
 
         } catch (Exception $e) {
-            DB::rollBack();
-            
-            // Determinar el tipo de error para un mensaje más específico
-            $errorMessage = 'Error al procesar el archivo';
-            
-            if (strpos($e->getMessage(), 'getClientOriginalName') !== false) {
-                $errorMessage = 'Error: No se pudo acceder al archivo. Por favor, selecciona un archivo válido.';
-            } elseif (strpos($e->getMessage(), 'getPathname') !== false) {
-                $errorMessage = 'Error: El archivo no se pudo cargar correctamente. Verifica que el archivo no esté corrupto.';
-            } elseif (strpos($e->getMessage(), 'IOFactory') !== false) {
-                $errorMessage = 'Error: El archivo no es un Excel válido. Verifica que el formato sea .xlsx o .xls.';
-            } else {
-                $errorMessage = 'Error al procesar el archivo: ' . $e->getMessage();
-            }
-            
-            $this->createErrorNotification($errorMessage);
-            
-            return redirect()->route('import.index')
-                ->with('toast', [
-                    'type' => 'error',
-                    'title' => 'Error',
-                    'message' => $errorMessage
-                ]);
+            $this->updateProgress(
+                $progressKey,
+                0,
+                0,
+                0,
+                'error',
+                'Error: ' . $e->getMessage(),
+                true
+            );
+            $this->createErrorNotification($e->getMessage());
+
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
+
+    private function updateProgress(
+        string $key,
+        int $current,
+        int $total,
+        float $percentage,
+        string $status,
+        string $message,
+        bool $writeFile = false
+    ) {
+        $data = compact('current', 'total', 'percentage', 'status', 'message');
+        $data['timestamp'] = time();
+
+        Cache::put($key, $data, 600);
+
+        if ($writeFile) {
+            $path = storage_path("app/progress/{$key}.json");
+            if (!file_exists(dirname($path))) {
+                mkdir(dirname($path), 0755, true);
+            }
+            file_put_contents($path, json_encode($data), LOCK_EX);
+        }
+    }
+
+    // mapExcelData, validateRowData, createImportNotification, createErrorNotification,
+    // parseDate, mapSexToId mantienen sus implementaciones actuales.
+
 
     /**
      * Manejar respuesta de importación
      */
-    private function handleImportResponse($imported, $errorCount, $duplicateCount)
+    private function handleImportResponse($imported, $errorCount, $duplicateCount, $sessionId = null)
     {
         // Si se importó al menos 1 registro (éxito)
         if ($imported > 0) {
@@ -158,7 +222,8 @@ class ImportController extends Controller
                     'type' => 'success',
                     'title' => 'Importación exitosa',
                     'message' => $message
-                ]);
+                ])
+                ->with('session_id', $sessionId);
         }
         
         // Si no se importó ningún registro (fallo)
@@ -185,7 +250,8 @@ class ImportController extends Controller
                 'type' => 'warning',
                 'title' => 'No se importaron registros',
                 'message' => $message
-            ]);
+            ])
+            ->with('session_id', $sessionId);
     }
 
     /**
