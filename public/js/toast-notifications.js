@@ -66,6 +66,11 @@ document.addEventListener('DOMContentLoaded', function() {
         return showToast('warning', title, message);
     };
 
+    // Función showNotificationToast para compatibilidad con el sistema de notificaciones
+    window.showNotificationToast = function(type, title, message, duration = 4000) {
+        return showToast(type, title, message, duration);
+    };
+
     // Procesamiento de toasts desde sesión de Laravel
     function processLaravelToasts() {
         if (window.laravelToastData) {

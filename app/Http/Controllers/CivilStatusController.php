@@ -76,7 +76,7 @@ class CivilStatusController extends Controller
             ->with('toast', [
                 'type' => 'warning',
                 'title' => 'Eliminación Éxitosa',
-                'message' => 'El estado civil se ha eliminado correctamente.'
+                'message' => 'El estado civil ' . $civilStatus->name . ' se ha eliminado correctamente.'
             ]);
     }
 

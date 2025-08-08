@@ -1687,8 +1687,12 @@ document.addEventListener('DOMContentLoaded', function() {
         loadUnreadNotifications();
     }, 30000);
     
-    // Exponer función para mostrar toasts desde otros scripts
-    window.showNotificationToast = showNotificationToast;
+    // Exponer función para mostrar toasts desde otros scripts (con fallback seguro)
+    window.showNotificationToast = window.showNotificationToast || function(type, title, message, duration) {
+        if (typeof window.showToast === 'function') {
+            return window.showToast(type, title, message, duration);
+        }
+    };
     
 
 });

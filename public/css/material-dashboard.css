@@ -22802,31 +22802,7 @@ fieldset:disabled .btn {
   padding-bottom: 15px;
 }
 
-/*       Fix bug for IE      */
-@media screen and (-ms-high-contrast: active),
-(-ms-high-contrast: none) {
-
-  .rotating-card-container .card .back,
-  .rotating-card-container .card .front {
-    -ms-backface-visibility: visible;
-    backface-visibility: visible;
-  }
-
-  .rotating-card-container .card .back {
-    visibility: hidden;
-    transition: visibility 0.3s cubic-bezier(0.34, 1.45, 0.7, 1);
-  }
-
-  .rotating-card-container .card .front {
-    z-index: 4;
-  }
-
-  .rotating-card-container.manual-flip.hover .card .back,
-  .rotating-card-container:not(.manual-flip):hover .card .back {
-    z-index: 5;
-    visibility: visible;
-  }
-}
+/* IE-specific high-contrast hack removed */
 
 .dark-version {
   background-color: #171717 !important;
@@ -24995,13 +24971,7 @@ hr.horizontal.gray-light {
   padding-right: 0;
 }
 
-@media all and (-ms-high-contrast: none),
-(-ms-high-contrast: active) {
-  .navbar-vertical.navbar-expand-xs>[class*=container] {
-    min-height: none;
-    height: 100%;
-  }
-}
+/* IE-specific high-contrast hack removed */
 
 .navbar-vertical.navbar-expand-xs.fixed-start {
   left: 0;
@@ -25091,13 +25061,7 @@ hr.horizontal.gray-light {
   }
 }
 
-@media (min-width: 576px) and (-ms-high-contrast: none),
-(min-width: 576px) and (-ms-high-contrast: active) {
-  .navbar-vertical.navbar-expand-sm>[class*=container] {
-    min-height: none;
-    height: 100%;
-  }
-}
+/* IE-specific high-contrast hack removed */
 
 @media (min-width: 576px) {
   .navbar-vertical.navbar-expand-sm.fixed-start {
@@ -25189,13 +25153,7 @@ hr.horizontal.gray-light {
   }
 }
 
-@media (min-width: 768px) and (-ms-high-contrast: none),
-(min-width: 768px) and (-ms-high-contrast: active) {
-  .navbar-vertical.navbar-expand-md>[class*=container] {
-    min-height: none;
-    height: 100%;
-  }
-}
+/* IE-specific high-contrast hack removed */
 
 @media (min-width: 768px) {
   .navbar-vertical.navbar-expand-md.fixed-start {
@@ -25287,13 +25245,7 @@ hr.horizontal.gray-light {
   }
 }
 
-@media (min-width: 992px) and (-ms-high-contrast: none),
-(min-width: 992px) and (-ms-high-contrast: active) {
-  .navbar-vertical.navbar-expand-lg>[class*=container] {
-    min-height: none;
-    height: 100%;
-  }
-}
+/* IE-specific high-contrast hack removed */
 
 @media (min-width: 992px) {
   .navbar-vertical.navbar-expand-lg.fixed-start {
@@ -25385,13 +25337,7 @@ hr.horizontal.gray-light {
   }
 }
 
-@media (min-width: 1200px) and (-ms-high-contrast: none),
-(min-width: 1200px) and (-ms-high-contrast: active) {
-  .navbar-vertical.navbar-expand-xl>[class*=container] {
-    min-height: none;
-    height: 100%;
-  }
-}
+/* IE-specific high-contrast hack removed */
 
 @media (min-width: 1200px) {
   .navbar-vertical.navbar-expand-xl.fixed-start {
@@ -25483,13 +25429,7 @@ hr.horizontal.gray-light {
   }
 }
 
-@media (min-width: 1400px) and (-ms-high-contrast: none),
-(min-width: 1400px) and (-ms-high-contrast: active) {
-  .navbar-vertical.navbar-expand-xxl>[class*=container] {
-    min-height: none;
-    height: 100%;
-  }
-}
+/* IE-specific high-contrast hack removed */
 
 @media (min-width: 1400px) {
   .navbar-vertical.navbar-expand-xxl.fixed-start {
@@ -29161,12 +29101,7 @@ pre[class*=language-] {
   }
 }
 
-@media screen and (-ms-high-contrast: active),
-(-ms-high-contrast: none) {
-  .ps {
-    overflow: auto !important;
-  }
-}
+/* IE-specific high-contrast hack removed */
 
 .accordion .accordion-button {
   margin: 0 auto;
@@ -31589,12 +31524,7 @@ pre[class*=language-] {
   }
 }
 
-@media screen and (-ms-high-contrast: active),
-(-ms-high-contrast: none) {
-  .ps {
-    overflow: auto !important;
-  }
-}
+/* IE-specific high-contrast hack removed */
 
 /*===============================
 =            Choices            =
