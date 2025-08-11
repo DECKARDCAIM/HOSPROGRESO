@@ -14,12 +14,14 @@ use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use App\Models\ClinicalRecord;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Cache;
 
 class MedicalConsultationController extends Controller
 {
     public function index()
     {
-        $query = MedicalConsultation::with(['clinicalRecord', 'doctor', 'specialty'])
+        $query = MedicalConsultation::with(['clinicalRecord:id,record_number,first_name,first_lastname', 'doctor:id,first_name,first_lastname', 'specialty:id,name'])
+            ->select('id','clinical_record_id','doctor_id','specialty_id','status','attention_type','consultation_date')
             ->whereIn('status', ['abierta', 'en_proceso']);
 
         // Filtrar por tipo de atención según el rol del usuario
@@ -30,7 +32,11 @@ class MedicalConsultationController extends Controller
             $query->where('attention_type', 'consulta_externa');
         }
 
-        $medicalConsultations = $query->orderBy('created_at', 'desc')->paginate(25);
+        $page = (int) (request()->query('page', 1));
+        $cacheKey = 'consultas:abiertas:index:v1:user=' . auth()->id() . ':p=' . $page;
+        $medicalConsultations = Cache::tags(['consultas','listados'])->remember($cacheKey, now()->addMinutes(5), function () use ($query) {
+            return $query->orderBy('created_at', 'desc')->paginate(25);
+        });
 
         return view('modules.medical_consultations.index', compact('medicalConsultations'));
     }
@@ -54,11 +60,11 @@ class MedicalConsultationController extends Controller
         $clinicalRecord = ClinicalRecord::findOrFail($request->clinical_record_id);
         
         // Obtener doctores y especialidades para los modales
-        $doctors = Doctor::with('specialty')->where('is_active', true)
-            ->orderBy('first_name')
-            ->orderBy('first_lastname')
-            ->get();
-        $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
+        $doctors = Cache::tags(['doctores','catalogos'])->remember('doctores:active:full:v1', now()->addHours(6), function () {
+            return Doctor::with('specialty:id,name')->where('is_active', true)
+                ->orderBy('first_name')->orderBy('first_lastname')->get();
+        });
+        $specialties = Cache::tags(['especialidades','catalogos'])->remember('especialidades:select:v2', now()->addHours(12), fn()=> Specialty::where('is_active', true)->orderBy('name')->get(['id','name']));
 
         return view('modules.medical_consultations.create', compact('clinicalRecord', 'doctors', 'specialties'));
     }
@@ -140,15 +146,14 @@ class MedicalConsultationController extends Controller
                 ->with('error', 'Esta consulta ya ha sido finalizada.');
         }
 
-        $doctors = Doctor::with('specialty')->where('is_active', true)
-            ->orderBy('first_name')
-            ->orderBy('first_lastname')
-            ->get();
-        $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
-        $laboratoryTests = LaboratoryTest::where('is_active', true)->orderBy('name')->get();
-        $exams = Exam::where('is_active', true)->orderBy('name')->get();
-        $medications = Medication::where('is_active', true)->orderBy('name')->get();
-        $controlTypes = ControlType::where('is_active', true)->orderBy('name')->get();
+        $doctors = Cache::tags(['doctores','catalogos'])->remember('doctores:active:full:v1', now()->addHours(6), function () {
+            return Doctor::with('specialty:id,name')->where('is_active', true)->orderBy('first_name')->orderBy('first_lastname')->get();
+        });
+        $specialties = Cache::tags(['especialidades','catalogos'])->remember('especialidades:select:v2', now()->addHours(12), fn()=> Specialty::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $laboratoryTests = Cache::tags(['pruebas_laboratorio','catalogos'])->remember('laboratory-tests:active:v1', now()->addHours(12), fn()=> LaboratoryTest::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $exams = Cache::tags(['examenes','catalogos'])->remember('exams:active:v1', now()->addHours(12), fn()=> Exam::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $medications = Cache::tags(['medicamentos','catalogos'])->remember('medications:active:v1', now()->addHours(12), fn()=> Medication::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $controlTypes = Cache::tags(['tipos_control','catalogos'])->remember('control-types:active:v1', now()->addHours(12), fn()=> ControlType::where('is_active', true)->orderBy('name')->get(['id','name']));
         $companionRelationships = \App\Models\CompanionRelationship::active()->orderBy('name')->get();
         $patientStatuses = \App\Models\PatientStatus::active()->orderBy('name')->get();
 
@@ -165,15 +170,14 @@ class MedicalConsultationController extends Controller
                 ->with('error', 'Esta consulta ya ha sido finalizada.');
         }
 
-        $doctors = Doctor::with('specialty')->where('is_active', true)
-            ->orderBy('first_name')
-            ->orderBy('first_lastname')
-            ->get();
-        $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
-        $laboratoryTests = LaboratoryTest::where('is_active', true)->orderBy('name')->get();
-        $exams = Exam::where('is_active', true)->orderBy('name')->get();
-        $medications = Medication::where('is_active', true)->orderBy('name')->get();
-        $controlTypes = ControlType::where('is_active', true)->orderBy('name')->get();
+        $doctors = Cache::tags(['doctores','catalogos'])->remember('doctores:active:full:v1', now()->addHours(6), function () {
+            return Doctor::with('specialty:id,name')->where('is_active', true)->orderBy('first_name')->orderBy('first_lastname')->get();
+        });
+        $specialties = Cache::tags(['especialidades','catalogos'])->remember('especialidades:select:v2', now()->addHours(12), fn()=> Specialty::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $laboratoryTests = Cache::tags(['pruebas_laboratorio','catalogos'])->remember('laboratory-tests:active:v1', now()->addHours(12), fn()=> LaboratoryTest::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $exams = Cache::tags(['examenes','catalogos'])->remember('exams:active:v1', now()->addHours(12), fn()=> Exam::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $medications = Cache::tags(['medicamentos','catalogos'])->remember('medications:active:v1', now()->addHours(12), fn()=> Medication::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $controlTypes = Cache::tags(['tipos_control','catalogos'])->remember('control-types:active:v1', now()->addHours(12), fn()=> ControlType::where('is_active', true)->orderBy('name')->get(['id','name']));
         $companionRelationships = \App\Models\CompanionRelationship::active()->orderBy('name')->get();
         $patientStatuses = \App\Models\PatientStatus::active()->orderBy('name')->get();
 
@@ -190,15 +194,14 @@ class MedicalConsultationController extends Controller
                 ->with('error', 'Esta consulta ya ha sido finalizada.');
         }
 
-        $doctors = Doctor::with('specialty')->where('is_active', true)
-            ->orderBy('first_name')
-            ->orderBy('first_lastname')
-            ->get();
-        $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
-        $laboratoryTests = LaboratoryTest::where('is_active', true)->orderBy('name')->get();
-        $exams = Exam::where('is_active', true)->orderBy('name')->get();
-        $medications = Medication::where('is_active', true)->orderBy('name')->get();
-        $controlTypes = ControlType::where('is_active', true)->orderBy('name')->get();
+        $doctors = Cache::tags(['doctores','catalogos'])->remember('doctores:active:full:v1', now()->addHours(6), function () {
+            return Doctor::with('specialty:id,name')->where('is_active', true)->orderBy('first_name')->orderBy('first_lastname')->get();
+        });
+        $specialties = Cache::tags(['especialidades','catalogos'])->remember('especialidades:select:v2', now()->addHours(12), fn()=> Specialty::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $laboratoryTests = Cache::tags(['pruebas_laboratorio','catalogos'])->remember('laboratory-tests:active:v1', now()->addHours(12), fn()=> LaboratoryTest::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $exams = Cache::tags(['examenes','catalogos'])->remember('exams:active:v1', now()->addHours(12), fn()=> Exam::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $medications = Cache::tags(['medicamentos','catalogos'])->remember('medications:active:v1', now()->addHours(12), fn()=> Medication::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $controlTypes = Cache::tags(['tipos_control','catalogos'])->remember('control-types:active:v1', now()->addHours(12), fn()=> ControlType::where('is_active', true)->orderBy('name')->get(['id','name']));
         $companionRelationships = \App\Models\CompanionRelationship::active()->orderBy('name')->get();
         $contraceptiveMethods = \App\Models\ContraceptiveMethod::active()->orderBy('type')->orderBy('name')->get();
         $patientStatuses = \App\Models\PatientStatus::active()->orderBy('name')->get();

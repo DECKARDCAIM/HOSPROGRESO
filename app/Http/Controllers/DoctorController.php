@@ -7,6 +7,7 @@ use App\Models\Specialty;
 use App\Models\ScheduleType;
 use Illuminate\Http\Request;
 use App\Services\NotificationService;
+use Illuminate\Support\Facades\Cache;
 
 class DoctorController extends Controller
 {
@@ -14,35 +15,46 @@ class DoctorController extends Controller
     {
         $status = $request->query('status', 'active');
         $search = $request->query('search', '');
+        $page = (int) ($request->query('page', 1));
 
-        $doctors = Doctor::with('specialty')
-            ->where('is_active', $status === 'active' ? 1 : 0)
-            ->when($search, function ($query, $search) {
-                $query->where(function($q) use ($search) {
-                    $q->where('first_name', 'like', "%$search%")
-                      ->orWhere('second_name', 'like', "%$search%")
-                      ->orWhere('third_name', 'like', "%$search%")
-                      ->orWhere('first_lastname', 'like', "%$search%")
-                      ->orWhere('second_lastname', 'like', "%$search%")
-                      ->orWhere('married_lastname', 'like', "%$search%")
-                      ->orWhere('cui', 'like', "%$search%")
-                      ->orWhere('license_number', 'like', "%$search%")
-                      ->orWhereHas('specialty', function($q2) use ($search) {
-                          $q2->where('name', 'like', "%$search%") ;
-                      });
-                });
-            })
-            ->orderBy('first_name')
-            ->paginate(25)
-            ->appends(['status' => $status, 'search' => $search]);
+        $ttl = now()->addMinutes(10);
+        $cacheKey = "doctores:index:v1:status={$status}:q=".urlencode((string) $search).":p={$page}";
+        $doctors = Cache::tags(['doctores','listados'])->remember($cacheKey, $ttl, function () use ($status, $search) {
+            return Doctor::with(['specialty:id,name'])
+                ->select('id','first_name','second_name','third_name','first_lastname','second_lastname','married_lastname','cui','license_number','specialty_id','is_active')
+                ->where('is_active', $status === 'active' ? 1 : 0)
+                ->when($search, function ($query, $search) {
+                    $query->where(function($q) use ($search) {
+                        $q->where('first_name', 'like', "%$search%")
+                          ->orWhere('second_name', 'like', "%$search%")
+                          ->orWhere('third_name', 'like', "%$search%")
+                          ->orWhere('first_lastname', 'like', "%$search%")
+                          ->orWhere('second_lastname', 'like', "%$search%")
+                          ->orWhere('married_lastname', 'like', "%$search%")
+                          ->orWhere('cui', 'like', "%$search%")
+                          ->orWhere('license_number', 'like', "%$search%")
+                          ->orWhereHas('specialty', function($q2) use ($search) {
+                              $q2->where('name', 'like', "%$search%") ;
+                          });
+                    });
+                })
+                ->orderBy('first_name')
+                ->paginate(25);
+        });
+
+        $doctors->appends(['status' => $status, 'search' => $search]);
 
         return view('modules.doctors.index', compact('doctors', 'status', 'search'));
     }
 
     public function create()
     {
-        $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
-        $scheduleTypes = ScheduleType::with('specialty')->orderBy('name')->get();
+        $specialties = Cache::tags(['especialidades','catalogos'])->remember('especialidades:select:v2', now()->addHours(12), function () {
+            return Specialty::where('is_active', true)->orderBy('name')->get(['id','name']);
+        });
+        $scheduleTypes = Cache::tags(['tipos_horario','catalogos'])->remember('schedule-types:select:v1', now()->addHours(12), function () {
+            return ScheduleType::with('specialty:id,name')->orderBy('name')->get(['id','name','specialty_id']);
+        });
         return view('modules.doctors.create', compact('specialties', 'scheduleTypes'));
     }
 
@@ -74,8 +86,12 @@ class DoctorController extends Controller
 
     public function edit(Doctor $doctor)
     {
-        $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
-        $scheduleTypes = ScheduleType::with('specialty')->orderBy('name')->get();
+        $specialties = Cache::tags(['especialidades','catalogos'])->remember('especialidades:select:v2', now()->addHours(12), function () {
+            return Specialty::where('is_active', true)->orderBy('name')->get(['id','name']);
+        });
+        $scheduleTypes = Cache::tags(['tipos_horario','catalogos'])->remember('schedule-types:select:v1', now()->addHours(12), function () {
+            return ScheduleType::with('specialty:id,name')->orderBy('name')->get(['id','name','specialty_id']);
+        });
         return view('modules.doctors.edit', compact('doctor', 'specialties', 'scheduleTypes'));
     }
 

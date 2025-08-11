@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CompanionRelationship;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CompanionRelationshipController extends Controller
 {
@@ -21,14 +22,21 @@ class CompanionRelationshipController extends Controller
         $status = $request->query('status', 'active');
         $search = $request->query('search');
         
-        $relationships = CompanionRelationship::where('is_active', $status === 'active' ? 1 : 0)
-            ->when($search, function ($query) use ($search) {
-                return $query->where('name', 'like', "%$search%")
-                           ->orWhere('description', 'like', "%$search%");
-            })
-            ->orderBy('name')
-            ->paginate(25)
-            ->appends($request->all());
+        $page = (int) ($request->query('page', 1));
+        $key = "relaciones_acompanantes:index:v1:status={$status}:q=".urlencode((string)$search).":p={$page}";
+        $relationships = Cache::tags(['relaciones_acompanantes','listados'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
+            return CompanionRelationship::select('id','name','description','is_active')
+                ->where('is_active', $status === 'active' ? 1 : 0)
+                ->when($search, function ($query) use ($search) {
+                    return $query->where(function ($q) use ($search) {
+                        $q->where('name', 'like', "%$search%")
+                          ->orWhere('description', 'like', "%$search%");
+                    });
+                })
+                ->orderBy('name')
+                ->paginate(25);
+        });
+        $relationships->appends($request->all());
             
         return view('modules.companion_relationships.index', compact('relationships', 'status', 'search'));
     }

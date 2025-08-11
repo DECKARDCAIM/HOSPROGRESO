@@ -19,18 +19,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Cache;
 
 class ClinicalRecordController extends Controller
 {
     public function index(Request $request)
     {
-        $countries = Country::orderBy('name')->get();
-        $departments = Department::orderBy('name')->get();
-        $municipalities = Municipality::orderBy('name')->get();
-        $linguisticCommunities = LinguisticCommunity::orderBy('name')->get();
-        $ethnicities = Ethnicity::orderBy('name')->get();
-        $sexes = Sex::orderBy('name')->get();
-        $civilStatuses = CivilStatus::orderBy('name')->get();
+        $countries = Cache::tags(['paises','catalogos'])->remember('paises:select:v1', now()->addHours(12), fn()=> Country::orderBy('name')->get(['id','name']));
+        $departments = Cache::tags(['departamentos','catalogos'])->remember('departamentos:select:v1', now()->addHours(12), fn()=> Department::orderBy('name')->get(['id','name','country_id']));
+        $municipalities = Cache::tags(['municipios','catalogos'])->remember('municipios:select:v1', now()->addHours(12), fn()=> Municipality::orderBy('name')->get(['id','name','department_id']));
+        $linguisticCommunities = Cache::tags(['comunidades_linguisticas','catalogos'])->remember('linguistic-communities:select:v1', now()->addHours(12), fn()=> LinguisticCommunity::orderBy('name')->get(['id','name']));
+        $ethnicities = Cache::tags(['etnias','catalogos'])->remember('ethnicities:select:v1', now()->addHours(12), fn()=> Ethnicity::orderBy('name')->get(['id','name']));
+        $sexes = Cache::tags(['sexos','catalogos'])->remember('sexes:select:v1', now()->addHours(12), fn()=> Sex::orderBy('name')->get(['id','name']));
+        $civilStatuses = Cache::tags(['estados_civiles','catalogos'])->remember('civil-statuses:select:v1', now()->addHours(12), fn()=> CivilStatus::orderBy('name')->get(['id','name']));
 
         // Obtener registros permanentes
         $permanentRecords = ClinicalRecord::select([
@@ -211,10 +212,12 @@ class ClinicalRecordController extends Controller
             $combinedRecords = $permanentRecords->union($temporaryRecords);
         }
 
-        $clinicalRecords = $combinedRecords
-            ->orderBy('created_at', 'desc')
-            ->paginate(25)
-            ->appends($request->all());
+        $page = (int) ($request->query('page', 1));
+        $cacheKey = 'clinical-records:index:v1:' . md5(json_encode($request->all()) . ":p={$page}");
+        $clinicalRecords = Cache::tags(['expedientes','listados'])->remember($cacheKey, now()->addMinutes(10), function () use ($combinedRecords) {
+            return $combinedRecords->orderBy('created_at', 'desc')->paginate(25);
+        });
+        $clinicalRecords->appends($request->all());
 
         // Estadísticas
         $stats = [
@@ -224,8 +227,8 @@ class ClinicalRecordController extends Controller
         ];
 
         // Datos para la cascada de ubicación
-        $allDepartments = Department::orderBy('name')->get();
-        $allMunicipalities = Municipality::orderBy('name')->get();
+        $allDepartments = $departments;
+        $allMunicipalities = $municipalities;
 
         return view('modules.clinical_records.index', compact(
             'clinicalRecords',
@@ -244,15 +247,15 @@ class ClinicalRecordController extends Controller
 
     public function create(Request $request)
     {
-        $sexes = Sex::where('is_active', true)->orderBy('name')->get();
-        $civilStatuses = CivilStatus::where('is_active', true)->orderBy('name')->get();
-        $linguisticCommunities = LinguisticCommunity::where('is_active', true)->orderBy('name')->get();
-        $ethnicities = Ethnicity::where('is_active', true)->orderBy('name')->get();
-        $disabilities = Disability::where('is_active', true)->orderBy('name')->get();
-        $allergies = Allergy::where('is_active', true)->orderBy('name')->get();
-        $countries = Country::where('is_active', true)->orderBy('name')->get();
-        $departments = Department::where('is_active', true)->orderBy('name')->get();
-        $municipalities = Municipality::where('is_active', true)->orderBy('name')->get();
+        $sexes = Cache::tags(['sexos','catalogos'])->remember('sexes:active:v1', now()->addHours(12), fn()=> Sex::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $civilStatuses = Cache::tags(['estados_civiles','catalogos'])->remember('civil-statuses:active:v1', now()->addHours(12), fn()=> CivilStatus::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $linguisticCommunities = Cache::tags(['comunidades_linguisticas','catalogos'])->remember('linguistic-communities:active:v1', now()->addHours(12), fn()=> LinguisticCommunity::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $ethnicities = Cache::tags(['etnias','catalogos'])->remember('ethnicities:active:v1', now()->addHours(12), fn()=> Ethnicity::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $disabilities = Cache::tags(['discapacidades','catalogos'])->remember('disabilities:active:v1', now()->addHours(12), fn()=> Disability::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $allergies = Cache::tags(['alergias','catalogos'])->remember('allergies:active:v1', now()->addHours(12), fn()=> Allergy::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $countries = Cache::tags(['paises','catalogos'])->remember('paises:active:v1', now()->addHours(12), fn()=> Country::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $departments = Cache::tags(['departamentos','catalogos'])->remember('departamentos:active:v1', now()->addHours(12), fn()=> Department::where('is_active', true)->orderBy('name')->get(['id','name','country_id']));
+        $municipalities = Cache::tags(['municipios','catalogos'])->remember('municipios:active:v1', now()->addHours(12), fn()=> Municipality::where('is_active', true)->orderBy('name')->get(['id','name','department_id']));
 
         // Buscar paciente temporal si se proporciona ID en la URL
         $temporaryPatient = null;

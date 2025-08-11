@@ -18,6 +18,7 @@ use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use PDF;
 
 class AppointmentController extends Controller
@@ -29,10 +30,16 @@ class AppointmentController extends Controller
 
     public function index(Request $request)
     {
-        // Verificar y marcar automáticamente citas perdidas (2 horas de gracia)
+        // Verificar y marcar automáticamente citas perdidas (día siguiente a las 00:00)
         $this->checkAndMarkMissedAppointments();
         
-        $query = Appointment::with(['clinicalRecord', 'doctor', 'specialty', 'scheduleType', 'createdBy']);
+        $query = Appointment::with([
+            'clinicalRecord:id,first_name,second_lastname,first_lastname,cui,record_number',
+            'doctor:id,first_name,first_lastname,specialty_id',
+            'specialty:id,name',
+            'scheduleType:id,name',
+            'createdBy:id,name'
+        ]);
         
         // Aplicar filtros
         $query->byStatus($request->status)
@@ -52,21 +59,34 @@ class AppointmentController extends Controller
             })->orWhere('appointment_number', 'like', "%{$search}%");
         }
         
-        $appointments = $query->orderBy('appointment_date', 'desc')->paginate(20);
+        // Cache de listados con tags (5-15 min)
+        $page = (int) ($request->query('page', 1));
+        $status = $request->status ?? '';
+        $date = $request->date ?? '';
+        $doctorId = $request->doctor_id ?? '';
+        $specialtyId = $request->specialty_id ?? '';
+        $q = $request->q ?? '';
+
+        $cacheKey = "citas:index:v1:s={$status}:d={$date}:doc={$doctorId}:esp={$specialtyId}:q=".urlencode((string)$q).":p={$page}";
+        $appointments = Cache::tags(['citas','listados'])->remember($cacheKey, now()->addMinutes(10), function () use ($query) {
+            return $query->orderBy('appointment_date', 'desc')->paginate(20);
+        });
         
         // Datos para filtros
-        $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
-        $doctors = Doctor::where('is_active', true)->orderBy('first_name')->get();
+        $specialties = Cache::tags(['especialidades','catalogos'])->remember('especialidades:select:v2', now()->addHours(12), fn() => Specialty::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $doctors = Cache::tags(['doctores','catalogos'])->remember('doctores:select:v1', now()->addHours(6), fn() => Doctor::where('is_active', true)->orderBy('first_name')->get(['id','first_name','first_lastname']));
         
         // Estadísticas rápidas
-        $stats = [
-            'total' => Appointment::count(),
-            'pendientes' => Appointment::where('status', 'pendiente')->count(),
-            'confirmadas' => Appointment::where('status', 'confirmada')->count(),
-            'atendidas' => Appointment::where('status', 'atendida')->count(),
-            'perdidas' => Appointment::where('status', 'perdida')->count(),
-            'canceladas' => Appointment::where('status', 'cancelada')->count(),
-        ];
+        $stats = Cache::tags(['citas','dashboard'])->remember('citas:stats:v1', now()->addMinutes(60), function () {
+            return [
+                'total' => Appointment::count(),
+                'pendientes' => Appointment::where('status', 'pendiente')->count(),
+                'confirmadas' => Appointment::where('status', 'confirmada')->count(),
+                'atendidas' => Appointment::where('status', 'atendida')->count(),
+                'perdidas' => Appointment::where('status', 'perdida')->count(),
+                'canceladas' => Appointment::where('status', 'cancelada')->count(),
+            ];
+        });
         
         return view('modules.appointments.index', compact('appointments', 'specialties', 'doctors', 'stats'));
     }
@@ -145,10 +165,13 @@ class AppointmentController extends Controller
     public function getDoctorsBySpecialty(Request $request)
     {
         $specialtyId = $request->input('specialty_id');
-        $doctors = Doctor::where('specialty_id', $specialtyId)
+        $cacheKey = "doctores:by_especialidad:v1:{$specialtyId}";
+        $doctors = Cache::tags(['doctores','catalogos'])->remember($cacheKey, now()->addHours(6), function () use ($specialtyId) {
+            return Doctor::where('specialty_id', $specialtyId)
                          ->where('is_active', true)
-                         ->with('scheduleType')
-                         ->get();
+                         ->with('scheduleType:id,name')
+                         ->get(['id','first_name','first_lastname','specialty_id']);
+        });
         return response()->json($doctors);
     }
 
@@ -552,12 +575,11 @@ class AppointmentController extends Controller
     private function checkAndMarkMissedAppointments()
     {
         try {
-            // Obtener SOLO citas PENDIENTES que ya pasaron su fecha/hora
-            // Las citas CONFIRMADAS NO se marcan como perdidas automáticamente
-            // porque confirmada significa que el paciente sí vino
-            $cutoffTime = now()->subHours(2);
-            
-            $missedAppointments = Appointment::where('status', 'pendiente') // SOLO PENDIENTES
+            // NUEVA LÓGICA: solo marcar a partir del día siguiente a las 00:00
+            // Citas en estado PENDIENTE cuya fecha/hora sea anterior al inicio del día actual
+            $cutoffTime = now()->startOfDay();
+
+            $missedAppointments = Appointment::where('status', 'pendiente')
                 ->where('appointment_date', '<', $cutoffTime)
                 ->get();
             

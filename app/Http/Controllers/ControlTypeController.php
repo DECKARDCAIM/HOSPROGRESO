@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ControlType;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ControlTypeController extends Controller
 {
@@ -21,13 +22,18 @@ class ControlTypeController extends Controller
         $status = $request->query('status', 'active');
         $search = $request->query('search');
         
-        $controlTypes = ControlType::where('is_active', $status === 'active' ? 1 : 0)
-            ->when($search, function ($query) use ($search) {
-                return $query->where('name', 'like', "%$search%");
-            })
-            ->orderBy('name')
-            ->paginate(25)
-            ->appends($request->all());
+        $page = (int) ($request->query('page', 1));
+        $key = "tipos_control:index:v1:status={$status}:q=".urlencode((string)$search).":p={$page}";
+        $controlTypes = Cache::tags(['tipos_control','listados'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
+            return ControlType::select('id','name','description','is_active')
+                ->where('is_active', $status === 'active' ? 1 : 0)
+                ->when($search, function ($query) use ($search) {
+                    return $query->where('name', 'like', "%$search%");
+                })
+                ->orderBy('name')
+                ->paginate(25);
+        });
+        $controlTypes->appends($request->all());
 
         return view('modules.control_types.index', compact('controlTypes', 'status', 'search'));
     }

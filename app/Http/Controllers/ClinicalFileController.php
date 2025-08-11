@@ -7,6 +7,7 @@ use App\Models\ClinicalFileTracking;
 use App\Models\TemporaryPatient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class ClinicalFileController extends Controller
 {
@@ -15,37 +16,35 @@ class ClinicalFileController extends Controller
      */
     public function index()
     {
-        // Expedientes recién creados (no archivados)
-        $recentRecords = ClinicalRecord::with([
-            'sex', 
-            'civilStatus', 
-            'medicalConsultations',
-            'appointments'
-        ])
-        ->leftJoin('clinical_file_tracking', 'clinical_records.id', '=', 'clinical_file_tracking.clinical_record_id')
-        ->where(function($query) {
-            $query->whereNull('clinical_file_tracking.is_archived')
-                  ->orWhere('clinical_file_tracking.is_archived', false);
-        })
-        ->select('clinical_records.*')
-        ->orderBy('clinical_records.created_at', 'desc')
-        ->get();
+        $recentRecords = Cache::tags(['archivo_clinico','listados'])->remember('clinical-file:index:v1', now()->addMinutes(10), function () {
+            $records = ClinicalRecord::with([
+                'sex',
+                'civilStatus',
+                'medicalConsultations',
+                'appointments'
+            ])
+            ->leftJoin('clinical_file_tracking', 'clinical_records.id', '=', 'clinical_file_tracking.clinical_record_id')
+            ->where(function($query) {
+                $query->whereNull('clinical_file_tracking.is_archived')
+                      ->orWhere('clinical_file_tracking.is_archived', false);
+            })
+            ->select('clinical_records.*')
+            ->orderBy('clinical_records.created_at', 'desc')
+            ->get();
 
-        // Agregar información de seguimiento y número de registro anterior
-        $recentRecords->each(function ($record) {
-            $record->tracking = ClinicalFileTracking::where('clinical_record_id', $record->id)->first();
-            if (!$record->tracking) {
-                // Crear registro de seguimiento si no existe
-                $record->tracking = ClinicalFileTracking::create([
-                    'clinical_record_id' => $record->id
+            $records->each(function ($record) {
+                // Asegurar tracking (sin duplicar)
+                $record->tracking = ClinicalFileTracking::firstOrCreate([
+                    'clinical_record_id' => $record->id,
                 ]);
-            }
-            
-            // Buscar número de registro anterior en temporales (ya procesados)
-            $tempPatient = TemporaryPatient::where('registration_number', $record->record_number)
-                                         ->where('is_processed', true)
-                                         ->first();
-            $record->old_registration_number = $tempPatient ? $tempPatient->registration_number : null;
+
+                $tempPatient = TemporaryPatient::where('registration_number', $record->record_number)
+                                             ->where('is_processed', true)
+                                             ->first();
+                $record->old_registration_number = $tempPatient ? $tempPatient->registration_number : null;
+            });
+
+            return $records;
         });
 
         return view('modules.clinical_file.index', compact('recentRecords'));
@@ -56,27 +55,31 @@ class ClinicalFileController extends Controller
      */
     public function archived()
     {
-        $archivedRecords = ClinicalRecord::with([
-            'sex', 
-            'civilStatus',
-            'medicalConsultations',
-            'appointments'
-        ])
-        ->join('clinical_file_tracking', 'clinical_records.id', '=', 'clinical_file_tracking.clinical_record_id')
-        ->where('clinical_file_tracking.is_archived', true)
-        ->select('clinical_records.*', 'clinical_file_tracking.archived_at', 'clinical_file_tracking.notes')
-        ->orderBy('clinical_file_tracking.archived_at', 'desc')
-        ->get();
+        $archivedRecords = Cache::tags(['archivo_clinico','listados'])->remember('clinical-file:archived:v1', now()->addMinutes(10), function () {
+            $records = ClinicalRecord::with([
+                'sex',
+                'civilStatus',
+                'medicalConsultations',
+                'appointments'
+            ])
+            ->join('clinical_file_tracking', 'clinical_records.id', '=', 'clinical_file_tracking.clinical_record_id')
+            ->where('clinical_file_tracking.is_archived', true)
+            ->select('clinical_records.*', 'clinical_file_tracking.archived_at', 'clinical_file_tracking.notes')
+            ->orderBy('clinical_file_tracking.archived_at', 'desc')
+            ->get();
 
-        // Agregar información de seguimiento
-        $archivedRecords->each(function ($record) {
-            $record->tracking = ClinicalFileTracking::where('clinical_record_id', $record->id)->first();
-            
-            // Buscar número de registro anterior
-            $tempPatient = TemporaryPatient::where('registration_number', $record->record_number)
-                                         ->where('is_processed', true)
-                                         ->first();
-            $record->old_registration_number = $tempPatient ? $tempPatient->registration_number : null;
+            $records->each(function ($record) {
+                $record->tracking = ClinicalFileTracking::firstOrCreate([
+                    'clinical_record_id' => $record->id,
+                ]);
+
+                $tempPatient = TemporaryPatient::where('registration_number', $record->record_number)
+                                             ->where('is_processed', true)
+                                             ->first();
+                $record->old_registration_number = $tempPatient ? $tempPatient->registration_number : null;
+            });
+
+            return $records;
         });
 
         return view('modules.clinical_file.archived', compact('archivedRecords'));
@@ -87,7 +90,8 @@ class ClinicalFileController extends Controller
      */
     public function show($id)
     {
-        $clinicalRecord = ClinicalRecord::with([
+        $clinicalRecord = Cache::tags(['archivo_clinico'])->remember("clinical-file:show:v1:{$id}", now()->addMinutes(10), function () use ($id) {
+            return ClinicalRecord::with([
             'sex',
             'civilStatus',
             'linguisticCommunity',
@@ -104,11 +108,9 @@ class ClinicalFileController extends Controller
             'medicalConsultations.medications',
             'appointments.doctor.specialty'
         ])->findOrFail($id);
+        });
 
-        $tracking = ClinicalFileTracking::where('clinical_record_id', $id)->first();
-        if (!$tracking) {
-            $tracking = ClinicalFileTracking::create(['clinical_record_id' => $id]);
-        }
+        $tracking = ClinicalFileTracking::firstOrCreate(['clinical_record_id' => $id]);
 
         // Buscar número de registro anterior
         $tempPatient = TemporaryPatient::where('registration_number', $clinicalRecord->record_number)

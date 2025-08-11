@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Cache;
 
 class UserController extends Controller
 {
@@ -32,23 +33,28 @@ class UserController extends Controller
         $role_filter = $request->query('role');
         $search = $request->query('search');
         
-        $users = User::with('role')
-            ->where('is_active', $status === 'active' ? 1 : 0)
-            ->when($role_filter, function ($query) use ($role_filter) {
-                return $query->where('role_id', $role_filter);
-            })
-            ->when($search, function ($query) use ($search) {
-                return $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%$search%")
-                      ->orWhere('email', 'like', "%$search%")
-                      ->orWhere('cui', 'like', "%$search%");
-                });
-            })
-            ->orderBy('name')
-            ->paginate(25)
-            ->appends($request->all());
+        $page = (int) ($request->query('page', 1));
+        $cacheKey = 'usuarios:index:v1:status=' . $status . ':role=' . ($role_filter ?? '') . ':q=' . urlencode((string) $search) . ':p=' . $page;
+        $users = Cache::tags(['usuarios','listados'])->remember($cacheKey, now()->addMinutes(10), function () use ($status, $role_filter, $search) {
+            return User::with('role:id,name')
+                ->select('id','name','email','cui','role_id','is_active')
+                ->where('is_active', $status === 'active' ? 1 : 0)
+                ->when($role_filter, function ($query) use ($role_filter) {
+                    return $query->where('role_id', $role_filter);
+                })
+                ->when($search, function ($query) use ($search) {
+                    return $query->where(function ($q) use ($search) {
+                        $q->where('name', 'like', "%$search%")
+                          ->orWhere('email', 'like', "%$search%")
+                          ->orWhere('cui', 'like', "%$search%");
+                    });
+                })
+                ->orderBy('name')
+                ->paginate(25);
+        });
+        $users->appends($request->all());
 
-        $roles = Role::where('is_active', true)->orderBy('name')->get();
+        $roles = Cache::tags(['roles','catalogos'])->remember('roles:select:v1', now()->addHours(12), fn() => Role::where('is_active', true)->orderBy('name')->get(['id','name']));
 
         return view('modules.users.index', compact('users', 'roles', 'status', 'role_filter', 'search'));
     }
@@ -58,7 +64,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        $roles = Role::where('is_active', true)->orderBy('name')->get();
+        $roles = Cache::tags(['roles','catalogos'])->remember('roles:select:v1', now()->addHours(12), fn() => Role::where('is_active', true)->orderBy('name')->get(['id','name']));
         return view('modules.users.create', compact('roles'));
     }
 

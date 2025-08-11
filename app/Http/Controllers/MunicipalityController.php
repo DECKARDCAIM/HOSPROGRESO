@@ -7,6 +7,7 @@ use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use App\Models\Department;
 use App\Models\Country;
+use Illuminate\Support\Facades\Cache;
 
 
 class MunicipalityController extends Controller
@@ -25,7 +26,7 @@ class MunicipalityController extends Controller
         $country_id = $request->country_id;
         $department_id = $request->department_id;
 
-        $countries = Country::all();
+        $countries = Cache::tags(['paises','catalogos'])->remember('paises:select:v1', now()->addHours(12), fn() => Country::where('is_active', true)->orderBy('name')->get(['id','name']));
         $departments = collect();
 
         $municipalities = Municipality::where('is_active', $status === 'active' ? 1 : 0);
@@ -43,8 +44,12 @@ class MunicipalityController extends Controller
             $municipalities->where('name', 'like', '%' . $search . '%');
         }
 
-        $municipalities = $municipalities->paginate(25)
-            ->appends(['status' => $status, 'search' => $search, 'country_id' => $country_id, 'department_id' => $department_id]);
+        $page = (int) ($request->query('page', 1));
+        $key = "municipios:index:v1:status={$status}:country={$country_id}:dept={$department_id}:q=".urlencode((string)$search).":p={$page}";
+        $municipalities = Cache::tags(['municipios','listados'])->remember($key, now()->addMinutes(10), function () use ($municipalities) {
+            return $municipalities->orderBy('name')->paginate(25);
+        });
+        $municipalities->appends(['status' => $status, 'search' => $search, 'country_id' => $country_id, 'department_id' => $department_id]);
 
         return view('modules.ubication.municipalities.index', compact('countries', 'departments', 'municipalities', 'status', 'search', 'country_id', 'department_id'));
     }
@@ -55,7 +60,7 @@ class MunicipalityController extends Controller
      */
     public function create(Request $request)
     {
-        $countries = Country::all();
+        $countries = Cache::tags(['paises','catalogos'])->remember('paises:select:v1', now()->addHours(12), fn() => Country::where('is_active', true)->orderBy('name')->get(['id','name']));
 
         $departments = collect(); // vacío por defecto
 

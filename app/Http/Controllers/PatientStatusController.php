@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PatientStatus;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class PatientStatusController extends Controller
 {
@@ -33,7 +34,11 @@ class PatientStatusController extends Controller
             });
         }
 
-        $patientStatuses = $query->orderBy('name')->paginate(10);
+        $page = (int) ($request->query('page', 1));
+        $cacheKey = "estados_paciente:index:v1:status={$status}:q=".urlencode((string)$search).":p={$page}";
+        $patientStatuses = Cache::tags(['estados_paciente','listados'])->remember($cacheKey, now()->addMinutes(10), function () use ($query) {
+            return $query->orderBy('name')->paginate(10);
+        });
 
         return view('modules.patient_statuses.index', compact('patientStatuses', 'status', 'search'));
     }

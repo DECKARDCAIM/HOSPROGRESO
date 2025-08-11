@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CivilStatus;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CivilStatusController extends Controller
 {
@@ -11,13 +12,21 @@ class CivilStatusController extends Controller
     {
         $status = $request->query('status', 'active');
         $search = $request->query('search', '');
-        $civilStatuses = CivilStatus::where('is_active', $status === 'active' ? 1 : 0)
-            ->when($search, function ($query, $search) {
-                $query->where('name', 'like', "%$search%");
-            })
-            ->orderBy('name')
-            ->paginate(25)
-            ->appends(['status' => $status, 'search' => $search]);
+        $page = (int) ($request->query('page', 1));
+        $civilStatuses = Cache::tags(['estados_civiles','listados'])->remember(
+            "civil-statuses:index:v1:status={$status}:q=".urlencode($search).":p={$page}",
+            now()->addMinutes(10),
+            function () use ($status, $search) {
+                return CivilStatus::select('id','name','description','is_active')
+                    ->where('is_active', $status === 'active' ? 1 : 0)
+                    ->when($search, function ($query, $search) {
+                        $query->where('name', 'like', "%$search%");
+                    })
+                    ->orderBy('name')
+                    ->paginate(25);
+            }
+        );
+        $civilStatuses->appends(['status' => $status, 'search' => $search]);
         return view('modules.civil_statuses.index', compact('civilStatuses', 'status', 'search'));
     }
 

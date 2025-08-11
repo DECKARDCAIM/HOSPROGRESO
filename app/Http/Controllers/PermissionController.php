@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Role;
 use App\Models\Permission;
+use Illuminate\Support\Facades\Cache;
 
 class PermissionController extends Controller
 {
@@ -13,8 +14,8 @@ class PermissionController extends Controller
      */
     public function edit(Role $role)
     {
-        // Obtener todos los permisos agrupados por módulo
-        $permissions = Permission::all()->groupBy('module');
+        // Obtener todos los permisos agrupados por módulo (cache 12h)
+        $permissions = Cache::tags(['permisos','catalogos'])->remember('permisos:all:v1', now()->addHours(12), fn() => Permission::all())->groupBy('module');
         
         // Obtener los IDs de permisos que ya tiene el rol
         $rolePermissions = $role->permissions->pluck('id')->toArray();

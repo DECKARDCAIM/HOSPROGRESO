@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\Country as ModelsCountry;
 use App\Models\Department;
 use App\Models\Municipality;
+use Illuminate\Support\Facades\Cache;
 
 class CountryController extends Controller
 {
@@ -23,12 +24,17 @@ class CountryController extends Controller
         $status = $request->query('status', 'active');
         $search = $request->query('search', '');
 
-        $countries = Country::where('is_active', $status === 'active' ? 1 : 0)
-            ->when($search, function ($query, $search) {
-                $query->where('name', 'like', '%' . $search . '%');
-            })
-            ->paginate(25)
-            ->appends(['status' => $status, 'search' => $search]);
+        $page = (int) ($request->query('page', 1));
+        $countries = Cache::tags(['paises','listados'])->remember("paises:index:v1:status={$status}:q=".urlencode($search).":p={$page}", now()->addMinutes(10), function () use ($status, $search) {
+            return Country::select('id','name','description','is_active')
+                ->where('is_active', $status === 'active' ? 1 : 0)
+                ->when($search, function ($query, $search) {
+                    $query->where('name', 'like', '%' . $search . '%');
+                })
+                ->orderBy('name')
+                ->paginate(25);
+        });
+        $countries->appends(['status' => $status, 'search' => $search]);
 
         return view('modules.ubication.countries.index', compact('countries', 'status', 'search'));
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Exam;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ExamController extends Controller
 {
@@ -12,13 +13,18 @@ class ExamController extends Controller
     {
         $status = $request->query('status', 'active');
         $search = $request->query('search', '');
-        $exams = Exam::where('is_active', $status === 'active' ? 1 : 0)
-            ->when($search, function ($query, $search) {
-                $query->where('name', 'like', "%$search%");
-            })
-            ->orderBy('name')
-            ->paginate(25)
-            ->appends(['status' => $status, 'search' => $search]);
+        $page = (int) ($request->query('page', 1));
+        $key = "examenes:index:v1:status={$status}:q=".urlencode($search).":p={$page}";
+        $exams = Cache::tags(['examenes','listados'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
+            return Exam::select('id','name','description','is_active')
+                ->where('is_active', $status === 'active' ? 1 : 0)
+                ->when($search, function ($query, $search) {
+                    $query->where('name', 'like', "%$search%");
+                })
+                ->orderBy('name')
+                ->paginate(25);
+        });
+        $exams->appends(['status' => $status, 'search' => $search]);
         return view('modules.exams.index', compact('exams', 'status', 'search'));
     }
 

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TemporaryPatient;
-use App\Models\Notification;
+// Notificaciones eliminadas
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -25,24 +25,28 @@ class ImportController extends Controller
         }
 
         $key = "import_progress_{$sessionId}";
-        $progressFile = storage_path('app/progress/' . $key . '.json');
+        // 1) Preferir Cache para actualizaciones frecuentes (cada ~10 filas)
+        if (is_array($cached = Cache::get($key))) {
+            return response()->json($cached);
+        }
 
-        if (file_exists($progressFile)) {
-            $data = json_decode(file_get_contents($progressFile), true);
+        // 2) Respaldo: archivo JSON (se escribe al finalizar cada chunk)
+        $progressFile = storage_path("app/progress/{$key}.json");
+        if (is_file($progressFile)) {
+            $data = json_decode(@file_get_contents($progressFile), true);
             if (is_array($data)) {
                 return response()->json($data);
             }
         }
 
-        $data = Cache::get($key, [
+        // 3) Valor por defecto
+        return response()->json([
             'current'    => 0,
             'total'      => 0,
             'percentage' => 0,
             'status'     => 'not_started',
             'message'    => 'Iniciando...'
         ]);
-
-        return response()->json($data);
     }
 
     public function import(Request $request)
@@ -88,6 +92,11 @@ class ImportController extends Controller
             $batchSize = 100;
             $chunks    = array_chunk($validRows, $batchSize, true);
 
+            // Parámetros de actualización de progreso sin afectar rendimiento
+            $progressEvery = 10; // reportar cada 10 filas
+            $minIntervalMs = 200; // mínimo 200ms entre reportes
+            $lastProgressAt = (int) (microtime(true) * 1000);
+
             foreach ($chunks as $chunk) {
                 $batchInsert = [];
 
@@ -109,6 +118,24 @@ class ImportController extends Controller
                         $processedSet[]  = $regNo;
                         $batchInsert[]   = $data;
                     }
+
+                    // Actualización de progreso intermedia, suave y no bloqueante
+                    if ($processedCount % $progressEvery === 0) {
+                        $nowMs = (int) (microtime(true) * 1000);
+                        if (($nowMs - $lastProgressAt) >= $minIntervalMs) {
+                            $pct = $totalRows > 0 ? round(($processedCount / $totalRows) * 100, 1) : 0;
+                            $this->updateProgress(
+                                $progressKey,
+                                $processedCount,
+                                $totalRows,
+                                $pct,
+                                'processing',
+                                "Procesados {$processedCount} de {$totalRows} registros...",
+                                false // sin escribir archivo para no degradar rendimiento
+                            );
+                            $lastProgressAt = $nowMs;
+                        }
+                    }
                 }
 
                 if (!empty($batchInsert)) {
@@ -116,7 +143,7 @@ class ImportController extends Controller
                     $imported += count($batchInsert);
                 }
 
-                // Actualizar progreso usando processedCount para incluir duplicados
+                // Persistir progreso al finalizar el chunk (incluye duplicados)
                 $pct = $totalRows > 0 ? round(($processedCount / $totalRows) * 100, 1) : 0;
                 $this->updateProgress(
                     $progressKey,
@@ -125,7 +152,7 @@ class ImportController extends Controller
                     $pct,
                     'processing',
                     "Procesados {$processedCount} de {$totalRows} registros...",
-                    true
+                    true // aquí sí escribimos archivo
                 );
             }
 
@@ -140,7 +167,7 @@ class ImportController extends Controller
                 true
             );
 
-            $this->createImportNotification($imported, count($errors), count($duplicates));
+            // notificaciones eliminadas
 
             return response()->json([
                 'status'     => 'completed',
@@ -161,7 +188,7 @@ class ImportController extends Controller
                 'Error: ' . $e->getMessage(),
                 true
             );
-            $this->createErrorNotification($e->getMessage());
+            // notificaciones eliminadas
 
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
@@ -254,92 +281,12 @@ class ImportController extends Controller
             ->with('session_id', $sessionId);
     }
 
-    /**
-     * Crear notificación de importación
-     */
-    private function createImportNotification($imported, $errorCount, $duplicateCount)
-    {
-        $user = auth()->user();
-        $fileName = request()->file('excel_file')->getClientOriginalName();
-        
-        if ($imported == 0) {
-            if ($errorCount > 0 && $duplicateCount > 0) {
-                $title = 'Importación fallida - Inconsistencias y duplicados';
-                $message = "No se pudo importar ningún registro del archivo '{$fileName}'. {$errorCount} registros tienen inconsistencias y {$duplicateCount} registros están duplicados en el archivo.";
-            } elseif ($errorCount > 0) {
-                $title = 'Importación fallida - Inconsistencias';
-                $message = "No se pudo importar ningún registro del archivo '{$fileName}'. {$errorCount} registros tienen inconsistencias en los datos.";
-            } elseif ($duplicateCount > 0) {
-                $title = 'Importación fallida - Registros duplicados';
-                $message = "No se pudo importar ningún registro del archivo '{$fileName}'. {$duplicateCount} registros están duplicados en el archivo.";
-            } else {
-                $title = 'Importación fallida - Archivo vacío';
-                $message = "El archivo '{$fileName}' no contiene datos válidos para importar.";
-            }
-            $type = 'warning';
-        } else {
-            $title = 'Importación exitosa';
-            $message = "Se importaron {$imported} registros del archivo '{$fileName}' exitosamente.";
-            if ($errorCount > 0) {
-                $message .= " {$errorCount} registros no fueron ingresados por inconsistencias.";
-            }
-            if ($duplicateCount > 0) {
-                $message .= " {$duplicateCount} registros no se pudieron importar porque están duplicados en el archivo.";
-            }
-            $type = 'success';
-        }
-
-        return Notification::create([
-            'user_id' => $user->id,
-            'title' => $title,
-            'message' => $message,
-            'type' => $type,
-            'data' => [
-                'imported' => $imported,
-                'errors' => $errorCount,
-                'duplicates' => $duplicateCount,
-                'file_name' => $fileName,
-                'action' => 'import_data'
-            ]
-        ]);
-    }
+    // Notificaciones removidas
 
     /**
      * Crear notificación de error
      */
-    private function createErrorNotification($errorMessage, $context = 'import')
-    {
-        $user = auth()->user();
-        
-        // Obtener nombre del archivo solo si existe y estamos en contexto de importación
-        $fileName = null;
-        if ($context === 'import' && request()->hasFile('excel_file') && request()->file('excel_file')) {
-            $fileName = request()->file('excel_file')->getClientOriginalName();
-        }
-        
-        // Configurar título y mensaje según el contexto
-        $title = $context === 'import' ? 'Error en importación' : 'Error en backup';
-        $message = $fileName 
-            ? "Error al procesar el archivo '{$fileName}': {$errorMessage}"
-            : $errorMessage;
-        
-        $data = [
-            'error_message' => $errorMessage,
-            'action' => $context === 'import' ? 'import_data_error' : 'backup_error'
-        ];
-        
-        if ($fileName) {
-            $data['file_name'] = $fileName;
-        }
-
-        return Notification::create([
-            'user_id' => $user->id,
-            'title' => $title,
-            'message' => $message,
-            'type' => 'error',
-            'data' => $data
-        ]);
-    }
+    // Notificaciones removidas
 
 
 
@@ -507,22 +454,7 @@ class ImportController extends Controller
     /**
      * Crear notificación de backup
      */
-    private function createBackupNotification($type, $filename)
-    {
-        $typeText = [
-            'completo' => 'completo',
-            'incremental' => 'incremental',
-            'diferencial' => 'diferencial'
-        ][$type] ?? $type;
-
-        Notification::create([
-            'title' => 'Backup Generado',
-            'message' => "Backup {$typeText} generado exitosamente: {$filename}",
-            'type' => 'success',
-            'user_id' => auth()->id(),
-            'read_at' => null
-        ]);
-    }
+    private function createBackupNotification($type, $filename) { /* removido */ }
 
     /**
      * Backup usando PHP (alternativa a mysqldump)

@@ -6,6 +6,7 @@ use App\Models\ScheduleType;
 use App\Models\Specialty;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ScheduleTypeController extends Controller
 {
@@ -22,14 +23,19 @@ class ScheduleTypeController extends Controller
         $status = $request->query('status', 'active');
         $search = $request->query('search');
         
-        $scheduleTypes = ScheduleType::with('specialty')
-            ->where('is_active', $status === 'active' ? 1 : 0)
-            ->when($search, function ($query) use ($search) {
-                return $query->where('name', 'like', "%$search%");
-            })
-            ->orderBy('name')
-            ->paginate(25)
-            ->appends($request->all());
+        $page = (int) ($request->query('page', 1));
+        $key = "tipos_horario:index:v1:status={$status}:q=".urlencode((string)$search).":p={$page}";
+        $scheduleTypes = Cache::tags(['tipos_horario','listados'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
+            return ScheduleType::with('specialty:id,name')
+                ->select('id','name','specialty_id','days_of_week','start_time','end_time','max_patients','is_active')
+                ->where('is_active', $status === 'active' ? 1 : 0)
+                ->when($search, function ($query) use ($search) {
+                    return $query->where('name', 'like', "%$search%");
+                })
+                ->orderBy('name')
+                ->paginate(25);
+        });
+        $scheduleTypes->appends($request->all());
 
         return view('modules.schedule_types.index', compact('scheduleTypes', 'status', 'search'));
     }
@@ -39,7 +45,7 @@ class ScheduleTypeController extends Controller
      */
     public function create()
     {
-        $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
+        $specialties = Cache::tags(['especialidades','catalogos'])->remember('especialidades:select:v2', now()->addHours(12), fn() => Specialty::where('is_active', true)->orderBy('name')->get(['id','name']));
         return view('modules.schedule_types.create', compact('specialties'));
     }
 
@@ -93,7 +99,7 @@ class ScheduleTypeController extends Controller
      */
     public function edit(ScheduleType $scheduleType)
     {
-        $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
+        $specialties = Cache::tags(['especialidades','catalogos'])->remember('especialidades:select:v2', now()->addHours(12), fn() => Specialty::where('is_active', true)->orderBy('name')->get(['id','name']));
         $scheduleType->days_of_week = json_decode($scheduleType->days_of_week, true);
         return view('modules.schedule_types.edit', compact('scheduleType', 'specialties'));
     }

@@ -6,6 +6,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class RoleController extends Controller
 {
@@ -22,14 +23,18 @@ class RoleController extends Controller
         $status = $request->query('status', 'active');
         $search = $request->query('search');
         
-        $roles = Role::where('is_active', $status === 'active' ? 1 : 0)
-            ->when($search, function ($query) use ($search) {
-                return $query->where('name', 'like', "%$search%");
-            })
-            ->withCount('users')
-            ->orderBy('name')
-            ->paginate(25)
-            ->appends($request->all());
+        $page = (int) ($request->query('page', 1));
+        $key = "roles:index:v1:status={$status}:q=".urlencode((string)$search).":p={$page}";
+        $roles = Cache::tags(['roles','listados'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
+            return Role::where('is_active', $status === 'active' ? 1 : 0)
+                ->when($search, function ($query) use ($search) {
+                    return $query->where('name', 'like', "%$search%");
+                })
+                ->withCount('users')
+                ->orderBy('name')
+                ->paginate(25);
+        });
+        $roles->appends($request->all());
 
         return view('modules.roles.index', compact('roles', 'status', 'search'));
     }

@@ -11,6 +11,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\DB;
 use Jenssegers\Agent\Agent;
+use Illuminate\Support\Facades\Cache;
 
 class ProfileController extends Controller
 {
@@ -24,9 +25,10 @@ class ProfileController extends Controller
      */
     public function index()
     {
+        $sessions = Cache::tags(['perfil'])->remember('profile:sessions:user:'.Auth::id(), now()->addMinutes(5), fn()=> $this->getSessionsProperty());
         return view('modules.profile.index', [
             'user' => Auth::user(),
-            'sessions' => $this->getSessionsProperty()
+            'sessions' => $sessions
         ]);
     }
 
@@ -186,13 +188,16 @@ class ProfileController extends Controller
     public function logoutSession($session_id)
     {
         if (config('session.driver') !== 'database') {
-            return back()->with('error', 'Esta función requiere el driver de sesión de base deatos.');
+            return back()->with('error', 'Esta función requiere el driver de sesión de base de datos.');
         }
 
         DB::table(config('session.table', 'sessions'))
             ->where('id', $session_id)
             ->where('user_id', Auth::user()->getKey())
             ->delete();
+
+        // Invalidar caché del listado de sesiones para el usuario actual
+        Cache::tags(['perfil'])->forget('profile:sessions:user:' . Auth::id());
 
         NotificationService::create('Sesión Cerrada', 'Una sesión ha sido cerrada exitosamente.', 'warning');
 
@@ -343,7 +348,7 @@ class ProfileController extends Controller
     public function logoutOtherBrowserSessions(Request $request)
     {
         if (config('session.driver') !== 'database') {
-            return back()->with('error', 'Esta función requiere el driver de sesión de base deatos.');
+            return back()->with('error', 'Esta función requiere el driver de sesión de base de datos.');
         }
 
         DB::table(config('session.table', 'sessions'))
@@ -352,6 +357,9 @@ class ProfileController extends Controller
             ->delete();
 
         Auth::logoutOtherDevices($request->password);
+
+        // Invalidar caché del listado de sesiones para el usuario actual
+        Cache::tags(['perfil'])->forget('profile:sessions:user:' . Auth::id());
 
         NotificationService::create('Sesiones Cerradas', 'Se han cerrado las demás sesiones de navegador.', 'warning');
 

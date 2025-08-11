@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\LinguisticCommunity;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class LinguisticCommunityController extends Controller
 {
@@ -12,13 +13,18 @@ class LinguisticCommunityController extends Controller
     {
         $status = $request->query('status', 'active');
         $search = $request->query('search', '');
-        $linguisticCommunities = LinguisticCommunity::where('is_active', $status === 'active' ? 1 : 0)
-            ->when($search, function ($query, $search) {
-                $query->where('name', 'like', "%$search%");
-            })
-            ->orderBy('name')
-            ->paginate(25)
-            ->appends(['status' => $status, 'search' => $search]);
+        $page = (int) ($request->query('page', 1));
+        $key = "comunidades_linguisticas:index:v1:status={$status}:q=".urlencode($search).":p={$page}";
+        $linguisticCommunities = Cache::tags(['comunidades_linguisticas','listados'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
+            return LinguisticCommunity::select('id','name','description','is_active')
+                ->where('is_active', $status === 'active' ? 1 : 0)
+                ->when($search, function ($query, $search) {
+                    $query->where('name', 'like', "%$search%");
+                })
+                ->orderBy('name')
+                ->paginate(25);
+        });
+        $linguisticCommunities->appends(['status' => $status, 'search' => $search]);
         return view('modules.linguistic_communities.index', compact('linguisticCommunities', 'status', 'search'));
     }
 

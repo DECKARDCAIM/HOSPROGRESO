@@ -7,6 +7,7 @@ use App\Models\Country;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use App\Models\Municipality;
+use Illuminate\Support\Facades\Cache;
 
 class DepartmentController extends Controller
 {
@@ -23,17 +24,23 @@ class DepartmentController extends Controller
         $search = $request->query('search', '');
         $country_id = $request->country_id;
 
-        $countries = Country::all();
+        $countries = Cache::tags(['paises','catalogos'])->remember('paises:select:v1', now()->addHours(12), fn() => Country::where('is_active', true)->orderBy('name')->get(['id','name']));
 
-        $departments = Department::where('is_active', $status === 'active' ? 1 : 0)
-            ->when($country_id, function ($query) use ($country_id) {
-                return $query->where('country_id', $country_id);
-            })
-            ->when($search, function ($query, $search) {
-                $query->where('name', 'like', '%' . $search . '%');
-            })
-            ->paginate(25)
-            ->appends(['status' => $status, 'search' => $search, 'country_id' => $country_id]);
+        $page = (int) ($request->query('page', 1));
+        $key = "departamentos:index:v1:status={$status}:country={$country_id}:q=".urlencode((string)$search).":p={$page}";
+        $departments = Cache::tags(['departamentos','listados'])->remember($key, now()->addMinutes(10), function () use ($status, $country_id, $search) {
+            return Department::select('id','name','description','country_id','is_active')
+                ->where('is_active', $status === 'active' ? 1 : 0)
+                ->when($country_id, function ($query) use ($country_id) {
+                    return $query->where('country_id', $country_id);
+                })
+                ->when($search, function ($query, $search) {
+                    $query->where('name', 'like', '%' . $search . '%');
+                })
+                ->orderBy('name')
+                ->paginate(25);
+        });
+        $departments->appends(['status' => $status, 'search' => $search, 'country_id' => $country_id]);
 
         return view('modules.ubication.departments.index', compact('departments', 'countries', 'status', 'search', 'country_id'));
     }
@@ -44,7 +51,7 @@ class DepartmentController extends Controller
      */
     public function create()
     {
-        $countries = Country::all(); // Carga todos los países desde la tabla `countries`
+        $countries = Cache::tags(['paises','catalogos'])->remember('paises:select:v1', now()->addHours(12), fn() => Country::where('is_active', true)->orderBy('name')->get(['id','name']));
         return view('modules.ubication.departments.create', compact('countries'));
     }
 

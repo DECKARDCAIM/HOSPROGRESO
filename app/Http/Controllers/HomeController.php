@@ -11,6 +11,7 @@ use App\Models\Specialty;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
@@ -31,27 +32,30 @@ class HomeController extends Controller
      */
     public function index()
     {
-        // Estadísticas principales
-        $stats = [
-            'expedientes_activos' => ClinicalRecord::count(),
-            'citas_hoy' => Appointment::whereDate('appointment_date', today())
-                                    ->whereIn('status', ['pendiente', 'confirmada'])
-                                    ->count(),
-            'consultas_mes' => MedicalConsultation::whereMonth('consultation_date', now()->month)
-                                                 ->whereYear('consultation_date', now()->year)
-                                                 ->count(),
-            'doctores_activos' => Doctor::where('is_active', true)->count(),
-            'especialidades_activas' => Specialty::where('is_active', true)->count(),
-            'total_citas' => Appointment::count(),
-            'citas_mes' => Appointment::whereMonth('appointment_date', now()->month)
-                                    ->whereYear('appointment_date', now()->year)
-                                    ->count()
-        ];
+        $stats = Cache::tags(['dashboard','reportes'])->remember('dashboard:home:stats:v1', now()->addMinutes(60), function () {
+            return [
+                'expedientes_activos' => ClinicalRecord::count(),
+                'citas_hoy' => Appointment::whereDate('appointment_date', today())
+                                        ->whereIn('status', ['pendiente', 'confirmada'])
+                                        ->count(),
+                'consultas_mes' => MedicalConsultation::whereMonth('consultation_date', now()->month)
+                                                     ->whereYear('consultation_date', now()->year)
+                                                     ->count(),
+                'doctores_activos' => Doctor::where('is_active', true)->count(),
+                'especialidades_activas' => Specialty::where('is_active', true)->count(),
+                'total_citas' => Appointment::count(),
+                'citas_mes' => Appointment::whereMonth('appointment_date', now()->month)
+                                        ->whereYear('appointment_date', now()->year)
+                                        ->count()
+            ];
+        });
 
         // Consultas por especialidad (último mes) - mejorado
-        $consultasPorEspecialidad = collect();
-        if (MedicalConsultation::count() > 0) {
-            $consultasPorEspecialidad = MedicalConsultation::join('specialties', 'medical_consultations.specialty_id', '=', 'specialties.id')
+        $consultasPorEspecialidad = Cache::tags(['dashboard','reportes'])->remember('dashboard:home:consultasPorEspecialidad:v1', now()->addMinutes(60), function () {
+            if (MedicalConsultation::count() === 0) {
+                return collect();
+            }
+            return MedicalConsultation::join('specialties', 'medical_consultations.specialty_id', '=', 'specialties.id')
                 ->whereMonth('consultation_date', now()->month)
                 ->whereYear('consultation_date', now()->year)
                 ->whereNotNull('medical_consultations.specialty_id')
@@ -60,7 +64,7 @@ class HomeController extends Controller
                 ->orderBy('total', 'desc')
                 ->limit(6)
                 ->get();
-        }
+        });
 
         // Si no hay consultas, mostrar especialidades disponibles
         if ($consultasPorEspecialidad->isEmpty()) {
@@ -71,10 +75,12 @@ class HomeController extends Controller
         }
 
         // Citas por estado (últimos 30 días)
-        $citasPorEstado = Appointment::select('status', DB::raw('count(*) as total'))
-            ->whereDate('appointment_date', '>=', now()->subDays(30))
-            ->groupBy('status')
-            ->get();
+        $citasPorEstado = Cache::tags(['dashboard','reportes'])->remember('dashboard:home:citasPorEstado:v1', now()->addMinutes(60), function () {
+            return Appointment::select('status', DB::raw('count(*) as total'))
+                ->whereDate('appointment_date', '>=', now()->subDays(30))
+                ->groupBy('status')
+                ->get();
+        });
 
         // Si no hay citas, mostrar estados por defecto
         if ($citasPorEstado->isEmpty()) {
@@ -86,35 +92,43 @@ class HomeController extends Controller
         }
 
         // Consultas por día (últimos 7 días)
-        $consultasUltimaSemana = [];
-        for ($i = 6; $i >= 0; $i--) {
-            $fecha = now()->subDays($i);
-            $total = MedicalConsultation::whereDate('consultation_date', $fecha)->count();
-            $consultasUltimaSemana[] = [
-                'fecha' => $fecha->format('Y-m-d'),
-                'dia' => $fecha->translatedFormat('D'),
-                'total' => $total
-            ];
-        }
+        $consultasUltimaSemana = Cache::tags(['dashboard','reportes'])->remember('dashboard:home:consultas7d:v1', now()->addMinutes(60), function () {
+            $data = [];
+            for ($i = 6; $i >= 0; $i--) {
+                $fecha = now()->subDays($i);
+                $total = MedicalConsultation::whereDate('consultation_date', $fecha)->count();
+                $data[] = [
+                    'fecha' => $fecha->format('Y-m-d'),
+                    'dia' => $fecha->translatedFormat('D'),
+                    'total' => $total
+                ];
+            }
+            return $data;
+        });
 
         // Citas por día (últimos 7 días)
-        $citasUltimaSemana = [];
-        for ($i = 6; $i >= 0; $i--) {
-            $fecha = now()->subDays($i);
-            $total = Appointment::whereDate('appointment_date', $fecha)->count();
-            $citasUltimaSemana[] = [
-                'fecha' => $fecha->format('Y-m-d'),
-                'dia' => $fecha->translatedFormat('D'),
-                'total' => $total
-            ];
-        }
+        $citasUltimaSemana = Cache::tags(['dashboard','reportes'])->remember('dashboard:home:citas7d:v1', now()->addMinutes(60), function () {
+            $data = [];
+            for ($i = 6; $i >= 0; $i--) {
+                $fecha = now()->subDays($i);
+                $total = Appointment::whereDate('appointment_date', $fecha)->count();
+                $data[] = [
+                    'fecha' => $fecha->format('Y-m-d'),
+                    'dia' => $fecha->translatedFormat('D'),
+                    'total' => $total
+                ];
+            }
+            return $data;
+        });
 
         // Distribución por tipo de atención
-        $tiposAtencion = MedicalConsultation::select('attention_type', DB::raw('count(*) as total'))
-            ->whereMonth('consultation_date', now()->month)
-            ->whereYear('consultation_date', now()->year)
-            ->groupBy('attention_type')
-            ->get();
+        $tiposAtencion = Cache::tags(['dashboard','reportes'])->remember('dashboard:home:tiposAtencion:v1', now()->addMinutes(60), function () {
+            return MedicalConsultation::select('attention_type', DB::raw('count(*) as total'))
+                ->whereMonth('consultation_date', now()->month)
+                ->whereYear('consultation_date', now()->year)
+                ->groupBy('attention_type')
+                ->get();
+        });
 
         // Si no hay datos, mostrar tipos por defecto
         if ($tiposAtencion->isEmpty()) {
@@ -125,13 +139,15 @@ class HomeController extends Controller
         }
 
         // Médicos por especialidad
-        $doctoresPorEspecialidad = Doctor::join('specialties', 'doctors.specialty_id', '=', 'specialties.id')
-            ->where('doctors.is_active', true)
-            ->whereNotNull('doctors.specialty_id')
-            ->select('specialties.name', DB::raw('count(*) as total'))
-            ->groupBy('specialties.id', 'specialties.name')
-            ->orderBy('total', 'desc')
-            ->get();
+        $doctoresPorEspecialidad = Cache::tags(['dashboard','reportes'])->remember('dashboard:home:doctoresPorEspecialidad:v1', now()->addMinutes(60), function () {
+            return Doctor::join('specialties', 'doctors.specialty_id', '=', 'specialties.id')
+                ->where('doctors.is_active', true)
+                ->whereNotNull('doctors.specialty_id')
+                ->select('specialties.name', DB::raw('count(*) as total'))
+                ->groupBy('specialties.id', 'specialties.name')
+                ->orderBy('total', 'desc')
+                ->get();
+        });
 
         // Si no hay doctores con especialidad, mostrar especialidades disponibles
         if ($doctoresPorEspecialidad->isEmpty()) {
@@ -141,10 +157,12 @@ class HomeController extends Controller
         }
 
         // Actividad reciente (últimas 10 consultas o citas si no hay consultas)
-        $actividadReciente = MedicalConsultation::with(['clinicalRecord', 'doctor', 'specialty'])
-            ->orderBy('consultation_date', 'desc')
-            ->limit(10)
-            ->get();
+        $actividadReciente = Cache::tags(['dashboard','reportes'])->remember('dashboard:home:actividadReciente:v1', now()->addMinutes(10), function () {
+            return MedicalConsultation::with(['clinicalRecord', 'doctor', 'specialty'])
+                ->orderBy('consultation_date', 'desc')
+                ->limit(10)
+                ->get();
+        });
 
         // Si no hay consultas, mostrar citas recientes
         if ($actividadReciente->isEmpty()) {

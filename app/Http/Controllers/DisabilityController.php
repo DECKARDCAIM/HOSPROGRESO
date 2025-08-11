@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Disability;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class DisabilityController extends Controller
 {
@@ -12,13 +13,18 @@ class DisabilityController extends Controller
     {
         $status = $request->query('status', 'active');
         $search = $request->query('search', '');
-        $disabilities = Disability::where('is_active', $status === 'active' ? 1 : 0)
-            ->when($search, function ($query, $search) {
-                $query->where('name', 'like', "%$search%");
-            })
-            ->orderBy('name')
-            ->paginate(25)
-            ->appends(['status' => $status, 'search' => $search]);
+        $page = (int) ($request->query('page', 1));
+        $key = "discapacidades:index:v1:status={$status}:q=".urlencode($search).":p={$page}";
+        $disabilities = Cache::tags(['discapacidades','listados'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
+            return Disability::select('id','name','description','is_active')
+                ->where('is_active', $status === 'active' ? 1 : 0)
+                ->when($search, function ($query, $search) {
+                    $query->where('name', 'like', "%$search%");
+                })
+                ->orderBy('name')
+                ->paginate(25);
+        });
+        $disabilities->appends(['status' => $status, 'search' => $search]);
         return view('modules.disabilities.index', compact('disabilities', 'status', 'search'));
     }
 

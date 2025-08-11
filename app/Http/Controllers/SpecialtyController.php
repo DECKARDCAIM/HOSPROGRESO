@@ -6,6 +6,7 @@ use App\Models\Specialty;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use App\Models\Specialty as ModelsSpecialty;
+use Illuminate\Support\Facades\Cache;
 
 class SpecialtyController extends Controller
 {
@@ -20,13 +21,22 @@ class SpecialtyController extends Controller
     {
         $status = $request->query('status', 'active');
         $search = $request->query('search');
-        $specialties = Specialty::where('is_active', $status === 'active' ? 1 : 0)
-            ->when($search, function ($query) use ($search) {
-                return $query->where('name', 'like', "%$search%");
-            })
-            ->orderBy('name')
-            ->paginate(25)
-            ->appends($request->all());
+        $page = (int) ($request->query('page', 1));
+
+        $ttl = now()->addMinutes(10);
+        $cacheKey = "especialidades:index:v2:status={$status}:q=".urlencode((string) $search).":p={$page}";
+
+        $specialties = Cache::tags(['especialidades','listados'])->remember($cacheKey, $ttl, function () use ($status, $search) {
+            return Specialty::select('id','name','description','is_active')
+                ->where('is_active', $status === 'active' ? 1 : 0)
+                ->when($search, function ($query) use ($search) {
+                    return $query->where('name', 'like', "%$search%");
+                })
+                ->orderBy('name')
+                ->paginate(25);
+        });
+
+        $specialties->appends($request->all());
         return view('modules.specialties.index', compact('specialties', 'status', 'search'));
     }
 
@@ -80,6 +90,11 @@ class SpecialtyController extends Controller
      */
     public function edit(Specialty $specialty)
     {
+        $ttl = now()->addHours(6);
+        $cacheKey = "especialidades:show:v2:{$specialty->id}";
+        $cached = Cache::tags(['especialidades'])->remember($cacheKey, $ttl, fn() => $specialty->only(['id','name','description','is_active']));
+        // Reconstruir el modelo mínimo para la vista
+        $specialty->fill($cached);
         return view('modules.specialties.edit', compact('specialty'));
     }
 

@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\SigsaReportExport;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
+use App\Jobs\GenerateSigsaReportJob;
 
 class ReportController extends Controller
 {
@@ -23,10 +25,37 @@ class ReportController extends Controller
      */
     public function index()
     {
-        $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
-        $controlTypes = ControlType::where('is_active', true)->orderBy('name')->get();
+        $specialties = Cache::tags(['especialidades','catalogos'])->remember('especialidades:select:v2', now()->addHours(12), function () {
+            return Specialty::where('is_active', true)->orderBy('name')->get(['id','name']);
+        });
+        $controlTypes = Cache::tags(['tipos_control','catalogos'])->remember('control-types:select:v1', now()->addHours(12), function () {
+            return ControlType::where('is_active', true)->orderBy('name')->get(['id','name']);
+        });
         
         return view('modules.reports.index', compact('specialties', 'controlTypes'));
+    }
+
+    /**
+     * Encolar generación de reporte SIGSA 3H (async con Redis/Horizon)
+     */
+    public function queueSigsa(Request $request)
+    {
+        $rules = [
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'attention_type' => 'nullable|in:emergencia,consulta_externa',
+            'specialty_id' => 'nullable|exists:specialties,id',
+            'control_type_id' => 'nullable|exists:control_types,id'
+        ];
+        $this->validate($request, $rules);
+
+        GenerateSigsaReportJob::dispatch($request->only(['start_date','end_date','attention_type','specialty_id','control_type_id']), auth()->id());
+
+        return back()->with('toast', [
+            'type' => 'info',
+            'title' => 'Reporte en cola',
+            'message' => 'Tu reporte SIGSA 3H fue encolado. Recibirás notificación cuando esté listo.'
+        ]);
     }
 
     /**
@@ -114,6 +143,11 @@ class ReportController extends Controller
         }
 
         // Verificar que existan registros
+        // Cache lock para evitar stampede cuando muchas solicitudes generan el mismo reporte
+        $lockKey = 'reports:sigsa3h:lock:' . md5(json_encode($request->all()));
+        $lock = Cache::lock($lockKey, 30);
+        $lock->block(5);
+
         $totalRecords = $query->count();
         if ($totalRecords === 0) {
             return back()->with('toast', [
@@ -133,7 +167,9 @@ class ReportController extends Controller
         }
 
         try {
-            $consultations = $query->orderBy('consultation_date')->get();
+            $cacheKey = 'reports:sigsa3h:data:v1:' . md5(json_encode($request->all()));
+            $consultations = Cache::tags(['reportes'])
+                ->remember($cacheKey, now()->addMinutes(60), fn() => $query->orderBy('consultation_date')->get());
 
             // Generar nombre del archivo
             $fileName = 'SIGSA_3H_' . $startDate->format('d-m-Y') . '_al_' . $endDate->format('d-m-Y');
@@ -179,6 +215,8 @@ class ReportController extends Controller
                 'title' => 'Error al Generar Reporte',
                 'message' => 'Ocurrió un error al generar el reporte: ' . $e->getMessage()
             ])->withInput();
+        } finally {
+            optional($lock)->release();
         }
     }
 
@@ -224,7 +262,9 @@ class ReportController extends Controller
                 $query->where('attention_type', 'consulta_externa');
             }
 
-            $totalCount = $query->count();
+            $cacheKey = 'reports:preview:count:v1:' . md5(json_encode($request->all()));
+            $totalCount = Cache::tags(['reportes'])
+                ->remember($cacheKey, now()->addMinutes(10), fn() => $query->count());
             
             if ($totalCount === 0) {
                 return response()->json([
@@ -233,7 +273,8 @@ class ReportController extends Controller
                 ]);
             }
 
-            $consultations = $query->limit(100)->get(); // Limitar para preview
+            $consultations = Cache::tags(['reportes'])
+                ->remember($cacheKey.':sample', now()->addMinutes(10), fn() => $query->orderBy('consultation_date','desc')->limit(100)->get());
 
             return response()->json([
                 'success' => true,

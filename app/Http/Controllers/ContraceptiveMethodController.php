@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ContraceptiveMethod;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ContraceptiveMethodController extends Controller
 {
@@ -22,18 +23,25 @@ class ContraceptiveMethodController extends Controller
         $search = $request->query('search');
         $type = $request->query('type', 'all');
         
-        $methods = ContraceptiveMethod::where('is_active', $status === 'active' ? 1 : 0)
-            ->when($search, function ($query) use ($search) {
-                return $query->where('name', 'like', "%$search%")
-                           ->orWhere('description', 'like', "%$search%");
-            })
-            ->when($type !== 'all', function ($query) use ($type) {
-                return $query->where('type', $type);
-            })
-            ->orderBy('type')
-            ->orderBy('name')
-            ->paginate(25)
-            ->appends($request->all());
+        $page = (int) ($request->query('page', 1));
+        $key = "metodos_anticonceptivos:index:v1:status={$status}:type={$type}:q=".urlencode((string)$search).":p={$page}";
+        $methods = Cache::tags(['metodos_anticonceptivos','listados'])->remember($key, now()->addMinutes(10), function () use ($status, $search, $type) {
+            return ContraceptiveMethod::select('id','name','description','type','is_active')
+                ->where('is_active', $status === 'active' ? 1 : 0)
+                ->when($search, function ($query) use ($search) {
+                    return $query->where(function ($q) use ($search) {
+                        $q->where('name', 'like', "%$search%")
+                          ->orWhere('description', 'like', "%$search%");
+                    });
+                })
+                ->when($type !== 'all', function ($query) use ($type) {
+                    return $query->where('type', $type);
+                })
+                ->orderBy('type')
+                ->orderBy('name')
+                ->paginate(25);
+        });
+        $methods->appends($request->all());
             
         return view('modules.contraceptive_methods.index', compact('methods', 'status', 'search', 'type'));
     }
