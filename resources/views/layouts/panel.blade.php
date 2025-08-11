@@ -14,7 +14,6 @@
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
     <!-- Bootstrap Icons Local -->
     <link href="{{ asset('bootstrap-icons-1.11.3/font/bootstrap-icons.css') }}" rel="stylesheet" />
-    <link href="{{ asset('css/notifications.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/panel.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/search-styles.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/pagination.css') }}" rel="stylesheet" />
@@ -110,7 +109,6 @@
 
     {{-- Panel JS Files --}}
     <script src="{{ asset('js/panel.js') }}"></script>
-    <script src="{{ asset('js/toast-notifications.js') }}"></script>
     <script src="{{ asset('js/menu-manager.js') }}"></script>
     <script src="{{ asset('js/global-search.js') }}"></script>
     <script src="{{ asset('js/common-filters.js') }}"></script>
@@ -134,6 +132,8 @@
             window.laravelToastData = @json(session('toast'));
         </script>
     @endif
+
+    <!-- Notificaciones deshabilitadas -->
 
 </body>
 

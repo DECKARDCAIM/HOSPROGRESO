@@ -23,7 +23,6 @@ use App\Http\Controllers\LinguisticCommunityController;
 use App\Http\Controllers\MedicalConsultationController;
 use App\Http\Controllers\MedicationController;
 use App\Http\Controllers\MunicipalityController;
-use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PatientStatusController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
@@ -35,6 +34,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\ClinicalFileController;
 use App\Http\Controllers\PermissionController;
+use Illuminate\Support\Facades\Cache;
+// Nota: Horizon se usa condicionalmente más abajo para evitar errores si no está instalado
 
 /*
 |--------------------------------------------------------------------------
@@ -80,18 +81,18 @@ Route::middleware('auth')->group(function () {
     Route::delete('/perfil/sesion/{session_id}', [ProfileController::class, 'logoutSession'])->name('profile.logoutSession');
 });
 
-/*
-|--------------------------------------------------------------------------
-| RUTAS DE NOTIFICACIONES
-|--------------------------------------------------------------------------
-*/
-Route::prefix('notifications')->middleware('auth')->group(function () {
-    Route::get('/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unread-count');
-    Route::get('/unread', [NotificationController::class, 'getUnreadNotifications'])->name('notifications.unread');
-    Route::get('/all', [NotificationController::class, 'getAllNotifications'])->name('notifications.all');
-    Route::post('/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
-    Route::post('/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-as-read');
-});
+// Ruta Horizon protegida (solo si el paquete está instalado)
+if (class_exists(\Laravel\Horizon\Horizon::class)) {
+    Route::middleware(['web','auth'])->group(function () {
+        \Laravel\Horizon\Horizon::auth(function ($request) {
+            return auth()->check();
+        });
+    });
+}
+
+// Eliminado endpoint API de estadísticas por requerimiento (no usar APIs)
+
+// Rutas de notificaciones eliminadas por requerimiento de performance
 
 /*
 |--------------------------------------------------------------------------

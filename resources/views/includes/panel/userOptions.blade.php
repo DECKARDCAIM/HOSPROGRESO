@@ -43,41 +43,7 @@
                 <i class="bi bi-search"></i>
             </a>
         </li>
-        <!-- Notificaciones -->
-        <li class="nav-item dropdown">
-            <a class="nav-link text-dark position-relative notification-trigger" href="javascript:;" id="notificationDropdown" role="button"
-                data-bs-toggle="dropdown" data-bs-strategy="fixed" aria-expanded="false">
-                <i class="bi bi-bell notification-bell"></i>
-                <span class="notification-badge" id="notification-count" style="display: none;"></span>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end professional-dropdown" aria-labelledby="notificationDropdown">
-                <li class="dropdown-header-professional">
-                    <div class="header-content">
-                        <div class="header-icon">
-                            <i class="bi bi-bell"></i>
-                        </div>
-                        <div class="header-text">
-                            <h6>Notificaciones</h6>
-                            <small>Manténgase actualizado</small>
-                        </div>
-                    </div>
-                    <button class="btn-mini-professional" id="mark-all-read" title="Marcar todas como leídas">
-                        <i class="bi bi-check-all"></i>
-                    </button>
-                </li>
-                <li class="dropdown-divider-professional"></li>
-                <div id="notifications-list" class="notifications-preview">
-                    <!-- Las notificaciones se cargarán dinámicamente aquí -->
-                </div>
-                <li class="dropdown-divider-professional"></li>
-                <li class="dropdown-footer-professional">
-                    <button class="btn-view-all-professional" id="view-all-notifications">
-                        <i class="bi bi-arrows-fullscreen me-2"></i>
-                        <span>Ver Centro de Notificaciones</span>
-                    </button>
-                </li>
-            </ul>
-        </li>
+        <!-- Notificaciones deshabilitadas: se oculta el ícono -->
 
         <!-- Menú de perfil -->
         <li class="nav-item dropdown d-flex align-items-center ms-2">
@@ -1361,214 +1327,19 @@ document.addEventListener('DOMContentLoaded', function() {
     let allNotifications = [];
     
     // Función para cargar el contador de notificaciones
-    function loadNotificationCount() {
-        fetch('{{ route("notifications.unread-count") }}')
-            .then(response => response.json())
-            .then(data => {
-                notificationCount = parseInt(data.count) || 0;
-                const countElement = document.getElementById('notification-count');
-                if (countElement) {
-                    if (notificationCount > 0) {
-                        countElement.textContent = notificationCount;
-                        countElement.classList.add('show');
-                        countElement.style.display = 'flex';
-                        countElement.style.visibility = 'visible';
-                    } else {
-                        countElement.classList.remove('show');
-                        countElement.style.display = 'none';
-                        countElement.style.visibility = 'hidden';
-                        countElement.textContent = '';
-                        countElement.innerHTML = '';
-                    }
-                }
-    
-            })
-                          .catch(error => {});
-    }
+    function loadNotificationCount() {}
     
     // Función para cargar notificaciones no leídas
-    function loadUnreadNotifications() {
-        fetch('{{ route("notifications.unread") }}')
-            .then(response => response.json())
-            .then(data => {
-                const notificationsList = document.getElementById('notifications-list');
-                if (notificationsList) {
-                    if (data.notifications.length === 0) {
-                        notificationsList.innerHTML = `
-                            <div class="no-notifications-preview">
-                                <div class="no-notifications-icon-small">
-                                    <i class="bi bi-bell-slash"></i>
-                                </div>
-                                <p>No hay notificaciones nuevas</p>
-                            </div>
-                        `;
-                    } else {
-                        notificationsList.innerHTML = data.notifications.map(notification => `
-                            <div class="notification-preview-item ${notification.read_at ? 'read' : 'unread'} ${notification.type}">
-                                <div class="notification-preview-content">
-                                    <div class="notification-preview-icon">
-                                        <i class="bi ${getNotificationIcon(notification.type)}"></i>
-                                    </div>
-                                    <div class="notification-preview-details">
-                                        <div class="notification-preview-header">
-                                            <h6 class="notification-preview-title">${notification.title}</h6>
-                                            <span class="notification-preview-time">${formatDate(notification.created_at)}</span>
-                                        </div>
-                                        <p class="notification-preview-message">${notification.message}</p>
-                                        ${!notification.read_at ? '<span class="mini-unread-indicator">NUEVO</span>' : ''}
-                                    </div>
-                                    <div class="notification-preview-actions">
-                                        ${!notification.read_at ? `
-                                            <button class="btn-mini-action mark-read-btn" 
-                                                    data-notification-id="${notification.id}"
-                                                    title="Marcar como leída">
-                                                <i class="bi bi-check"></i>
-                                            </button>
-                                        ` : `
-                                            <div class="mini-read-status">
-                                                <i class="bi bi-check-circle"></i>
-                                            </div>
-                                        `}
-                                    </div>
-                                </div>
-                            </div>
-                        `).join('');
-                    }
-                }
-            })
-            .catch(error => {});
-    }
+    function loadUnreadNotifications() {}
     
     // Función para cargar todas las notificaciones
-    function loadAllNotifications() {
-        fetch('{{ route("notifications.all") }}')
-            .then(response => response.json())
-            .then(data => {
-                allNotifications = data.notifications;
-                const allNotificationsList = document.getElementById('all-notifications-list');
-                if (allNotificationsList) {
-                    if (allNotifications.length === 0) {
-                        allNotificationsList.innerHTML = `
-                            <div class="no-notifications-state">
-                                <div class="no-notifications-icon">
-                                    <i class="bi bi-bell-slash"></i>
-                                </div>
-                                <h6>No tienes notificaciones</h6>
-                                <p class="text-muted">Cuando recibas notificaciones, aparecerán aquí</p>
-                            </div>
-                        `;
-                    } else {
-                        allNotificationsList.innerHTML = allNotifications.map(notification => `
-                            <div class="professional-notification-card ${notification.read_at ? 'read' : 'unread'} ${notification.type}">
-                                <div class="notification-card-content">
-                                    <div class="notification-icon-type">
-                                        <i class="bi ${getNotificationIcon(notification.type)}"></i>
-                                    </div>
-                                    <div class="notification-details">
-                                        <div class="notification-header">
-                                            <h6 class="notification-title">${notification.title}</h6>
-                                            <span class="notification-time">${formatDate(notification.created_at)}</span>
-                                        </div>
-                                        <p class="notification-message">${notification.message}</p>
-                                        ${!notification.read_at ? '<span class="unread-indicator">NUEVO</span>' : ''}
-                                    </div>
-                                    <div class="notification-actions">
-                                        ${!notification.read_at ? `
-                                            <button class="btn-professional-action mark-read-btn" 
-                                                    data-notification-id="${notification.id}"
-                                                    title="Marcar como leída">
-                                                <i class="bi bi-check"></i>
-                                            </button>
-                                        ` : `
-                                            <div class="read-status">
-                                                <i class="bi bi-check-circle"></i>
-                                            </div>
-                                        `}
-                                    </div>
-                                </div>
-                            </div>
-                        `).join('');
-                    }
-                }
-            })
-            .catch(error => {});
-    }
+    function loadAllNotifications() {}
     
     // Función para marcar notificación como leída
-    function markAsRead(notificationId) {
-        fetch('{{ route("notifications.mark-as-read") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({ notification_id: notificationId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Actualizar contador inmediatamente
-                notificationCount = Math.max(0, notificationCount - 1);
-                const countElement = document.getElementById('notification-count');
-                if (countElement) {
-                    if (notificationCount > 0) {
-                        countElement.textContent = notificationCount;
-                        countElement.classList.add('show');
-                        countElement.style.display = 'flex';
-                        countElement.style.visibility = 'visible';
-                    } else {
-                        countElement.classList.remove('show');
-                        countElement.style.display = 'none';
-                        countElement.style.visibility = 'hidden';
-                        countElement.textContent = '';
-                        countElement.innerHTML = '';
-                    }
-                }
-                
-                // Recargar datos
-                loadNotificationCount();
-                loadUnreadNotifications();
-                if (document.getElementById('allNotificationsModal').classList.contains('show')) {
-                    loadAllNotifications();
-                }
-            }
-        })
-        .catch(error => {});
-    }
+    function markAsRead(notificationId) {}
     
     // Función para marcar todas como leídas
-    function markAllAsRead() {
-        fetch('{{ route("notifications.mark-all-as-read") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Actualizar contador inmediatamente a 0
-                notificationCount = 0;
-                const countElement = document.getElementById('notification-count');
-                if (countElement) {
-                    countElement.classList.remove('show');
-                    countElement.style.display = 'none';
-                    countElement.style.visibility = 'hidden';
-                    countElement.textContent = '';
-                    countElement.innerHTML = '';
-                }
-                
-                // Recargar datos
-                loadNotificationCount();
-                loadUnreadNotifications();
-                if (document.getElementById('allNotificationsModal').classList.contains('show')) {
-                    loadAllNotifications();
-                }
-            }
-        })
-        .catch(error => {});
-    }
+    function markAllAsRead() {}
     
     // Función para obtener color según tipo de notificación
     function getNotificationColor(type) {
@@ -1677,15 +1448,7 @@ document.addEventListener('DOMContentLoaded', function() {
         countElement.innerHTML = '';
     }
     
-    // Cargar datos iniciales
-    loadNotificationCount();
-    loadUnreadNotifications();
-    
-    // Recargar cada 30 segundos
-    setInterval(function() {
-        loadNotificationCount();
-        loadUnreadNotifications();
-    }, 30000);
+    // Notificaciones deshabilitadas: no cargar datos ni programar intervalos
     
     // Exponer función para mostrar toasts desde otros scripts (con fallback seguro)
     window.showNotificationToast = window.showNotificationToast || function(type, title, message, duration) {
