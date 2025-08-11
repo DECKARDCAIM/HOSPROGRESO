@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Cache;
 
 class CheckUserAccess
 {
@@ -23,7 +24,9 @@ class CheckUserAccess
             $user = Auth::user();
             
             // Si el usuario no puede acceder al sistema, cerrar sesión
-            if (!$user->canAccess()) {
+            $canAccess = Cache::tags(['usuarios'])
+                ->remember("user:{$user->id}:can_access", now()->addSeconds(60), fn() => $user->canAccess());
+            if (!$canAccess) {
                 Auth::logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();

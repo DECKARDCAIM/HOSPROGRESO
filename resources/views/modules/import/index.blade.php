@@ -133,77 +133,55 @@
     </div>
 </div>
 
-<!-- Modal: Progreso de Importación -->
-<div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <!-- Header azul con icono -->
-      <div class="modal-header bg-gradient-info text-white">
-        <h5 class="modal-title text-white">
-          <i class="bi bi-file-earmark-excel me-2 text-white"></i>
-          Importando Archivo
-        </h5> 
-      </div>
-      
-      <!-- Body del modal -->
-      <div class="modal-body text-center">
-        <!--centrar el spinner-->
+<!-- Modal: Progreso de Importación con estilo del buscador global -->
+<div id="loadingModal" class="search-modal" style="display:none; padding-top:14vh;">
+  <div class="search-modal-overlay"></div>
+  <div class="search-modal-content" style="max-width: 520px;">
+    <div class="search-header">
+      <div class="search-icon"><i class="bi bi-file-earmark-excel"></i></div>
+      <div class="text-white fw-bold">Importando Archivo</div>
+      <button class="search-close ms-auto" id="closeImportModal" type="button"><i class="bi bi-x"></i></button>
+    </div>
+    <div class="search-results" style="max-height:none; padding: 24px;">
+      <div class="text-center">
         <div class="d-flex justify-content-center">
-            <div class="spinner-border text-info mb-3" role="status">
-                <span class="visually-hidden">Procesando...</span>
-            </div>
+          <div class="spinner-border text-info mb-3" role="status">
+            <span class="visually-hidden">Procesando...</span>
+          </div>
         </div>
         <h5 id="modalTitle">Procesando archivo Excel...</h5>
         <p id="modalMessage" class="text-muted mb-3">Preparando archivo para importación...</p>
-        
-        <!-- Barra de progreso -->
         <div class="progress mb-2" style="height:10px;">
-          <div
-            id="progressBar"
-            class="progress-bar progress-bar-striped progress-bar-animated bg-info"
-            role="progressbar"
-            style="width:0%; transition:width .3s ease-out;"
-          ></div>
+          <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" style="width:0%; transition:width .3s ease-out;"></div>
         </div>
-        
-        <!-- Solo mostrar el contador principal en rosa/rojo -->
         <small id="progressText" class="text-info fw-bold">Iniciando...</small>
-        
-        <!-- Información de velocidad más pequeña -->
         <div><small id="processingSpeed" class="text-muted"></small></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal: Progreso de Backup -->
-<div class="modal fade" id="backupModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-gradient-info text-white">
-                <h5 class="modal-title text-white">
-                    <i class="bi bi-database-fill me-2 text-white"></i>
-                    Generando Backup
-                </h5> 
-            </div>
-            <div class="modal-body text-center">
-                <div class="spinner-border text-info mb-3" role="status">
-                    <span class="visually-hidden">Generando backup...</span>
-                </div>
-                <h5 id="backupModalTitle">Generando backup de la base de datos...</h5>
-                <p class="text-muted mb-3" id="backupModalMessage">Este proceso puede tomar varios minutos dependiendo del tamaño de la base de datos.</p>
-                
-                <!-- Barra de progreso -->
-                <div class="progress mb-3" style="height: 10px;">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" 
-                         role="progressbar" 
-                         id="backupProgressBar" 
-                         style="width: 0%"></div>
-                </div>
-                <small class="text-muted" id="backupProgressText">Iniciando generación de backup...</small>
-            </div>
-        </div>
+<!-- Modal: Progreso de Backup con mismo estilo del buscador global -->
+<div id="backupModal" class="search-modal" style="display:none; padding-top:14vh;">
+  <div class="search-modal-overlay"></div>
+  <div class="search-modal-content" style="max-width:520px;">
+    <div class="search-header">
+      <div class="search-icon"><i class="bi bi-database-fill"></i></div>
+      <div class="text-white fw-bold">Generando Backup</div>
+      <button class="search-close ms-auto" id="closeBackupModal" type="button"><i class="bi bi-x"></i></button>
     </div>
+    <div class="search-results" style="max-height:none; padding:24px;">
+      <div class="text-center">
+        <div class="spinner-border text-info mb-3" role="status"><span class="visually-hidden">Generando backup...</span></div>
+        <h5 id="backupModalTitle">Generando backup de la base de datos...</h5>
+        <p class="text-muted mb-3" id="backupModalMessage">Este proceso puede tomar varios minutos dependiendo del tamaño de la base de datos.</p>
+        <div class="progress mb-3" style="height:10px;">
+          <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" id="backupProgressBar" style="width:0%"></div>
+        </div>
+        <small class="text-muted" id="backupProgressText">Iniciando generación de backup...</small>
+      </div>
+    </div>
+  </div>
 </div>
 @endsection
 
@@ -254,8 +232,9 @@ async function submitForm() {
   btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Procesando...';
   
   // Muestra modal de progreso
-  const modal = new bootstrap.Modal(document.getElementById('loadingModal'));
-  modal.show();
+  // Mostrar modal con mismo estilo que buscador global
+  document.getElementById('loadingModal').style.display = 'flex';
+  document.getElementById('loadingModal').classList.add('show');
   
   // Inicializa tracking de tiempo
   startTime = Date.now();
@@ -310,8 +289,9 @@ function startRealProgressMonitoring() {
         if (data.status === 'completed') {
           // Esperar 3 segundos antes de cerrar
           setTimeout(() => {
-            const modal = bootstrap.Modal.getInstance(document.getElementById('loadingModal'));
-            if (modal) modal.hide();
+            const lm = document.getElementById('loadingModal');
+            lm.classList.remove('show');
+            lm.style.display = 'none';
             
             // Restablecer botón
             const btn = document.getElementById('headerSubmitBtn');
@@ -327,7 +307,7 @@ function startRealProgressMonitoring() {
     } catch (error) {
       console.error('Error consultando progreso:', error);
     }
-  }, 100); // CADA 100ms - MUY AGRESIVO para ver CADA cambio
+  }, 100); // polling rápido para UI fluida
 }
 
 // Actualiza la UI del progreso
@@ -413,10 +393,18 @@ function updateProgressUI(data) {
   }
 }
 
+// Cerrar modal manualmente si el usuario lo desea
+document.getElementById('closeImportModal')?.addEventListener('click', () => {
+  const lm = document.getElementById('loadingModal');
+  lm.classList.remove('show');
+  lm.style.display = 'none';
+});
+
 // Función para generar backup
 function generateBackup(type) {
-    const backupModal = new bootstrap.Modal(document.getElementById('backupModal'));
-    backupModal.show();
+    const bm = document.getElementById('backupModal');
+    bm.style.display = 'flex';
+    bm.classList.add('show');
     
     const backupModalTitle = document.getElementById('backupModalTitle');
     const backupModalMessage = document.getElementById('backupModalMessage');
@@ -461,7 +449,8 @@ function generateBackup(type) {
             // Realizar la petición al servidor
             setTimeout(() => {
                 window.location.href = route;
-                backupModal.hide();
+                bm.classList.remove('show');
+                bm.style.display = 'none';
             }, 2000);
         }
     }, 150);
@@ -470,5 +459,12 @@ function generateBackup(type) {
         clearInterval(progressInterval);
     }, estimatedTime + 3000);
 }
+
+// Cerrar modal de backup manualmente
+document.getElementById('closeBackupModal')?.addEventListener('click', () => {
+  const bm = document.getElementById('backupModal');
+  bm.classList.remove('show');
+  bm.style.display = 'none';
+});
 </script>
 @endpush

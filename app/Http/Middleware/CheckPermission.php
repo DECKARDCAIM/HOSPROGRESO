@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class CheckPermission
 {
@@ -29,7 +30,10 @@ class CheckPermission
             $hasAnyPermission = false;
             
             foreach ($permissions as $perm) {
-                if ($user->hasPermission(trim($perm))) {
+                // Cache per-user permission checks for 60s to reduce DB
+                $has = Cache::tags(['permisos'])
+                    ->remember("perm:{$user->id}:".trim($perm), now()->addSeconds(60), fn() => $user->hasPermission(trim($perm)));
+                if ($has) {
                     $hasAnyPermission = true;
                     break;
                 }
@@ -41,7 +45,9 @@ class CheckPermission
             }
         } else {
             // Verificar si el usuario tiene el permiso requerido (modo original)
-            if (!$user->hasPermission($permission)) {
+            $has = Cache::tags(['permisos'])
+                ->remember("perm:{$user->id}:{$permission}", now()->addSeconds(60), fn() => $user->hasPermission($permission));
+            if (!$has) {
                 return redirect()->route('permission.denied')
                                ->with('error', 'No tienes permiso para acceder a esta página.');
             }
