@@ -107,18 +107,44 @@ class AppointmentController extends Controller
         // Buscar pacientes con los mismos filtros que clinical records
         $clinicalRecordsQuery = ClinicalRecord::query();
         
-        // Aplicar filtros de búsqueda
+        // Aplicar filtros de búsqueda (misma lógica que en ClinicalRecordController@index)
         if ($request->filled('patient_search')) {
-            $search = $request->patient_search;
-            $clinicalRecordsQuery->where(function($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('second_name', 'like', "%{$search}%")
-                  ->orWhere('third_name', 'like', "%{$search}%")
-                  ->orWhere('first_lastname', 'like', "%{$search}%")
-                  ->orWhere('second_lastname', 'like', "%{$search}%")
-                  ->orWhere('married_lastname', 'like', "%{$search}%")
-                  ->orWhere('cui', 'like', "%{$search}%")
-                  ->orWhere('record_number', 'like', "%{$search}%");
+            $search = trim($request->patient_search);
+            $clinicalRecordsQuery->where(function($q2) use ($search) {
+                // Dividir la búsqueda en términos individuales
+                $terms = array_filter(explode(' ', $search));
+
+                // Búsqueda exacta por número de expediente, CUI, registro antiguo y dirección
+                $q2->where('record_number', 'like', "%{$search}%")
+                   ->orWhere('cui', 'like', "%{$search}%")
+                   ->orWhere('old_registration_number', 'like', "%{$search}%")
+                   ->orWhere('specific_residence', 'like', "%{$search}%");
+
+                // Si hay múltiples términos, buscar que TODOS los términos estén presentes
+                if (count($terms) > 1) {
+                    $q2->orWhere(function($q3) use ($terms) {
+                        foreach ($terms as $term) {
+                            $q3->where(function($q4) use ($term) {
+                                $q4->where('first_name', 'like', "%{$term}%")
+                                   ->orWhere('second_name', 'like', "%{$term}%")
+                                   ->orWhere('third_name', 'like', "%{$term}%")
+                                   ->orWhere('first_lastname', 'like', "%{$term}%")
+                                   ->orWhere('second_lastname', 'like', "%{$term}%")
+                                   ->orWhere('married_lastname', 'like', "%{$term}%")
+                                   ->orWhere('specific_residence', 'like', "%{$term}%");
+                            });
+                        }
+                    });
+                } else {
+                    // Si es un solo término, buscar en todos los campos incluida dirección
+                    $q2->orWhere('first_name', 'like', "%{$search}%")
+                       ->orWhere('second_name', 'like', "%{$search}%")
+                       ->orWhere('third_name', 'like', "%{$search}%")
+                       ->orWhere('first_lastname', 'like', "%{$search}%")
+                       ->orWhere('second_lastname', 'like', "%{$search}%")
+                       ->orWhere('married_lastname', 'like', "%{$search}%")
+                       ->orWhere('specific_residence', 'like', "%{$search}%");
+                }
             });
         }
         
