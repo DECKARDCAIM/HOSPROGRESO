@@ -11,8 +11,6 @@
     <link href="{{ asset('css/nucleo-icons.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/nucleo-svg.css') }}" rel="stylesheet" />
     <link id="pagestyle" href="{{ asset('css/material-dashboard.css') }}" rel="stylesheet" />
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
-    <!-- Bootstrap Icons Local -->
     <link href="{{ asset('bootstrap-icons-1.11.3/font/bootstrap-icons.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/panel.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/search-styles.css') }}" rel="stylesheet" />
@@ -23,13 +21,12 @@
     <link href="{{ asset('css/datatables-scroll-fix.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/datatables-buttons-fix.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/checkbox-fixes.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/useroptions-fixes.css') }}" rel="stylesheet" />
 </head>
 
 <body class="g-sidenav-show  bg-gray-100">
 
-    <!-- Sidenav Overlay for Mobile -->
     <div class="sidenav-overlay" id="sidenav-overlay"></div>
-
     <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2 bg-white my-2"
         id="sidenav-main" style="width: 280px !important; min-width: 280px !important;">
         <div class="sidenav-header">
@@ -74,7 +71,6 @@
                 </li>
             </ul>
         </div>
-
         <div class="collapse navbar-collapse  w-auto h-auto" id="sidenav-collapse-main">
             @include('includes.panel.menu')
         </div>
@@ -88,41 +84,31 @@
                 @include('includes.panel.userOptions')
             </div>
         </nav>
-
         <div class="container-fluid py-4 flex-grow-1" style="overflow-y: auto;">
             @yield('content')
         </div>
-
         @include('includes.panel.footer')
     </main>
 
     @include('includes.panel.globalsearch')
-
     <div class="toast-container position-fixed top-2 end-3 p-3" style="z-index: 1050"></div>
 
-    {{-- Core JS Files --}}
     <script src="{{ asset('js/core/popper.min.js') }}"></script>
     <script src="{{ asset('js/core/bootstrap.min.js') }}"></script>
     <script src="{{ asset('js/plugins/perfect-scrollbar.min.js') }}"></script>
     <script src="{{ asset('js/plugins/smooth-scrollbar.min.js') }}"></script>
     <script src="{{ asset('js/plugins/datatables.js') }}"></script>
-
-    {{-- Panel JS Files --}}
     <script src="{{ asset('js/panel.js') }}"></script>
     <script src="{{ asset('js/menu-manager.js') }}"></script>
     <script src="{{ asset('js/global-search.js') }}"></script>
     <script src="{{ asset('js/common-filters.js') }}"></script>
-    {{-- <script src="{{ asset('js/appointment-form.js') }}"></script> --}}
+    <script src="{{ asset('js/appointment-form.js') }}"></script>
     <script src="{{ asset('js/mobile-sidenav.js') }}"></script>
     <script src="{{ asset('js/responsive-datatables.js') }}"></script>
     <script src="{{ asset('js/datatables-init.js') }}"></script>
     <script src="{{ asset('js/datatables-touch-handler.js') }}"></script>
-    
-    {{-- Choices.js for Multi-Select Enhancement --}}
     <script src="{{ asset('js/plugins/choices.min.js') }}"></script>
     <script src="{{ asset('js/multi-select-init.js') }}"></script>
-
-    {{-- Material Dashboard JS --}}
     <script src="{{ asset('js/material-dashboard.min.js?v=3.1.0') }}"></script>
 
     @stack('scripts')
@@ -133,8 +119,5 @@
         </script>
     @endif
 
-    <!-- Notificaciones deshabilitadas -->
-
 </body>
-
 </html>

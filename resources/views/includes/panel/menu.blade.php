@@ -392,8 +392,8 @@
                 @if(auth()->user()->isAdmin() || Gate::check('import.acceso'))
                 <li class="nav-item">
                     <a class="nav-link text-dark mobile-submenu-item" href="{{ route('import.index') }}">
-                        <i class="bi bi-download opacity-5 me-2"></i>
-                        <span class="sidenav-normal">Exportar Datos</span>
+                        <i class="bi bi-database opacity-5 me-2"></i>
+                        <span class="sidenav-normal">Base de Datos</span>
                     </a>
                 </li>
                 @endif
