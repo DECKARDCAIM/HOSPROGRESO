@@ -251,8 +251,8 @@ function submitForm() {
     
     // Deshabilitar botón para evitar envíos duplicados
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesando...';
-    
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2 text-white"></i>Procesando...';
+
     // Enviar formulario
     try {
         form.submit();

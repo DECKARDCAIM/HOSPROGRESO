@@ -237,7 +237,6 @@
                                 <tr>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Número de Expediente</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Nombre Completo</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">CUI</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Edad</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3" style="width: 30%; min-width: 250px; max-width: 400px;">Ubicación</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3 text-center">Acciones</th>
@@ -270,9 +269,9 @@
                                     </td>
                                     <td class="px-3 py-2">
                                         <p class="text-sm font-weight-bold mb-0">{{ $record->full_name }}</p>
-                                    </td>
-                                    <td class="px-3 py-2">
-                                        <p class="text-sm text-secondary mb-0">{{ $record->cui }}</p>
+                                        <small class="text-muted">
+      <i class="fas fa-id-card me-1"></i>{{ $record->cui ?? '-' }}
+    </small>
                                     </td>
                                     <td class="px-3 py-2">
                                         <p class="text-sm text-secondary mb-0">{{ $record->age }} años</p>
