@@ -30,8 +30,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 // Mostrar spinner
-                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Procesando...';
-                
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status text-white"></span>Procesando...';
+
                 // Restaurar el botón si hay error (después de 10 segundos)
                 setTimeout(() => {
                     if (submitBtn.dataset.originalText) {
@@ -88,7 +88,7 @@ function showLoadingToast(message = 'Procesando...') {
     toastDiv.innerHTML = `
         <div class="toast show" role="alert">
             <div class="toast-header">
-                <div class="spinner-border spinner-border-sm me-2" role="status">
+                <div class="spinner-border spinner-border-sm me-2 text-white" role="status">
                     <span class="visually-hidden">Cargando...</span>
                 </div>
                 <strong class="me-auto">Procesando</strong>

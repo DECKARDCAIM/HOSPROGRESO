@@ -1,0 +1,63 @@
+/* ====== UTILIDADES DE MARCA PARA HEADERS / TABLAS (usa tus variables) ====== */
+
+/* Header de card/tabla con el mismo look del menú */
+.bg-brand-header{
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
+  color: #fff !important;
+  border-top-left-radius: .75rem;
+  border-top-right-radius: .75rem;
+}
+.bg-brand-header .text-white{ color:#fff !important; }
+
+/* Quita línea entre header y body y mantiene esquinas */
+.card > .bg-brand-header + .card-body{
+  border-top-left-radius: 0; border-top-right-radius: 0;
+}
+
+/* Botones de marca */
+.btn-brand{
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
+  color:#fff !important; border:none;
+  box-shadow: var(--shadow-light);
+}
+.btn-brand:hover{ filter: brightness(.95); box-shadow: var(--shadow-medium); }
+
+.btn-brand-outline{
+  background: transparent; color:#fff !important;
+  border:1px solid rgba(255,255,255,.6);
+}
+.btn-brand-outline:hover{ background: rgba(255,255,255,.12); }
+
+/* Borde/Focus de inputs y selects con color de marca */
+.border-brand{ border-color: var(--primary-blue) !important; }
+.form-control.border-brand:focus,
+.form-select.border-brand:focus{
+  border-color: var(--primary-blue-dark) !important;
+  box-shadow: 0 0 0 .2rem rgba(25,118,210,.15);
+}
+
+/* Input-group “de marca” para buscadores */
+.input-group-text.brand{
+  background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+  color:#fff; border:0;
+}
+
+/* TH de DataTable con tu gris claro y borde suave */
+.table thead th{
+  background: var(--background-light);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-weight: 700; letter-spacing: .03em;
+}
+
+/* Chips/badges coherentes (roles, estados) */
+.badge-brand{
+  background: var(--primary-blue-light);
+  color: var(--primary-blue-dark);
+  border: 1px solid var(--secondary-blue);
+  padding:.35rem .6rem; border-radius:999px; font-weight:600;
+}
+
+/* Avatares circulares con azul de marca */
+.avatar.bg-brand{ background: var(--primary-blue) !important; color:#fff; }
+

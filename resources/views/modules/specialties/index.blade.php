@@ -34,12 +34,13 @@
     }
 }
 </style>
+
    
     <div class="container-fluid py-4">
         <div class="row">
             <div class="col-12">
                 <div class="card mb-4">
-                    <div class="card-header pb-0 bg-info">
+                    <div class="card-header pb-0 bg-brand-header">
                         <div class="row align-items-center">
                             <div class="col-md-8">
                                 <h6 class="text-white mb-0">Especialidades</h6>
@@ -67,11 +68,11 @@
                                 </div>
                                 <div class="col-md-6 col-lg-5 mb-2 mb-md-0">
                                     <div class="input-group input-group-lg">
-                                        <span class="input-group-text bg-info text-white border-info">
+                                        <span class="input-group-text bg-brand-header text-white border-info">
                                             <i class="fas fa-search"></i>
                                         </span>
                                         <input type="text" name="search" class="form-control border border-info" placeholder="Buscar por nombre..." value="{{ $search }}">
-                                        <button type="submit" class="btn bg-gradient-info text-white">
+                                        <button type="submit" class="btn bg-brand-header text-white">
                                             <i class="fas fa-filter me-2"></i>Filtrar
                                         </button>
                                     </div>
@@ -103,7 +104,7 @@
                                         <tr>
                                             <td>
                                                 <div class="d-flex px-3 py-2">
-                                                    <div class="avatar avatar-sm me-3 bg-info rounded-circle">
+                                                    <div class="avatar avatar-sm me-3 bg-brand-header rounded-circle">
                                                         <span class="text-white font-weight-bold">{{ substr($especialidad->name, 0, 1) }}</span>
                                                     </div>
                                                     <div class="d-flex flex-column justify-content-center">
@@ -129,21 +130,21 @@
                                             <td class="align-middle text-center">
                                                 @if ($status === 'active')
                                                     <a href="{{ url('/especialidades/' . $especialidad->id . '/edit') }}"
-                                                        class="btn btn-info rounded-pill px-3 py-2 me-2">
+                                                        class="btn btn-info rounded-pill px-3 py-2 me-2 bg-brand-header">
                                                         <i class="fas fa-edit me-1"></i>Editar
                                                     </a>
                                                     <form action="{{ url('/especialidades/' . $especialidad->id) }}"
                                                         method="POST" class="d-inline">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="btn btn-danger rounded-pill px-3 py-2">
+                                                        <button type="submit" class="btn btn-danger rounded-pill px-3 py-2 text-white">
                                                             <i class="fas fa-trash me-1"></i>Eliminar
                                                         </button>
                                                     </form>
                                                 @else
                                                     <form action="{{ route('especialidades.reactivate', $especialidad->id) }}" method="POST" class="d-inline">
                                                         @csrf
-                                                        <button type="submit" class="btn btn-success rounded-pill px-3 py-2">
+                                                        <button type="submit" class="btn btn-success rounded-pill px-3 py-2 bg-brand-header">
                                                             <i class="fas fa-power-off me-1"></i>Reactivar
                                                         </button>
                                                     </form>

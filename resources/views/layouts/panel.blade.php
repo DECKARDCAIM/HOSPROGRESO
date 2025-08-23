@@ -22,6 +22,7 @@
     <link href="{{ asset('css/datatables-buttons-fix.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/checkbox-fixes.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/useroptions-fixes.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/style_card.css') }}" rel="stylesheet" />
 </head>
 
 <body class="g-sidenav-show  bg-gray-100">
@@ -91,6 +92,7 @@
     </main>
 
     @include('includes.panel.globalsearch')
+    
     <div class="toast-container position-fixed top-2 end-3 p-3" style="z-index: 1050"></div>
 
     <script src="{{ asset('js/core/popper.min.js') }}"></script>
@@ -110,6 +112,7 @@
     <script src="{{ asset('js/plugins/choices.min.js') }}"></script>
     <script src="{{ asset('js/multi-select-init.js') }}"></script>
     <script src="{{ asset('js/material-dashboard.min.js?v=3.1.0') }}"></script>
+    <script src="{{ asset('js/toast-notifications.js') }}"></script>
 
     @stack('scripts')
 
