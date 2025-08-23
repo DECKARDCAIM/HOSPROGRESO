@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\LinguisticCommunity;
-use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -14,9 +13,9 @@ class LinguisticCommunityController extends Controller
         $status = $request->query('status', 'active');
         $search = $request->query('search', '');
         $page = (int) ($request->query('page', 1));
-        $key = "comunidades_linguisticas:index:v1:status={$status}:q=".urlencode($search).":p={$page}";
-        $linguisticCommunities = Cache::tags(['comunidades_linguisticas','listados'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
-            return LinguisticCommunity::select('id','name','description','is_active')
+        $key = "comunidades_linguisticas:index:v1:status={$status}:q=" . urlencode($search) . ":p={$page}";
+        $linguisticCommunities = Cache::tags(['comunidades_linguisticas'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
+            return LinguisticCommunity::select('id', 'name', 'description', 'is_active')
                 ->where('is_active', $status === 'active' ? 1 : 0)
                 ->when($search, function ($query, $search) {
                     $query->where('name', 'like', "%$search%");
@@ -44,8 +43,11 @@ class LinguisticCommunityController extends Controller
             'description' => $request->description,
             'is_active' => true
         ]);
-        NotificationService::notifyCreate('Comunidad Lingüística', $linguisticCommunity->name);
-        return redirect()->route('linguistic-communities.index')
+
+        Cache::tags(['comunidades_linguisticas'])->flush();
+
+        return redirect()
+            ->route('linguistic-communities.index')
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Creación Éxitosa',
@@ -68,8 +70,11 @@ class LinguisticCommunityController extends Controller
             'name' => $request->name,
             'description' => $request->description,
         ]);
-        NotificationService::notifyUpdate('Comunidad Lingüística', $linguisticCommunity->name);
-        return redirect()->route('linguistic-communities.index')
+
+        Cache::tags(['comunidades_linguisticas'])->flush();
+
+        return redirect()
+            ->route('linguistic-communities.index')
             ->with('toast', [
                 'type' => 'info',
                 'title' => 'Actualización Éxitosa',
@@ -82,9 +87,10 @@ class LinguisticCommunityController extends Controller
         $linguisticCommunityName = $linguisticCommunity->name;
         $linguisticCommunity->update(['is_active' => false]);
 
-        NotificationService::notifyDelete('Comunidad Lingüística', $linguisticCommunityName);
+        Cache::tags(['comunidades_linguisticas'])->flush();
 
-        return redirect()->route('linguistic-communities.index')
+        return redirect()
+            ->route('linguistic-communities.index')
             ->with('toast', [
                 'type' => 'warning',
                 'title' => 'Eliminación Éxitosa',
@@ -97,12 +103,15 @@ class LinguisticCommunityController extends Controller
         $linguisticCommunity = LinguisticCommunity::findOrFail($id);
         $linguisticCommunity->is_active = true;
         $linguisticCommunity->save();
-        NotificationService::notifyUpdate('Comunidad Lingüística', $linguisticCommunity->name);
-        return redirect()->route('linguistic-communities.index', ['status' => 'inactive'])
+
+        Cache::tags(['comunidades_linguisticas'])->flush();
+
+        return redirect()
+            ->route('linguistic-communities.index', ['status' => 'inactive'])
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Reactivación Éxitosa',
                 'message' => 'La comunidad lingüística ' . $linguisticCommunity->name . ' ha sido reactivada correctamente.'
             ]);
     }
-} 
+}

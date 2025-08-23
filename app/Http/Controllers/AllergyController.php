@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Allergy;
-use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -14,9 +13,9 @@ class AllergyController extends Controller
         $status = $request->query('status', 'active');
         $search = $request->query('search', '');
         $page = (int) ($request->query('page', 1));
-        $key = "alergias:index:v1:status={$status}:q=".urlencode($search).":p={$page}";
-        $allergies = Cache::tags(['alergias','listados'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
-            return Allergy::select('id','name','description','is_active')
+        $key = "alergias:index:v1:status={$status}:q=" . urlencode($search) . ":p={$page}";
+        $allergies = Cache::tags(['alergias'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
+            return Allergy::select('id', 'name', 'description', 'is_active')
                 ->where('is_active', $status === 'active' ? 1 : 0)
                 ->when($search, function ($query, $search) {
                     $query->where('name', 'like', "%$search%");
@@ -44,8 +43,11 @@ class AllergyController extends Controller
             'description' => $request->description,
             'is_active' => true
         ]);
-        NotificationService::notifyCreate('Alergia', $allergy->name);
-        return redirect()->route('allergies.index')
+
+        Cache::tags(['alergias'])->flush();
+
+        return redirect()
+            ->route('allergies.index')
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Creación Éxitosa',
@@ -68,8 +70,11 @@ class AllergyController extends Controller
             'name' => $request->name,
             'description' => $request->description,
         ]);
-        NotificationService::notifyUpdate('Alergia', $allergy->name);
-        return redirect()->route('allergies.index')
+
+        Cache::tags(['alergias'])->flush();
+
+        return redirect()
+            ->route('allergies.index')
             ->with('toast', [
                 'type' => 'info',
                 'title' => 'Actualización Éxitosa',
@@ -82,9 +87,10 @@ class AllergyController extends Controller
         $allergyName = $allergy->name;
         $allergy->update(['is_active' => false]);
 
-        NotificationService::notifyDelete('Alergia', $allergyName);
+        Cache::tags(['alergias'])->flush();
 
-        return redirect()->route('allergies.index')
+        return redirect()
+            ->route('allergies.index')
             ->with('toast', [
                 'type' => 'warning',
                 'title' => 'Eliminación Éxitosa',
@@ -97,12 +103,15 @@ class AllergyController extends Controller
         $allergy = Allergy::findOrFail($id);
         $allergy->is_active = true;
         $allergy->save();
-        NotificationService::notifyUpdate('Alergia', $allergy->name);
-        return redirect()->route('allergies.index', ['status' => 'inactive'])
+
+        Cache::tags(['alergias'])->flush();
+
+        return redirect()
+            ->route('allergies.index', ['status' => 'inactive'])
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Reactivación Éxitosa',
                 'message' => 'La alergia ' . $allergy->name . ' ha sido reactivada correctamente.'
             ]);
     }
-} 
+}

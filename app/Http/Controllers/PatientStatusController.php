@@ -3,15 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\PatientStatus;
-use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class PatientStatusController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $status = $request->get('status', 'active');
@@ -19,41 +15,34 @@ class PatientStatusController extends Controller
 
         $query = PatientStatus::query();
 
-        // Filtrar por estado
         if ($status === 'active') {
             $query->where('is_active', true);
         } elseif ($status === 'inactive') {
             $query->where('is_active', false);
         }
 
-        // Filtrar por búsqueda
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q
+                    ->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
         $page = (int) ($request->query('page', 1));
-        $cacheKey = "estados_paciente:index:v1:status={$status}:q=".urlencode((string)$search).":p={$page}";
-        $patientStatuses = Cache::tags(['estados_paciente','listados'])->remember($cacheKey, now()->addMinutes(10), function () use ($query) {
+        $cacheKey = "estados_paciente:index:v1:status={$status}:q=" . urlencode((string) $search) . ":p={$page}";
+        $patientStatuses = Cache::tags(['estados_paciente'])->remember($cacheKey, now()->addMinutes(10), function () use ($query) {
             return $query->orderBy('name')->paginate(10);
         });
 
         return view('modules.patient_statuses.index', compact('patientStatuses', 'status', 'search'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('modules.patient_statuses.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -70,37 +59,24 @@ class PatientStatusController extends Controller
 
         $data = $request->all();
         $data['color'] = $data['color'] ?? '#007bff';
-        
+
         $patientStatus = PatientStatus::create($data);
 
-        NotificationService::notifyCreate('Estado del Paciente', $patientStatus->name);
+        Cache::tags(['estados_paciente'])->flush();
 
-        return redirect()->route('patient-statuses.index')
+        return redirect()
+            ->route('patient-statuses.index')
             ->with('success', [
                 'title' => 'Estado del Paciente Creado',
                 'message' => 'El estado "' . $patientStatus->name . '" se ha creado exitosamente.'
             ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(PatientStatus $patientStatus)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(PatientStatus $patientStatus)
     {
         return view('modules.patient_statuses.edit', compact('patientStatus'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, PatientStatus $patientStatus)
     {
         $request->validate([
@@ -117,46 +93,42 @@ class PatientStatusController extends Controller
 
         $data = $request->all();
         $data['color'] = $data['color'] ?? '#007bff';
-        
+
         $patientStatus->update($data);
 
-        NotificationService::notifyUpdate('Estado del Paciente', $patientStatus->name);
+        Cache::tags(['estados_paciente'])->flush();
 
-        return redirect()->route('patient-statuses.index')
+        return redirect()
+            ->route('patient-statuses.index')
             ->with('success', [
                 'title' => 'Estado del Paciente Actualizado',
                 'message' => 'El estado "' . $patientStatus->name . '" se ha actualizado exitosamente.'
             ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(PatientStatus $patientStatus)
     {
-        // Soft delete - cambiar is_active a false
         $patientStatus->update(['is_active' => false]);
 
-        NotificationService::notifyDelete('Estado del Paciente', $patientStatus->name);
+        Cache::tags(['estados_paciente'])->flush();
 
-        return redirect()->route('patient-statuses.index')
+        return redirect()
+            ->route('patient-statuses.index')
             ->with('success', [
                 'title' => 'Estado del Paciente Desactivado',
                 'message' => 'El estado "' . $patientStatus->name . '" se ha desactivado exitosamente.'
             ]);
     }
 
-    /**
-     * Reactivate the specified resource.
-     */
     public function reactivate($id)
     {
         $patientStatus = PatientStatus::findOrFail($id);
         $patientStatus->update(['is_active' => true]);
 
-        NotificationService::notifyUpdate('Estado del Paciente', $patientStatus->name . ' - Reactivado');
+        Cache::tags(['estados_paciente'])->flush();
 
-        return redirect()->route('patient-statuses.index')
+        return redirect()
+            ->route('patient-statuses.index')
             ->with('success', [
                 'title' => 'Estado del Paciente Reactivado',
                 'message' => 'El estado "' . $patientStatus->name . '" se ha reactivado exitosamente.'

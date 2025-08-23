@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\ScheduleType;
 use App\Models\Specialty;
-use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -15,19 +14,16 @@ class ScheduleTypeController extends Controller
         $this->middleware('auth');
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $status = $request->query('status', 'active');
         $search = $request->query('search');
-        
+
         $page = (int) ($request->query('page', 1));
-        $key = "tipos_horario:index:v1:status={$status}:q=".urlencode((string)$search).":p={$page}";
-        $scheduleTypes = Cache::tags(['tipos_horario','listados'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
+        $key = "tipos_horario:index:v1:status={$status}:q=" . urlencode((string) $search) . ":p={$page}";
+        $scheduleTypes = Cache::tags(['tipos_horario'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
             return ScheduleType::with('specialty:id,name')
-                ->select('id','name','specialty_id','days_of_week','start_time','end_time','max_patients','is_active')
+                ->select('id', 'name', 'specialty_id', 'days_of_week', 'start_time', 'end_time', 'max_patients', 'is_active')
                 ->where('is_active', $status === 'active' ? 1 : 0)
                 ->when($search, function ($query) use ($search) {
                     return $query->where('name', 'like', "%$search%");
@@ -40,18 +36,12 @@ class ScheduleTypeController extends Controller
         return view('modules.schedule_types.index', compact('scheduleTypes', 'status', 'search'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        $specialties = Cache::tags(['especialidades','catalogos'])->remember('especialidades:select:v2', now()->addHours(12), fn() => Specialty::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $specialties = Cache::tags(['especialidades', 'catalogos'])->remember('especialidades:select:v2', now()->addHours(12), fn() => Specialty::where('is_active', true)->orderBy('name')->get(['id', 'name']));
         return view('modules.schedule_types.create', compact('specialties'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $rules = [
@@ -82,10 +72,10 @@ class ScheduleTypeController extends Controller
         $data = $request->only(['name', 'specialty_id', 'start_time', 'end_time', 'max_patients']);
         $data['days_of_week'] = json_encode($request->input('days_of_week'));
         $data['is_active'] = true;
-        
+
         $scheduleType = ScheduleType::create($data);
 
-        NotificationService::notifyCreate('Tipo de Horario', $scheduleType->name);
+        Cache::tags(['tipos_horario'])->flush();
 
         return redirect()->route('schedule-types.index')->with('toast', [
             'type' => 'success',
@@ -94,19 +84,13 @@ class ScheduleTypeController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(ScheduleType $scheduleType)
     {
-        $specialties = Cache::tags(['especialidades','catalogos'])->remember('especialidades:select:v2', now()->addHours(12), fn() => Specialty::where('is_active', true)->orderBy('name')->get(['id','name']));
+        $specialties = Cache::tags(['especialidades', 'catalogos'])->remember('especialidades:select:v2', now()->addHours(12), fn() => Specialty::where('is_active', true)->orderBy('name')->get(['id', 'name']));
         $scheduleType->days_of_week = json_decode($scheduleType->days_of_week, true);
         return view('modules.schedule_types.edit', compact('scheduleType', 'specialties'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, ScheduleType $scheduleType)
     {
         $rules = [
@@ -136,10 +120,10 @@ class ScheduleTypeController extends Controller
 
         $data = $request->only(['name', 'specialty_id', 'start_time', 'end_time', 'max_patients']);
         $data['days_of_week'] = json_encode($request->input('days_of_week'));
-        
+
         $scheduleType->update($data);
 
-        NotificationService::notifyUpdate('Tipo de Horario', $scheduleType->name);
+        Cache::tags(['tipos_horario'])->flush();
 
         return redirect()->route('schedule-types.index')->with('toast', [
             'type' => 'info',
@@ -148,13 +132,9 @@ class ScheduleTypeController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage (soft delete).
-     */
     public function destroy(ScheduleType $scheduleType)
     {
         try {
-            // Verificar si tiene doctores asociados
             if ($scheduleType->doctors()->count() > 0) {
                 return back()->with('toast', [
                     'type' => 'error',
@@ -167,7 +147,7 @@ class ScheduleTypeController extends Controller
             $scheduleType->is_active = false;
             $scheduleType->save();
 
-            NotificationService::notifyDelete('Tipo de Horario', $scheduleTypeName);
+            Cache::tags(['tipos_horario'])->flush();
 
             return redirect()->route('schedule-types.index')->with('toast', [
                 'type' => 'warning',
@@ -183,22 +163,20 @@ class ScheduleTypeController extends Controller
         }
     }
 
-    /**
-     * Reactivar tipo de horario inactivo.
-     */
     public function reactivate($id)
     {
         $scheduleType = ScheduleType::findOrFail($id);
         $scheduleType->is_active = true;
         $scheduleType->save();
 
-        NotificationService::notifyUpdate('Tipo de Horario', $scheduleType->name);
+        Cache::tags(['tipos_horario'])->flush();
 
-        return redirect()->route('schedule-types.index', ['status' => 'inactive'])
+        return redirect()
+            ->route('schedule-types.index', ['status' => 'inactive'])
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Reactivación Éxitosa',
                 'message' => 'El tipo de horario ' . $scheduleType->name . ' ha sido reactivado correctamente.'
             ]);
     }
-} 
+}

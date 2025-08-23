@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Jenssegers\Agent\Agent;
-use Illuminate\Support\Facades\Cache;
 
 class ProfileController extends Controller
 {
@@ -20,15 +19,29 @@ class ProfileController extends Controller
         $this->middleware('auth');
     }
 
-    /**
-     * Display the user's profile view.
-     */
     public function index()
     {
-        $sessions = Cache::tags(['perfil'])->remember('profile:sessions:user:'.Auth::id(), now()->addMinutes(5), fn()=> $this->getSessionsProperty());
+        $userId = Auth::id();
+
+        $version = 'no-db';
+        if (config('session.driver') === 'database') {
+            $base = DB::table(config('session.table', 'sessions'))
+                ->where('user_id', $userId);
+
+            $maxLastActivity = (int) ($base->max('last_activity') ?? 0);
+            $count = (int) ($base->count() ?? 0);
+
+            $version = $maxLastActivity . ':' . $count;
+        }
+
+        $cacheKey = "profile:sessions:user:{$userId}:v:{$version}";
+
+        $sessions = Cache::tags(['perfil', 'perfil:' . $userId])
+            ->remember($cacheKey, now()->addMinutes(5), fn() => $this->getSessionsProperty());
+
         return view('modules.profile.index', [
             'user' => Auth::user(),
-            'sessions' => $sessions
+            'sessions' => $sessions,
         ]);
     }
 
@@ -39,22 +52,23 @@ class ProfileController extends Controller
         }
 
         return DB::table(config('session.table', 'sessions'))
-                ->where('user_id', Auth::user()->getKey())
-                ->orderBy('last_activity', 'desc')
-                ->get()->map(function ($session) {
-                    $agent = $this->createAgent($session);
-                    return (object) [
-                        'id' => $session->id,
-                        'agent' => [
-                            'is_desktop' => $agent->isDesktop(),
-                            'platform' => $agent->platform(),
-                            'browser' => $agent->browser(),
-                        ],
-                        'ip_address' => $session->ip_address,
-                        'is_current_device' => $session->id === request()->session()->getId(),
-                        'last_active' => \Carbon\Carbon::createFromTimestamp($session->last_activity)->diffForHumans(),
-                    ];
-                });
+            ->where('user_id', Auth::user()->getKey())
+            ->orderBy('last_activity', 'desc')
+            ->get()
+            ->map(function ($session) {
+                $agent = $this->createAgent($session);
+                return (object) [
+                    'id' => $session->id,
+                    'agent' => [
+                        'is_desktop' => $agent->isDesktop(),
+                        'platform' => $agent->platform(),
+                        'browser' => $agent->browser(),
+                    ],
+                    'ip_address' => $session->ip_address,
+                    'is_current_device' => $session->id === request()->session()->getId(),
+                    'last_active' => \Carbon\Carbon::createFromTimestamp($session->last_activity)->diffForHumans(),
+                ];
+            });
     }
 
     protected function createAgent($session)
@@ -64,9 +78,6 @@ class ProfileController extends Controller
         return $agent;
     }
 
-    /**
-     * Display the user's profile edit form.
-     */
     public function edit()
     {
         return view('modules.profile.edit', [
@@ -74,9 +85,6 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * Update the user's profile information.
-     */
     public function update(Request $request)
     {
         $user = Auth::user();
@@ -93,8 +101,6 @@ class ProfileController extends Controller
         $user->fill($validated);
         $user->save();
 
-        NotificationService::notifyUpdate('Perfil', $user->name);
-
         return redirect()->route('profile.edit')->with('toast', [
             'type' => 'success',
             'title' => 'Información Actualizada',
@@ -102,9 +108,6 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * Update the user's password.
-     */
     public function updatePassword(Request $request)
     {
         $user = Auth::user();
@@ -118,8 +121,6 @@ class ProfileController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        NotificationService::create('Contraseña Actualizada', 'Tu contraseña ha sido actualizada correctamente.', 'info');
-
         return back()->with('toast', [
             'type' => 'success',
             'title' => 'Contraseña Actualizada',
@@ -127,9 +128,6 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * Update the user's profile photo.
-     */
     public function updatePhoto(Request $request)
     {
         $user = Auth::user();
@@ -139,7 +137,6 @@ class ProfileController extends Controller
                 'profile_photo' => ['required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
             ]);
 
-            // Eliminar la foto anterior si existe
             if ($user->profile_photo_path && Storage::disk('public')->exists($user->profile_photo_path)) {
                 Storage::disk('public')->delete($user->profile_photo_path);
             }
@@ -147,11 +144,9 @@ class ProfileController extends Controller
             $path = $request->file('profile_photo')->store('profile-photos', 'public');
             $user->update(['profile_photo_path' => $path]);
 
-            NotificationService::create('Foto de Perfil Actualizada', 'Tu foto de perfil ha sido actualizada.', 'info');
-
             if ($request->expectsJson()) {
                 return response()->json([
-                    'success' => true, 
+                    'success' => true,
                     'message' => 'Foto de perfil actualizada correctamente.',
                     'path' => $user->profile_photo_url
                 ]);
@@ -162,7 +157,6 @@ class ProfileController extends Controller
                 'title' => 'Foto de Perfil Actualizada',
                 'message' => 'Foto de perfil actualizada correctamente.'
             ]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             if ($request->expectsJson()) {
                 return response()->json([
@@ -182,9 +176,6 @@ class ProfileController extends Controller
         }
     }
 
-    /**
-     * Delete a specific user session.
-     */
     public function logoutSession($session_id)
     {
         if (config('session.driver') !== 'database') {
@@ -196,17 +187,11 @@ class ProfileController extends Controller
             ->where('user_id', Auth::user()->getKey())
             ->delete();
 
-        // Invalidar caché del listado de sesiones para el usuario actual
         Cache::tags(['perfil'])->forget('profile:sessions:user:' . Auth::id());
-
-        NotificationService::create('Sesión Cerrada', 'Una sesión ha sido cerrada exitosamente.', 'warning');
 
         return back()->with('success', 'La sesión ha sido cerrada exitosamente.');
     }
 
-    /**
-     * Update the user's banner photo.
-     */
     public function updateBanner(Request $request)
     {
         $user = Auth::user();
@@ -216,15 +201,12 @@ class ProfileController extends Controller
                 'banner_photo' => ['required', 'image', 'mimes:jpeg,png,jpg', 'max:4096'],
             ]);
 
-            // Eliminar el banner anterior si existe
             if ($user->banner_photo_path && Storage::disk('public')->exists($user->banner_photo_path)) {
                 Storage::disk('public')->delete($user->banner_photo_path);
             }
 
             $path = $request->file('banner_photo')->store('banner-photos', 'public');
             $user->update(['banner_photo_path' => $path]);
-
-            NotificationService::create('Banner Actualizado', 'Tu banner ha sido actualizado correctamente.', 'info');
 
             if ($request->expectsJson()) {
                 return response()->json([
@@ -239,7 +221,6 @@ class ProfileController extends Controller
                 'title' => 'Banner Actualizado',
                 'message' => 'Banner actualizado correctamente.'
             ]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             if ($request->expectsJson()) {
                 return response()->json([
@@ -259,23 +240,16 @@ class ProfileController extends Controller
         }
     }
 
-    /**
-     * Delete the user's profile photo.
-     */
     public function deletePhoto(Request $request)
     {
         $user = Auth::user();
 
         try {
-            // Eliminar la foto del storage si existe
             if ($user->profile_photo_path && Storage::disk('public')->exists($user->profile_photo_path)) {
                 Storage::disk('public')->delete($user->profile_photo_path);
             }
 
-            // Resetear a null para usar la foto por defecto
             $user->update(['profile_photo_path' => null]);
-
-            NotificationService::create('Foto Eliminada', 'Tu foto de perfil ha sido eliminada.', 'warning');
 
             if ($request->expectsJson()) {
                 return response()->json([
@@ -290,7 +264,6 @@ class ProfileController extends Controller
                 'title' => 'Foto Eliminada',
                 'message' => 'Foto de perfil eliminada correctamente.'
             ]);
-
         } catch (\Exception $e) {
             if ($request->expectsJson()) {
                 return response()->json([
@@ -302,23 +275,16 @@ class ProfileController extends Controller
         }
     }
 
-    /**
-     * Delete the user's banner photo.
-     */
     public function deleteBanner(Request $request)
     {
         $user = Auth::user();
 
         try {
-            // Eliminar el banner del storage si existe
             if ($user->banner_photo_path && Storage::disk('public')->exists($user->banner_photo_path)) {
                 Storage::disk('public')->delete($user->banner_photo_path);
             }
 
-            // Resetear a null para usar el banner por defecto
             $user->update(['banner_photo_path' => null]);
-
-            NotificationService::create('Banner Eliminado', 'Tu banner ha sido eliminado.', 'warning');
 
             if ($request->expectsJson()) {
                 return response()->json([
@@ -333,7 +299,6 @@ class ProfileController extends Controller
                 'title' => 'Banner Eliminado',
                 'message' => 'Banner eliminado correctamente.'
             ]);
-
         } catch (\Exception $e) {
             if ($request->expectsJson()) {
                 return response()->json([
@@ -358,10 +323,7 @@ class ProfileController extends Controller
 
         Auth::logoutOtherDevices($request->password);
 
-        // Invalidar caché del listado de sesiones para el usuario actual
         Cache::tags(['perfil'])->forget('profile:sessions:user:' . Auth::id());
-
-        NotificationService::create('Sesiones Cerradas', 'Se han cerrado las demás sesiones de navegador.', 'warning');
 
         return back()->with('toast', [
             'type' => 'success',
@@ -369,4 +331,4 @@ class ProfileController extends Controller
             'message' => 'Se han cerrado las demás sesiones de navegador.'
         ]);
     }
-} 
+}

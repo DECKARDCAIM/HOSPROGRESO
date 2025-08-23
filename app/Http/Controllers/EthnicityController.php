@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ethnicity;
-use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -14,9 +13,9 @@ class EthnicityController extends Controller
         $status = $request->query('status', 'active');
         $search = $request->query('search', '');
         $page = (int) ($request->query('page', 1));
-        $key = "etnias:index:v1:status={$status}:q=".urlencode($search).":p={$page}";
-        $ethnicities = Cache::tags(['etnias','listados'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
-            return Ethnicity::select('id','name','description','is_active')
+        $key = "etnias:index:v1:status={$status}:q=" . urlencode($search) . ":p={$page}";
+        $ethnicities = Cache::tags(['etnias'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
+            return Ethnicity::select('id', 'name', 'description', 'is_active')
                 ->where('is_active', $status === 'active' ? 1 : 0)
                 ->when($search, function ($query, $search) {
                     $query->where('name', 'like', "%$search%");
@@ -44,8 +43,11 @@ class EthnicityController extends Controller
             'description' => $request->description,
             'is_active' => true
         ]);
-        NotificationService::notifyCreate('Etnia', $ethnicity->name);
-        return redirect()->route('ethnicities.index')
+
+        Cache::tags(['etnias'])->flush();
+
+        return redirect()
+            ->route('ethnicities.index')
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Creación Éxitosa',
@@ -68,8 +70,10 @@ class EthnicityController extends Controller
             'name' => $request->name,
             'description' => $request->description,
         ]);
-        NotificationService::notifyUpdate('Etnia', $ethnicity->name);
-        return redirect()->route('ethnicities.index')
+        Cache::tags(['etnias'])->flush();
+
+        return redirect()
+            ->route('ethnicities.index')
             ->with('toast', [
                 'type' => 'info',
                 'title' => 'Actualización Éxitosa',
@@ -82,9 +86,10 @@ class EthnicityController extends Controller
         $ethnicityName = $ethnicity->name;
         $ethnicity->update(['is_active' => false]);
 
-        NotificationService::notifyDelete('Etnia', $ethnicityName);
+        Cache::tags(['etnias'])->flush();
 
-        return redirect()->route('ethnicities.index')
+        return redirect()
+            ->route('ethnicities.index')
             ->with('toast', [
                 'type' => 'warning',
                 'title' => 'Eliminación Éxitosa',
@@ -97,12 +102,15 @@ class EthnicityController extends Controller
         $ethnicity = Ethnicity::findOrFail($id);
         $ethnicity->is_active = true;
         $ethnicity->save();
-        NotificationService::notifyUpdate('Etnia', $ethnicity->name);
-        return redirect()->route('ethnicities.index', ['status' => 'inactive'])
+
+        Cache::tags(['etnias'])->flush();
+
+        return redirect()
+            ->route('ethnicities.index', ['status' => 'inactive'])
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Reactivación Éxitosa',
                 'message' => 'La etnia ' . $ethnicity->name . ' ha sido reactivada correctamente.'
             ]);
     }
-} 
+}

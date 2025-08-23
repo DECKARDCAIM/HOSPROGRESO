@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\ControlType;
-use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -14,18 +13,15 @@ class ControlTypeController extends Controller
         $this->middleware('auth');
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $status = $request->query('status', 'active');
         $search = $request->query('search');
-        
+
         $page = (int) ($request->query('page', 1));
-        $key = "tipos_control:index:v1:status={$status}:q=".urlencode((string)$search).":p={$page}";
-        $controlTypes = Cache::tags(['tipos_control','listados'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
-            return ControlType::select('id','name','description','is_active')
+        $key = "tipos_control:index:v1:status={$status}:q=" . urlencode((string) $search) . ":p={$page}";
+        $controlTypes = Cache::tags(['tipos_control'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
+            return ControlType::select('id', 'name', 'description', 'is_active')
                 ->where('is_active', $status === 'active' ? 1 : 0)
                 ->when($search, function ($query) use ($search) {
                     return $query->where('name', 'like', "%$search%");
@@ -38,17 +34,11 @@ class ControlTypeController extends Controller
         return view('modules.control_types.index', compact('controlTypes', 'status', 'search'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('modules.control_types.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $rules = [
@@ -69,7 +59,7 @@ class ControlTypeController extends Controller
         $controlType->is_active = true;
         $controlType->save();
 
-        NotificationService::notifyCreate('Tipo de Control', $controlType->name);
+        Cache::tags(['tipos_control'])->flush();
 
         return redirect()->route('control-types.index')->with('toast', [
             'type' => 'success',
@@ -78,25 +68,16 @@ class ControlTypeController extends Controller
         ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(ControlType $controlType)
     {
         return view('modules.control_types.show', compact('controlType'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(ControlType $controlType)
     {
         return view('modules.control_types.edit', compact('controlType'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, ControlType $controlType)
     {
         $rules = [
@@ -115,7 +96,7 @@ class ControlTypeController extends Controller
         $controlType->description = $request->input('description');
         $controlType->save();
 
-        NotificationService::notifyUpdate('Tipo de Control', $controlType->name);
+        Cache::tags(['tipos_control'])->flush();
 
         return redirect()->route('control-types.index')->with('toast', [
             'type' => 'info',
@@ -124,13 +105,9 @@ class ControlTypeController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage (soft delete).
-     */
     public function destroy(ControlType $controlType)
     {
         try {
-            // Verificar si tiene consultas asociadas
             if ($controlType->medicalConsultations()->count() > 0) {
                 return back()->with('toast', [
                     'type' => 'error',
@@ -143,7 +120,7 @@ class ControlTypeController extends Controller
             $controlType->is_active = false;
             $controlType->save();
 
-            NotificationService::notifyDelete('Tipo de Control', $controlTypeName);
+            Cache::tags(['tipos_control'])->flush();
 
             return redirect()->route('control-types.index')->with('toast', [
                 'type' => 'warning',
@@ -159,18 +136,16 @@ class ControlTypeController extends Controller
         }
     }
 
-    /**
-     * Reactivar tipo de control inactivo.
-     */
     public function reactivate($id)
     {
         $controlType = ControlType::findOrFail($id);
         $controlType->is_active = true;
         $controlType->save();
 
-        NotificationService::notifyUpdate('Tipo de Control', $controlType->name);
+        Cache::tags(['tipos_control'])->flush();
 
-        return redirect()->route('control-types.index', ['status' => 'inactive'])
+        return redirect()
+            ->route('control-types.index', ['status' => 'inactive'])
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Reactivación Éxitosa',

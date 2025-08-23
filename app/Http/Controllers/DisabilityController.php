@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Disability;
-use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -14,9 +13,9 @@ class DisabilityController extends Controller
         $status = $request->query('status', 'active');
         $search = $request->query('search', '');
         $page = (int) ($request->query('page', 1));
-        $key = "discapacidades:index:v1:status={$status}:q=".urlencode($search).":p={$page}";
-        $disabilities = Cache::tags(['discapacidades','listados'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
-            return Disability::select('id','name','description','is_active')
+        $key = "discapacidades:index:v1:status={$status}:q=" . urlencode($search) . ":p={$page}";
+        $disabilities = Cache::tags(['discapacidades'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
+            return Disability::select('id', 'name', 'description', 'is_active')
                 ->where('is_active', $status === 'active' ? 1 : 0)
                 ->when($search, function ($query, $search) {
                     $query->where('name', 'like', "%$search%");
@@ -44,8 +43,11 @@ class DisabilityController extends Controller
             'description' => $request->description,
             'is_active' => true
         ]);
-        NotificationService::notifyCreate('Discapacidad', $disability->name);
-        return redirect()->route('disabilities.index')
+
+        Cache::tags(['discapacidades'])->flush();
+
+        return redirect()
+            ->route('disabilities.index')
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Creación Éxitosa',
@@ -68,8 +70,11 @@ class DisabilityController extends Controller
             'name' => $request->name,
             'description' => $request->description,
         ]);
-        NotificationService::notifyUpdate('Discapacidad', $disability->name);
-        return redirect()->route('disabilities.index')
+
+        Cache::tags(['discapacidades'])->flush();
+
+        return redirect()
+            ->route('disabilities.index')
             ->with('toast', [
                 'type' => 'info',
                 'title' => 'Actualización Éxitosa',
@@ -82,9 +87,10 @@ class DisabilityController extends Controller
         $disabilityName = $disability->name;
         $disability->update(['is_active' => false]);
 
-        NotificationService::notifyDelete('Discapacidad', $disabilityName);
+        Cache::tags(['discapacidades'])->flush();
 
-        return redirect()->route('disabilities.index')
+        return redirect()
+            ->route('disabilities.index')
             ->with('toast', [
                 'type' => 'warning',
                 'title' => 'Eliminación Éxitosa',
@@ -97,12 +103,15 @@ class DisabilityController extends Controller
         $disability = Disability::findOrFail($id);
         $disability->is_active = true;
         $disability->save();
-        NotificationService::notifyUpdate('Discapacidad', $disability->name);
-        return redirect()->route('disabilities.index', ['status' => 'inactive'])
+
+        Cache::tags(['discapacidades'])->flush();
+
+        return redirect()
+            ->route('disabilities.index', ['status' => 'inactive'])
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Reactivación Éxitosa',
                 'message' => 'La discapacidad ' . $disability->name . ' ha sido reactivada correctamente.'
             ]);
     }
-} 
+}
