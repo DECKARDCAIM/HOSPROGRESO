@@ -22,7 +22,7 @@
     <div class="col-12">
       <div class="card">
 
-        <div class="card-header pb-0 bg-info">
+        <div class="card-header pb-0 bg-brand-header">
           <div class="row align-items-center">
             <div class="col-md-6">
               <h6 class="text-white mb-0">Agendar Nueva Cita</h6>
@@ -126,7 +126,7 @@
                       <input type="date" name="birth_date" class="form-control auto-submit" value="{{ request('birth_date') }}">
                     </div>
                     <div class="col-md-4 d-flex align-items-end gap-2">
-                      <button type="submit" class="btn bg-gradient-info text-white">
+                      <button type="submit" class="btn bg-brand-header text-white">
                         <i class="fas fa-filter me-2"></i>Filtrar
                       </button>
                       @php
@@ -182,7 +182,7 @@
                           <td class="align-middle"><span class="fw-bold">{{ $record->record_number }}</span></td>
                           <td class="align-middle"><span>{{ $record->full_name }}</span></td>
                           <td class="align-middle"><span class="text-muted">{{ $record->cui }}</span></td>
-                          <td class="align-middle"><span class="badge bg-info">{{ $record->age }} años</span></td>
+                                                          <td class="align-middle"><span class="badge bg-brand-header">{{ $record->age }} años</span></td>
                           <td class="align-middle">
                             <span class="text-muted">
                               <i class="fas fa-map-marker-alt text-info me-1"></i>
@@ -316,7 +316,7 @@
               <button type="button" class="btn btn-secondary" onclick="backToStep1()">
                 <i class="fas fa-arrow-left me-2"></i>Seleccionar otro Paciente
               </button>
-              <button type="button" class="btn btn-info" disabled id="submitBtn" onclick="submitForm()">
+              <button type="button" class="btn bg-brand-header" disabled id="submitBtn" onclick="submitForm()">
                 <i class="fas fa-calendar-plus me-2"></i>Agendar Cita
               </button>
             </div>
@@ -501,7 +501,7 @@ function proceedToStep2() {
     document.getElementById('step1').style.display = 'none';
     document.getElementById('step2').style.display = 'block';
   } else {
-    alert('Por favor, selecciona un paciente antes de continuar.');
+    showErrorToast('Por favor, selecciona un paciente antes de continuar.', 'Paciente Requerido');
   }
 }
 
@@ -607,12 +607,44 @@ document.addEventListener('DOMContentLoaded', function () {
   const doctorSelect = document.getElementById('doctor_id');
   const attentionTypeSelect = document.querySelector('select[name="attention_type"]');
 
-  if (specialtySelect) specialtySelect.addEventListener('change', function () { loadDoctorsBySpecialty(this.value); });
-  if (doctorSelect) doctorSelect.addEventListener('change', function () { loadNextAvailableSlot(this.value); });
-  if (attentionTypeSelect) attentionTypeSelect.addEventListener('change', updateSubmitButtonState);
+  if (specialtySelect) {
+    specialtySelect.addEventListener('change', function () { 
+      loadDoctorsBySpecialty(this.value);
+      validateField(this, 'Especialidad');
+    });
+  }
+  
+  if (doctorSelect) {
+    doctorSelect.addEventListener('change', function () { 
+      loadNextAvailableSlot(this.value);
+      validateField(this, 'Doctor');
+    });
+  }
+  
+  if (attentionTypeSelect) {
+    attentionTypeSelect.addEventListener('change', function() {
+      updateSubmitButtonState();
+      validateField(this, 'Tipo de Atención');
+    });
+  }
 
   updateSubmitButtonState();
 });
+
+// Función para validar campos en tiempo real
+function validateField(field, fieldName) {
+  const value = field.value.trim();
+  
+  if (!value) {
+    showWarningToast(`Por favor, selecciona ${fieldName.toLowerCase()}`, 'Campo Requerido');
+    field.classList.add('is-invalid');
+    return false;
+  } else {
+    field.classList.remove('is-invalid');
+    field.classList.add('is-valid');
+    return true;
+  }
+}
 
 function backToStep1() {
   document.getElementById('step2').style.display = 'none';
@@ -621,7 +653,102 @@ function backToStep1() {
 
 function submitForm() {
   const form = document.getElementById('appointmentForm');
-  if (form) form.submit();
+  if (!form) return;
+
+  // Validar campos requeridos antes de enviar
+  const specialtySelect = document.getElementById('specialty_id');
+  const doctorSelect = document.getElementById('doctor_id');
+  const attentionTypeSelect = document.querySelector('select[name="attention_type"]');
+  const clinicalRecordId = document.getElementById('selectedPatientId');
+
+  let errors = [];
+
+  if (!clinicalRecordId.value) {
+    errors.push('Debe seleccionar un paciente');
+  }
+
+  if (!specialtySelect.value) {
+    errors.push('Debe seleccionar una especialidad');
+  }
+
+  if (!doctorSelect.value || doctorSelect.disabled) {
+    errors.push('Debe seleccionar un doctor');
+  }
+
+  if (!attentionTypeSelect.value) {
+    errors.push('Debe seleccionar un tipo de atención');
+  }
+
+  // Verificar si hay información de cupo disponible
+  const hasSlotInfo = document.getElementById('nextSlotInfo').style.display === 'block' &&
+                      !document.getElementById('slotDetails').innerHTML.includes('Error') &&
+                      !document.getElementById('slotDetails').innerHTML.includes('Cargando');
+
+  if (!hasSlotInfo) {
+    errors.push('No hay cupos disponibles para el doctor seleccionado');
+  }
+
+  if (errors.length > 0) {
+    showErrorToast(errors.join('<br>'), 'Error de Validación');
+    return;
+  }
+
+  // Deshabilitar botón de envío
+  const submitBtn = document.getElementById('submitBtn');
+  const originalText = submitBtn.innerHTML;
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creando...';
+
+  // Enviar formulario con AJAX
+  const formData = new FormData(form);
+  
+  fetch(form.action, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    }
+  })
+  .then(response => {
+    // Verificar si la respuesta es JSON
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return response.json();
+    } else {
+      // Si no es JSON, probablemente es una redirección
+      window.location.href = response.url;
+      return;
+    }
+  })
+  .then(data => {
+    if (data && data.success) {
+      // NO mostrar toast aquí, solo redirigir inmediatamente
+      const redirectUrl = data.redirect_url || '{{ route("appointments.index") }}';
+      const urlWithToast = redirectUrl + '?toast=success&title=' + encodeURIComponent('Cita Creada Exitosamente') + '&message=' + encodeURIComponent(data.message);
+      window.location.href = urlWithToast;
+    } else if (data && data.errors) {
+      // Mostrar errores de validación
+      let errorMessages = [];
+      Object.keys(data.errors).forEach(field => {
+        errorMessages.push(data.errors[field].join('<br>'));
+      });
+      showErrorToast(errorMessages.join('<br>'), 'Error de Validación');
+    } else {
+      showErrorToast('Error inesperado al crear la cita', 'Error del Sistema');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showErrorToast('Error de conexión. Por favor, intente nuevamente.', 'Error de Conexión');
+  })
+  .finally(() => {
+    // Restaurar botón solo si no se redirigió
+    if (!window.location.href.includes('appointments?')) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+    }
+  });
 }
 </script>
 

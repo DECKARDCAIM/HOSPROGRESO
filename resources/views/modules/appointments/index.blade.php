@@ -94,7 +94,7 @@
                             </div>
                         </div>
                         <div class="col-4 text-end">
-                            <div class="icon icon-shape bg-info shadow text-center border-radius-md">
+                            <div class="icon icon-shape bg-brand-header shadow text-center border-radius-md">
                                 <i class="bi bi-check-circle text-lg opacity-10"></i>
                             </div>
                         </div>
@@ -164,7 +164,7 @@
     <div class="row">
         <div class="col-12">
             <div class="card mb-4">
-                <div class="card-header pb-0 bg-info">
+                <div class="card-header pb-0 bg-brand-header">
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <h6 class="text-white mb-0">Gestión de Citas Médicas</h6>
@@ -223,7 +223,7 @@
                             </div>
                         <div class="row g-2 align-items-end mt-2">
                             <div class="col-md-12 d-flex align-items-end gap-2">
-                                <button type="submit" class="btn bg-gradient-info text-white btn-lg">
+                                <button type="submit" class="btn bg-brand-header text-white btn-lg">
                                     <i class="bi bi-funnel me-2"></i>Filtrar
                                 </button>
                                 @php
@@ -281,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <tr>
                                         <td class="px-3 py-2">
                                             <div class="d-flex align-items-center">
-                                                <div class="avatar avatar-sm me-3 bg-info rounded-circle">
+                                                <div class="avatar avatar-sm me-3 bg-brand-header rounded-circle">
                                                     <span class="text-white font-weight-bold text-xs">{{ $appointment->slot_number ?? '1' }}</span>
                                                 </div>
                                                 <div>
@@ -309,11 +309,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                             <span class="badge {{ $appointment->status_badge }}">{{ $appointment->status_text }}</span>
                                         </td>
                                         <td class="align-middle text-center">
-                                            <a href="{{ route('appointments.show', $appointment) }}" class="btn btn-primary rounded-pill px-3 py-2 me-2">
+                                            <a href="{{ route('appointments.show', $appointment) }}" class="btn btn-primary rounded-pill px-3 py-2">
                                             <i class="bi bi-search me-1"></i>Ver
-                                            </a>
-                                            <a href="{{ route('appointments.print', $appointment) }}" class="btn btn-secondary rounded-pill px-3 py-2" target="_blank">
-                                            <i class="bi bi-file-earmark-text me-1"></i>Imprimir
                                             </a>
                                         </td>
                                     </tr>
@@ -335,5 +332,89 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 </div>
+
+@push('scripts')
+@if(isset($toastData) && $toastData)
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    showToast('{{ $toastData['type'] }}', '{{ $toastData['title'] }}', '{{ $toastData['message'] }}');
+});
+</script>
+@endif
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const specialtySelect = document.querySelector('select[name="specialty_id"]');
+    const doctorSelect = document.querySelector('select[name="doctor_id"]');
+    
+    if (specialtySelect && doctorSelect) {
+        // Función para cargar doctores por especialidad
+        function loadDoctorsBySpecialty(specialtyId, preserveSelection = false) {
+            if (specialtyId) {
+                // Mostrar loading en el select de doctores
+                doctorSelect.innerHTML = '<option value="">Cargando doctores...</option>';
+                doctorSelect.disabled = true;
+                
+                // Hacer petición AJAX para obtener doctores por especialidad
+                fetch('{{ route("appointments.get-doctors") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ specialty_id: specialtyId })
+                })
+                .then(response => response.json())
+                .then(doctors => {
+                    doctorSelect.innerHTML = '<option value="">Todos los doctores</option>';
+                    doctors.forEach(doctor => {
+                        const option = document.createElement('option');
+                        option.value = doctor.id;
+                        option.textContent = `${doctor.first_name} ${doctor.first_lastname}`;
+                        
+                        // Preservar selección si se especifica
+                        if (preserveSelection && '{{ request("doctor_id") }}' == doctor.id) {
+                            option.selected = true;
+                        }
+                        
+                        doctorSelect.appendChild(option);
+                    });
+                    doctorSelect.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error cargando doctores:', error);
+                    doctorSelect.innerHTML = '<option value="">Error cargando doctores</option>';
+                    doctorSelect.disabled = false;
+                });
+            } else {
+                // Si no hay especialidad seleccionada, cargar todos los doctores
+                doctorSelect.innerHTML = '<option value="">Todos los doctores</option>';
+                @foreach($doctors as $doctor)
+                    const option{{ $doctor->id }} = document.createElement('option');
+                    option{{ $doctor->id }}.value = '{{ $doctor->id }}';
+                    option{{ $doctor->id }}.textContent = '{{ $doctor->first_name }} {{ $doctor->first_lastname }}';
+                    @if(request('doctor_id') == $doctor->id)
+                        option{{ $doctor->id }}.selected = true;
+                    @endif
+                    doctorSelect.appendChild(option{{ $doctor->id }});
+                @endforeach
+            }
+        }
+        
+        // Event listener para cambios en especialidad
+        specialtySelect.addEventListener('change', function() {
+            loadDoctorsBySpecialty(this.value);
+        });
+        
+        // Cargar doctores al inicializar si ya hay una especialidad seleccionada
+        const selectedSpecialtyId = specialtySelect.value;
+        if (selectedSpecialtyId) {
+            loadDoctorsBySpecialty(selectedSpecialtyId, true);
+        }
+    }
+});
+</script>
+@endpush
 
 @endsection 

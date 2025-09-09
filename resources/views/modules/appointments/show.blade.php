@@ -8,7 +8,7 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header pb-0 bg-info">
+                <div class="card-header pb-0 bg-brand-header">
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <h6 class="text-white mb-0">Detalles de Cita - {{ $appointment->appointment_number }}</h6>
@@ -107,7 +107,7 @@
                                         @if(in_array($appointment->status, ['pendiente', 'confirmada']))
                                             {{-- Citas pendientes o confirmadas - Acciones normales --}}
                                             @if($appointment->status === 'pendiente')
-                                                <button class="btn btn-info" onclick="updateStatus('{{ $appointment->id }}', 'confirmada')">
+                                                <button class="btn bg-brand-header" onclick="updateStatus('{{ $appointment->id }}', 'confirmada')">
                                                     <i class="bi bi-check me-2"></i>Confirmar Cita
                                                 </button>
                                             @endif
@@ -130,7 +130,7 @@
 
                                         @elseif($appointment->status === 'perdida')
                                             {{-- Cita perdida - Solo reagendar --}}
-                                            <div class="alert alert-warning">
+                                            <div class="alert alert-warning text-white">
                                                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
                                                 <strong>Cita Perdida:</strong> El paciente no se presentó a la cita.
                                             </div>
@@ -140,7 +140,7 @@
 
                                         @elseif($appointment->status === 'atendida')
                                             {{-- Cita atendida - Agendar nueva --}}
-                                            <div class="alert alert-success">
+                                            <div class="alert alert-success text-white">
                                                 <i class="bi bi-check-circle-fill me-2"></i>
                                                 <strong>Cita Atendida:</strong> El paciente fue atendido exitosamente.
                                             </div>
@@ -150,7 +150,7 @@
 
                                         @elseif($appointment->status === 'cancelada')
                                             {{-- Cita cancelada - Agendar nueva --}}
-                                            <div class="alert alert-danger">
+                                            <div class="alert alert-danger text-white">
                                                 <i class="bi bi-x-circle-fill me-2"></i>
                                                 <strong>Cita Cancelada:</strong> 
                                                 @if($appointment->cancelled_reason)
@@ -159,23 +159,8 @@
                                                     Cita cancelada por el sistema.
                                                 @endif
                                             </div>
-                                            <a href="{{ route('appointments.create', ['clinical_record_id' => $appointment->clinical_record_id]) }}" class="btn btn-info btn-lg">
+                                            <a href="{{ route('appointments.create', ['clinical_record_id' => $appointment->clinical_record_id]) }}" class="btn bg-brand-header btn-lg">
                                                 <i class="bi bi-plus-circle me-2"></i>Agendar Nueva Cita
-                                            </a>
-                                        @endif
-                                    </div>
-
-                                    <hr>
-                                    
-                                    <div class="d-grid gap-2">
-                                        <a href="{{ route('appointments.print', $appointment) }}" class="btn btn-outline-primary" target="_blank">
-                                            <i class="bi bi-printer me-2"></i>Imprimir PDF
-                                        </a>
-                                        
-                                        @if($appointment->status !== 'atendida')
-                                            {{-- Mostrar botón para ver expediente completo si no está atendida --}}
-                                            <a href="{{ route('clinical-records.show', $appointment->clinicalRecord) }}" class="btn btn-outline-info">
-                                                <i class="bi bi-folder2-open me-2"></i>Ver Expediente Completo
                                             </a>
                                         @endif
                                     </div>
