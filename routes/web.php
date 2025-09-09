@@ -17,6 +17,7 @@ use App\Http\Controllers\DisabilityController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\EthnicityController;
 use App\Http\Controllers\ExamController;
+use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LaboratoryTestController;
 use App\Http\Controllers\LinguisticCommunityController;
@@ -31,6 +32,7 @@ use App\Http\Controllers\ScheduleTypeController;
 use App\Http\Controllers\SexController;
 use App\Http\Controllers\SpecialtyController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\DoctorSubstitutionController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\ClinicalFileController;
 use App\Http\Controllers\PermissionController;
@@ -51,8 +53,8 @@ Route::get('/', function () {
     return redirect()->route('login');
 })->middleware('web');
 
-// Rutas de autenticación de Laravel
-Auth::routes();
+// Rutas de autenticación de Laravel (registro y reset de contraseña deshabilitados)
+Auth::routes(['register' => false, 'reset' => false, 'verify' => false]);
 
 // Panel principal
 Route::get('/panel', [HomeController::class, 'index'])
@@ -221,6 +223,39 @@ Route::middleware('auth')->group(function () {
     Route::delete('schedule-types/{scheduleType}', [ScheduleTypeController::class, 'destroy'])
         ->name('schedule-types.destroy')
         ->middleware('permission:tipos_horario.eliminar');
+    
+    // Ruta AJAX para obtener tipos de horario por especialidad
+    Route::post('schedule-types/get-by-specialty', [ScheduleTypeController::class, 'getBySpecialty'])
+        ->name('schedule-types.get-by-specialty')
+        ->middleware('permission:tipos_horario.ver');
+    
+    // Sustituciones de doctores - Rutas individuales con permisos específicos
+    Route::get('doctor-substitutions', [DoctorSubstitutionController::class, 'index'])
+        ->name('doctor-substitutions.index')
+        ->middleware('permission:doctores.sustituciones.ver');
+    Route::get('doctor-substitutions/create', [DoctorSubstitutionController::class, 'create'])
+        ->name('doctor-substitutions.create')
+        ->middleware('permission:doctores.sustituciones.crear');
+    Route::post('doctor-substitutions', [DoctorSubstitutionController::class, 'store'])
+        ->name('doctor-substitutions.store')
+        ->middleware('permission:doctores.sustituciones.crear');
+    Route::get('doctor-substitutions/{doctorSubstitution}', [DoctorSubstitutionController::class, 'show'])
+        ->name('doctor-substitutions.show')
+        ->middleware('permission:doctores.sustituciones.ver');
+    Route::post('doctor-substitutions/{doctorSubstitution}/complete', [DoctorSubstitutionController::class, 'complete'])
+        ->name('doctor-substitutions.complete')
+        ->middleware('permission:doctores.sustituciones.editar');
+    Route::post('doctor-substitutions/{doctorSubstitution}/cancel', [DoctorSubstitutionController::class, 'cancel'])
+        ->name('doctor-substitutions.cancel')
+        ->middleware('permission:doctores.sustituciones.editar');
+    Route::post('doctor-substitutions/{doctorSubstitution}/assign-new-doctor', [DoctorSubstitutionController::class, 'assignNewDoctor'])
+        ->name('doctor-substitutions.assign-new-doctor')
+        ->middleware('permission:doctores.sustituciones.editar');
+    
+    // Ruta AJAX para obtener doctores disponibles para sustitución
+    Route::post('doctor-substitutions/get-available-doctors', [DoctorSubstitutionController::class, 'getAvailableDoctors'])
+        ->name('doctor-substitutions.get-available-doctors')
+        ->middleware('permission:doctores.sustituciones.ver');
     
     // Tipos de control - Rutas individuales con permisos específicos
     Route::get('control-types', [ControlTypeController::class, 'index'])
@@ -565,6 +600,30 @@ Route::middleware('auth')->group(function () {
         ->name('doctors.destroy')
         ->middleware('permission:doctores.eliminar');
     
+    // Días Festivos - Rutas individuales con permisos específicos
+    Route::get('holidays', [HolidayController::class, 'index'])
+        ->name('holidays.index')
+        ->middleware('permission:dias_festivos.ver');
+    Route::get('holidays/create', [HolidayController::class, 'create'])
+        ->name('holidays.create')
+        ->middleware('permission:dias_festivos.crear');
+    Route::post('holidays', [HolidayController::class, 'store'])
+        ->name('holidays.store')
+        ->middleware('permission:dias_festivos.crear');
+    Route::get('holidays/{holiday}/edit', [HolidayController::class, 'edit'])
+        ->name('holidays.edit')
+        ->middleware('permission:dias_festivos.editar');
+    Route::put('holidays/{holiday}', [HolidayController::class, 'update'])
+        ->name('holidays.update')
+        ->middleware('permission:dias_festivos.editar');
+    Route::delete('holidays/{holiday}', [HolidayController::class, 'destroy'])
+        ->name('holidays.destroy')
+        ->middleware('permission:dias_festivos.eliminar');
+    Route::post('holidays/{id}/reactivate', [HolidayController::class, 'reactivate'])
+        ->name('holidays.reactivate')
+        ->middleware('permission:dias_festivos.reactivar');
+    
+    
     // Expedientes clínicos - Rutas individuales con permisos específicos
     Route::get('clinical-records', [ClinicalRecordController::class, 'index'])
         ->name('clinical-records.index')
@@ -774,6 +833,14 @@ Route::middleware('auth')->group(function () {
         ->name('usuarios.reset-password')
         ->middleware('permission:usuarios.reset_password');
     
+    Route::get('usuarios/{user}/print-credentials', [UserController::class, 'printCredentials'])
+        ->name('usuarios.print-credentials')
+        ->middleware('permission:usuarios.ver');
+    
+    Route::get('usuarios/{user}/generate-password', [UserController::class, 'generateNewPassword'])
+        ->name('usuarios.generate-password')
+        ->middleware('permission:usuarios.editar');
+    
     /*
     |--------------------------------------------------------------------------
     | RUTAS DE IMPORTACIÓN DE DATOS
@@ -799,22 +866,8 @@ Route::middleware('auth')->group(function () {
             ->name('backup.full')
             ->middleware('permission:import.importar');
     });
+
     
-    /*
-    |--------------------------------------------------------------------------
-    | RUTAS DE ARCHIVO CLÍNICO
-    |--------------------------------------------------------------------------
-    */
-    
-    // Módulo de archivo clínico
-    Route::prefix('clinical-file')->name('clinical-file.')->middleware('permission:archivo_clinico.acceso')->group(function () {
-        Route::get('/', [ClinicalFileController::class, 'index'])->name('index')->middleware('permission:archivo_clinico.expedientes_recientes');
-        Route::get('/archived', [ClinicalFileController::class, 'archived'])->name('archived')->middleware('permission:archivo_clinico.expedientes_archivados');
-        Route::get('/{id}', [ClinicalFileController::class, 'show'])->name('show')->middleware('permission:archivo_clinico.expedientes_recientes');
-        Route::post('/{id}/mark-printed', [ClinicalFileController::class, 'markAsPrinted'])->name('mark-printed')->middleware('permission:expedientes.imprimir');
-        Route::post('/{id}/archive', [ClinicalFileController::class, 'markAsArchived'])->name('archive')->middleware('permission:archivo_clinico.archivar');
-        Route::post('/{id}/reactivate', [ClinicalFileController::class, 'reactivate'])->name('reactivate')->middleware('permission:archivo_clinico.desarchivar');
-    });
 });
 
 /*
@@ -870,4 +923,5 @@ Route::prefix('reports')->middleware('auth')->group(function () {
     Route::post('/sigsa-3h', [ReportController::class, 'generateSigsa'])->name('reports.generate-sigsa')->middleware('permission:reportes.generar');
     Route::post('/preview', [ReportController::class, 'preview'])->name('reports.preview')->middleware('permission:reportes.ver');
     Route::get('/statistics', [ReportController::class, 'statistics'])->name('reports.statistics')->middleware('permission:reportes.ver');
+    Route::get('/report-toast', [ReportController::class, 'showReportToast'])->name('reports.show-toast')->middleware('permission:reportes.ver');
 });
