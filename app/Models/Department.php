@@ -11,13 +11,11 @@ class Department extends Model
 
     protected $fillable = ['name', 'description', 'country_id'];
 
-    // Un departamento pertenece a un país
     public function country()
     {
         return $this->belongsTo(Country::class);
     }
 
-    // Un departamento tiene muchos municipios (más adelante)
     public function municipalities()
     {
         return $this->hasMany(Municipality::class);

@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\MedicalConsultation;
 use App\Models\Specialty;
 use App\Models\ControlType;
-use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\SigsaReportExport;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
+use App\Jobs\GenerateSigsaReportJob;
 
 class ReportController extends Controller
 {
@@ -18,23 +19,40 @@ class ReportController extends Controller
         $this->middleware('auth');
     }
 
-    /**
-     * Mostrar página principal de reportes
-     */
     public function index()
     {
-        $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
-        $controlTypes = ControlType::where('is_active', true)->orderBy('name')->get();
+        $specialties = Cache::tags(['especialidades','catalogos'])->remember('especialidades:select:v2', now()->addHours(12), function () {
+            return Specialty::where('is_active', true)->orderBy('name')->get(['id','name']);
+        });
+        $controlTypes = Cache::tags(['tipos_control','catalogos'])->remember('control-types:select:v1', now()->addHours(12), function () {
+            return ControlType::where('is_active', true)->orderBy('name')->get(['id','name']);
+        });
         
         return view('modules.reports.index', compact('specialties', 'controlTypes'));
     }
 
-    /**
-     * Generar reporte SIGSA 3H
-     */
+    public function queueSigsa(Request $request)
+    {
+        $rules = [
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'attention_type' => 'nullable|in:emergencia,consulta_externa',
+            'specialty_id' => 'nullable|exists:specialties,id',
+            'control_type_id' => 'nullable|exists:control_types,id'
+        ];
+        $this->validate($request, $rules);
+
+        GenerateSigsaReportJob::dispatch($request->only(['start_date','end_date','attention_type','specialty_id','control_type_id']), auth()->id());
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'title' => 'Reporte en cola',
+            'message' => 'Tu reporte SIGSA 3H fue encolado. Recibirás notificación cuando esté listo.'
+        ]);
+    }
+
     public function generateSigsa(Request $request)
     {
-        // Validaciones
         $rules = [
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
@@ -67,7 +85,6 @@ class ReportController extends Controller
         $startDate = Carbon::parse($request->start_date);
         $endDate = Carbon::parse($request->end_date);
         
-        // Validar rango de fechas (no más de 1 año)
         if ($startDate->diffInDays($endDate) > 365) {
             return back()->with('toast', [
                 'type' => 'warning',
@@ -76,12 +93,12 @@ class ReportController extends Controller
             ])->withInput();
         }
 
-        // Construir consulta base
         $query = MedicalConsultation::with([
             'clinicalRecord.sex',
             'clinicalRecord.ethnicity', 
             'clinicalRecord.linguisticCommunity',
             'clinicalRecord.disabilities',
+            'clinicalRecord.allergies',
             'clinicalRecord.country',
             'clinicalRecord.department',
             'clinicalRecord.municipality',
@@ -92,7 +109,6 @@ class ReportController extends Controller
         ->whereBetween('consultation_date', [$startDate->startOfDay(), $endDate->endOfDay()])
         ->where('status', 'finalizada');
 
-        // Aplicar filtros
         if ($request->attention_type) {
             $query->where('attention_type', $request->attention_type);
         }
@@ -105,7 +121,6 @@ class ReportController extends Controller
             $query->where('control_type_id', $request->control_type_id);
         }
 
-        // Filtrar por rol del usuario
         $user = auth()->user();
         if ($user->isEmergency()) {
             $query->where('attention_type', 'emergencia');
@@ -113,7 +128,10 @@ class ReportController extends Controller
             $query->where('attention_type', 'consulta_externa');
         }
 
-        // Verificar que existan registros
+        $lockKey = 'reports:sigsa3h:lock:' . md5(json_encode($request->all()));
+        $lock = Cache::lock($lockKey, 30);
+        $lock->block(5);
+
         $totalRecords = $query->count();
         if ($totalRecords === 0) {
             return back()->with('toast', [
@@ -123,7 +141,6 @@ class ReportController extends Controller
             ])->withInput();
         }
 
-        // Verificar si hay demasiados registros
         if ($totalRecords > 10000) {
             return back()->with('toast', [
                 'type' => 'warning',
@@ -133,9 +150,10 @@ class ReportController extends Controller
         }
 
         try {
-            $consultations = $query->orderBy('consultation_date')->get();
+            $cacheKey = 'reports:sigsa3h:data:v1:' . md5(json_encode($request->all()));
+            $consultations = Cache::tags(['reportes'])
+                ->remember($cacheKey, now()->addMinutes(60), fn() => $query->orderBy('consultation_date')->get());
 
-            // Generar nombre del archivo
             $fileName = 'SIGSA_3H_' . $startDate->format('d-m-Y') . '_al_' . $endDate->format('d-m-Y');
             if ($request->attention_type) {
                 $fileName .= '_' . strtoupper($request->attention_type);
@@ -146,7 +164,6 @@ class ReportController extends Controller
             }
             $fileName .= '.xlsx';
 
-            // Datos para el reporte
             $reportData = [
                 'consultations' => $consultations,
                 'start_date' => $startDate,
@@ -160,18 +177,18 @@ class ReportController extends Controller
                 'generated_at' => now()
             ];
 
-            // Registrar notificación
-            NotificationService::notifyCreate('Reporte SIGSA 3H', "Generado por {$user->name} - {$consultations->count()} registros");
-
-            // Mostrar mensaje de éxito
-            session()->flash('toast', [
-                'type' => 'success',
-                'title' => 'Reporte Generado',
-                'message' => 'El reporte SIGSA 3H se ha generado exitosamente con ' . number_format($consultations->count()) . ' registros.'
+            // Crear el archivo Excel
+            $excelFile = Excel::download(new SigsaReportExport($reportData), $fileName);
+            
+            // Guardar información del reporte generado en sesión para mostrar toast al regresar
+            session()->flash('report_generated', [
+                'success' => true,
+                'message' => 'El reporte SIGSA 3H se ha generado exitosamente con ' . number_format($consultations->count()) . ' registros.',
+                'filename' => $fileName,
+                'records_count' => $consultations->count()
             ]);
-
-            // Exportar a Excel
-            return Excel::download(new SigsaReportExport($reportData), $fileName);
+            
+            return $excelFile;
 
         } catch (\Exception $e) {
             return back()->with('toast', [
@@ -179,12 +196,11 @@ class ReportController extends Controller
                 'title' => 'Error al Generar Reporte',
                 'message' => 'Ocurrió un error al generar el reporte: ' . $e->getMessage()
             ])->withInput();
+        } finally {
+            optional($lock)->release();
         }
     }
 
-    /**
-     * Vista previa de datos del reporte
-     */
     public function preview(Request $request)
     {
         try {
@@ -199,11 +215,21 @@ class ReportController extends Controller
             $startDate = Carbon::parse($request->start_date);
             $endDate = Carbon::parse($request->end_date);
             
-            $query = MedicalConsultation::with(['clinicalRecord', 'doctor', 'specialty'])
+            $query = MedicalConsultation::with([
+                'clinicalRecord.sex',
+                'clinicalRecord.ethnicity', 
+                'clinicalRecord.linguisticCommunity',
+                'clinicalRecord.disabilities',
+                'clinicalRecord.allergies',
+                'clinicalRecord.country',
+                'clinicalRecord.department',
+                'clinicalRecord.municipality',
+                'doctor', 
+                'specialty'
+            ])
                 ->whereBetween('consultation_date', [$startDate->startOfDay(), $endDate->endOfDay()])
                 ->where('status', 'finalizada');
 
-            // Aplicar filtros
             if ($request->attention_type) {
                 $query->where('attention_type', $request->attention_type);
             }
@@ -216,7 +242,6 @@ class ReportController extends Controller
                 $query->where('control_type_id', $request->control_type_id);
             }
 
-            // Filtrar por rol del usuario
             $user = auth()->user();
             if ($user->isEmergency()) {
                 $query->where('attention_type', 'emergencia');
@@ -224,7 +249,9 @@ class ReportController extends Controller
                 $query->where('attention_type', 'consulta_externa');
             }
 
-            $totalCount = $query->count();
+            $cacheKey = 'reports:preview:count:v1:' . md5(json_encode($request->all()));
+            $totalCount = Cache::tags(['reportes'])
+                ->remember($cacheKey, now()->addMinutes(10), fn() => $query->count());
             
             if ($totalCount === 0) {
                 return response()->json([
@@ -233,7 +260,8 @@ class ReportController extends Controller
                 ]);
             }
 
-            $consultations = $query->limit(100)->get(); // Limitar para preview
+            $consultations = Cache::tags(['reportes'])
+                ->remember($cacheKey.':sample', now()->addMinutes(10), fn() => $query->orderBy('consultation_date','desc')->limit(100)->get());
 
             return response()->json([
                 'success' => true,
@@ -259,9 +287,6 @@ class ReportController extends Controller
         }
     }
 
-    /**
-     * Estadísticas para dashboard de reportes
-     */
     public function statistics()
     {
         try {
@@ -271,7 +296,6 @@ class ReportController extends Controller
             $baseQuery = MedicalConsultation::where('consultation_date', '>=', $currentMonth)
                 ->where('status', 'finalizada');
 
-            // Filtrar por rol del usuario
             if ($user->isEmergency()) {
                 $baseQuery->where('attention_type', 'emergencia');
             } elseif ($user->isConsultation()) {
@@ -299,5 +323,25 @@ class ReportController extends Controller
                 'referrals' => 0
             ]);
         }
+    }
+
+    /**
+     * Mostrar toast de reporte generado cuando el usuario regresa a la página
+     */
+    public function showReportToast()
+    {
+        if (session('report_generated')) {
+            $reportData = session('report_generated');
+            return response()->json([
+                'success' => true,
+                'toast' => [
+                    'type' => 'success',
+                    'title' => 'Reporte Generado',
+                    'message' => $reportData['message']
+                ]
+            ]);
+        }
+        
+        return response()->json(['success' => false]);
     }
 }

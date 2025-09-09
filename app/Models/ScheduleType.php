@@ -34,9 +34,6 @@ class ScheduleType extends Model
         return $this->hasMany(Doctor::class);
     }
 
-    /**
-     * Obtener tipos de horario activos
-     */
     public static function active()
     {
         return static::where('is_active', true)->orderBy('name');

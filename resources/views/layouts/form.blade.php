@@ -10,7 +10,7 @@
     <title>{{ config('app.name') }} - @yield('title')</title>
     <link href="{{ asset('css/nucleo-icons.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/nucleo-svg.css') }}" rel="stylesheet" />
-    <link id="pagestyle" href="{{ asset('css/material-dashboard.css?v=3.1.0') }}" rel="stylesheet" />
+    <link id="pagestyle" href="{{ asset('css/material-dashboard.css') }}?v={{ filemtime(public_path('css/material-dashboard.css')) }}" rel="stylesheet" />
     <link href="{{ asset('css/form.css') }}" rel="stylesheet" />
 </head>
 
@@ -42,7 +42,7 @@
     <script src="{{ asset('js/core/bootstrap.min.js') }}"></script>
     <script src="{{ asset('js/plugins/perfect-scrollbar.min.js') }}"></script>
     <script src="{{ asset('js/plugins/smooth-scrollbar.min.js') }}"></script>
-    <script src="{{ asset('js/material-dashboard.min.js?v=3.1.0') }}"></script>
+    <script src="{{ asset('js/material-dashboard.min.js') }}?v={{ filemtime(public_path('js/material-dashboard.min.js')) }}"></script>
     <script src="{{ asset('js/form.js') }}"></script>
 
 </body>

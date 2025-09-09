@@ -14,11 +14,14 @@ return Application::configure(basePath: dirname(__DIR__))
         // Registrar el middleware para verificar acceso de usuarios
         $middleware->alias([
             'check.user.access' => \App\Http\Middleware\CheckUserAccess::class,
+            'permission' => \App\Http\Middleware\CheckPermission::class,
+            'block.registration' => \App\Http\Middleware\BlockRegistration::class,
         ]);
         
         // Aplicar el middleware a todas las rutas web autenticadas
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\CheckUserAccess::class,
+            \App\Http\Middleware\BlockRegistration::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

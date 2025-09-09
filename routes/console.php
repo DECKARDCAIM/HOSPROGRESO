@@ -8,21 +8,24 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Programar tareas automáticas
+// Programar tarea automática: marcar citas perdidas al día siguiente a las 00:05
 Schedule::command('appointments:mark-missed --force')
-    ->hourly() // Ejecutar cada hora
-    ->withoutOverlapping() // No ejecutar si ya hay una instancia corriendo
-    ->onOneServer() // Solo ejecutar en un servidor (si tienes múltiples)
-    ->runInBackground() // Ejecutar en segundo plano
-    ->emailOutputOnFailure(env('ADMIN_EMAIL', 'admin@hospitalprogreso.gt')) // Enviar email si falla
-    ->appendOutputTo(storage_path('logs/cron-appointments.log')); // Log de ejecuciones
-
-// Verificar citas perdidas cada 30 minutos durante horarios laborales (6 AM - 8 PM)
-Schedule::command('appointments:mark-missed --force')
-    ->everyThirtyMinutes()
-    ->between('06:00', '20:00') // Solo durante horarios laborales
+    ->dailyAt('00:05')
     ->withoutOverlapping()
     ->onOneServer()
     ->runInBackground()
-    ->name('check-missed-appointments-frequent')
-    ->description('Verificación frecuente de citas perdidas durante horarios laborales');
+    ->emailOutputOnFailure(env('ADMIN_EMAIL', 'admin@hospitalprogreso.gt'))
+    ->appendOutputTo(storage_path('logs/cron-appointments.log'))
+    ->name('mark-missed-appointments-daily')
+    ->description('Marca citas pendientes como perdidas al día siguiente a las 00:05');
+
+// Programar tarea automática: activar sustituciones programadas a las 00:10
+Schedule::command('substitutions:activate')
+    ->dailyAt('00:10')
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->runInBackground()
+    ->emailOutputOnFailure(env('ADMIN_EMAIL', 'admin@hospitalprogreso.gt'))
+    ->appendOutputTo(storage_path('logs/cron-substitutions.log'))
+    ->name('activate-scheduled-substitutions-daily')
+    ->description('Activa las sustituciones programadas que deben iniciar hoy');

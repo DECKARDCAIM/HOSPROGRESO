@@ -278,9 +278,202 @@
         </div>
     </div>
             </div>
+            
+            <!-- Información del Acompañante/Tutor -->
+            @if($medicalConsultation->companion_name || $medicalConsultation->guardian_name)
+            <div class="section">
+                <div class="section-title">
+                    @if($medicalConsultation->guardian_name)
+                        👨‍👩‍👧‍👦 Información del Tutor/Padre/Madre
+                    @else
+                        👥 Información del Acompañante
+                    @endif
+                </div>
+                <div class="info-grid">
+                    @if($medicalConsultation->guardian_name)
+                        <div class="info-row">
+                            <div class="info-label">Nombre:</div>
+                            <div class="info-value">{{ $medicalConsultation->guardian_name }}</div>
+                        </div>
+                        @if($medicalConsultation->guardianRelationship)
+                        <div class="info-row">
+                            <div class="info-label">Relación:</div>
+                            <div class="info-value">{{ $medicalConsultation->guardianRelationship->name }}</div>
+                        </div>
+                        @endif
+                        <div class="info-row">
+                            <div class="info-label">Teléfono:</div>
+                            <div class="info-value">{{ $medicalConsultation->guardian_phone ?? '-' }}</div>
+                        </div>
+                        @if($medicalConsultation->guardian_email)
+                        <div class="info-row">
+                            <div class="info-label">Email:</div>
+                            <div class="info-value">{{ $medicalConsultation->guardian_email }}</div>
+                        </div>
+                        @endif
+                        @if($medicalConsultation->guardian_dpi)
+                        <div class="info-row">
+                            <div class="info-label">DPI/CUI:</div>
+                            <div class="info-value">{{ $medicalConsultation->guardian_dpi }}</div>
+                        </div>
+                        @endif
+                        @if($medicalConsultation->emergency_contact)
+                        <div class="info-row">
+                            <div class="info-label">Contacto de Emergencia:</div>
+                            <div class="info-value">{{ $medicalConsultation->emergency_contact }}</div>
+                        </div>
+                        @endif
+                    @else
+                        <div class="info-row">
+                            <div class="info-label">Nombre:</div>
+                            <div class="info-value">{{ $medicalConsultation->companion_name }}</div>
+                        </div>
+                        @if($medicalConsultation->companionRelationship)
+                        <div class="info-row">
+                            <div class="info-label">Relación:</div>
+                            <div class="info-value">{{ $medicalConsultation->companionRelationship->name }}</div>
+                        </div>
+                        @endif
+                        <div class="info-row">
+                            <div class="info-label">Teléfono:</div>
+                            <div class="info-value">{{ $medicalConsultation->companion_phone ?? '-' }}</div>
+                        </div>
+                        @if($medicalConsultation->companion_email)
+                        <div class="info-row">
+                            <div class="info-label">Email:</div>
+                            <div class="info-value">{{ $medicalConsultation->companion_email }}</div>
+                        </div>
+                        @endif
+                        @if($medicalConsultation->companion_dpi)
+                        <div class="info-row">
+                            <div class="info-label">DPI/CUI:</div>
+                            <div class="info-value">{{ $medicalConsultation->companion_dpi }}</div>
+                        </div>
+                        @endif
+                    @endif
+                </div>
+            </div>
+            @endif
+            
+            <!-- Información Gineco-Obstétrica -->
+            @if($medicalConsultation->is_pregnant !== null || $medicalConsultation->pregnancies_count || $medicalConsultation->gynecological_history)
+            <div class="section">
+                <div class="section-title">♀️ Control Gineco-Obstétrico</div>
+                <div class="info-grid">
+                    @if($medicalConsultation->is_pregnant !== null)
+                    <div class="info-row">
+                        <div class="info-label">Embarazada:</div>
+                        <div class="info-value">{{ $medicalConsultation->is_pregnant ? 'Sí' : 'No' }}
+                            @if($medicalConsultation->is_pregnant && $medicalConsultation->gestation_weeks)
+                                ({{ $medicalConsultation->gestation_weeks }} semanas)
+                            @endif
+                        </div>
+                    </div>
+                    @endif
+                    @if($medicalConsultation->pregnancies_count !== null)
+                    <div class="info-row">
+                        <div class="info-label">Historial Obstétrico:</div>
+                        <div class="info-value">
+                            G{{ $medicalConsultation->pregnancies_count ?? 0 }} 
+                            P{{ $medicalConsultation->births_count ?? 0 }} 
+                            A{{ $medicalConsultation->abortions_count ?? 0 }} 
+                            C{{ $medicalConsultation->cesareans_count ?? 0 }}
+                        </div>
+                    </div>
+                    @endif
+                    @if($medicalConsultation->last_menstrual_period)
+                    <div class="info-row">
+                        <div class="info-label">Última Menstruación:</div>
+                        <div class="info-value">{{ $medicalConsultation->last_menstrual_period->format('d/m/Y') }}</div>
+                    </div>
+                    @endif
+                    @if($medicalConsultation->contraceptiveMethod)
+                    <div class="info-row">
+                        <div class="info-label">Método Anticonceptivo:</div>
+                        <div class="info-value">{{ $medicalConsultation->contraceptiveMethod->name }} ({{ $medicalConsultation->contraceptiveMethod->getTypeLabel() }})</div>
+                    </div>
+                    @endif
+                    @if($medicalConsultation->gynecological_history)
+                    <div class="info-row">
+                        <div class="info-label">Antecedentes Ginecológicos:</div>
+                        <div class="info-value">
+                            <div class="text-content">{{ $medicalConsultation->gynecological_history }}</div>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endif
+            
+            <!-- Información Pediátrica -->
+            @if($medicalConsultation->birth_weight || $medicalConsultation->current_weight || $medicalConsultation->pediatric_history)
+            <div class="section">
+                <div class="section-title">👶 Información Pediátrica</div>
+                <div class="info-grid">
+                    @if($medicalConsultation->birth_weight)
+                    <div class="info-row">
+                        <div class="info-label">Peso al Nacer:</div>
+                        <div class="info-value">{{ $medicalConsultation->birth_weight }} kg</div>
+                    </div>
+                    @endif
+                    @if($medicalConsultation->current_weight || $medicalConsultation->current_height)
+                    <div class="info-row">
+                        <div class="info-label">Medidas Actuales:</div>
+                        <div class="info-value">
+                            @if($medicalConsultation->current_weight)
+                                Peso: {{ $medicalConsultation->current_weight }} kg
+                            @endif
+                            @if($medicalConsultation->current_height)
+                                @if($medicalConsultation->current_weight), @endif
+                                Talla: {{ $medicalConsultation->current_height }} cm
+                            @endif
+                            @if($medicalConsultation->head_circumference)
+                                , PC: {{ $medicalConsultation->head_circumference }} cm
+                            @endif
+                        </div>
+                    </div>
+                    @endif
+                    @if($medicalConsultation->vaccination_status)
+                    <div class="info-row">
+                        <div class="info-label">Vacunación:</div>
+                        <div class="info-value">{{ ucfirst(str_replace('_', ' ', $medicalConsultation->vaccination_status)) }}</div>
+                    </div>
+                    @endif
+                    @if($medicalConsultation->feeding_type)
+                    <div class="info-row">
+                        <div class="info-label">Alimentación:</div>
+                        <div class="info-value">{{ ucfirst(str_replace('_', ' ', $medicalConsultation->feeding_type)) }}</div>
+                    </div>
+                    @endif
+                    @if($medicalConsultation->development_milestones)
+                    <div class="info-row">
+                        <div class="info-label">Desarrollo:</div>
+                        <div class="info-value">{{ ucfirst(str_replace('_', ' ', $medicalConsultation->development_milestones)) }}</div>
+                    </div>
+                    @endif
+                    @if($medicalConsultation->pediatric_history)
+                    <div class="info-row">
+                        <div class="info-label">Antecedentes:</div>
+                        <div class="info-value">
+                            <div class="text-content">{{ $medicalConsultation->pediatric_history }}</div>
+                        </div>
+                    </div>
+                    @endif
+                    @if($medicalConsultation->parent_instructions)
+                    <div class="info-row">
+                        <div class="info-label">Instrucciones para Padres:</div>
+                        <div class="info-value">
+                            <div class="text-content">{{ $medicalConsultation->parent_instructions }}</div>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endif
+            
             <!-- Información de la Consulta -->
             <div class="section">
-                <div class="section-title">Información de la Consulta</div>
+                <div class="section-title">📋 Información de la Consulta</div>
                 <div class="info-grid">
                     <div class="info-row">
                         <div class="info-label">Fecha y Hora:</div>
@@ -445,9 +638,9 @@
             @endif
         </div>
     </div>
-            <!-- Notas de Enfermería y Admisión -->
+            <!-- Notas de Enfermería -->
     <div class="section">
-        <div class="section-title">Notas de Enfermería y Admisión</div>
+        <div class="section-title">Notas de Enfermería</div>
                 <div class="info-grid">
                     @if($medicalConsultation->nursing_note)
                     <div class="info-row">
@@ -457,25 +650,121 @@
                         </div>
                     </div>
                     @endif
-                    @if($medicalConsultation->admission_note)
-                    <div class="info-row">
-                        <div class="info-label">Nota de Admisión:</div>
-                        <div class="info-value">
-                            <div class="text-content">{{ $medicalConsultation->admission_note }}</div>
-                        </div>
-                    </div>
-                    @endif
                 </div>
             </div>
 
+            <!-- Estado Final de la Consulta -->
+            @if($medicalConsultation->final_status)
+            <div class="section">
+                <div class="section-title">
+                    @if($medicalConsultation->final_status === 'egresado')
+                        🏠 Egreso del Paciente
+                    @elseif($medicalConsultation->final_status === 'hospitalizado')
+                        🏥 Hospitalización
+                    @elseif($medicalConsultation->final_status === 'referido')
+                        ➡️ Referencia a Otro Centro
+                    @elseif($medicalConsultation->final_status === 'fallecido')
+                        ✝️ Fallecimiento
+                    @else
+                        🏁 Estado Final de la Consulta
+                    @endif
+                </div>
+                <div class="info-grid">
+                    <div class="info-row">
+                        <div class="info-label">Estado Final:</div>
+                        <div class="info-value">{{ $medicalConsultation->getFinalStatusLabel() ?? '-' }}</div>
+                    </div>
+                    
+                    @if($medicalConsultation->final_status === 'hospitalizado' && $medicalConsultation->hospital_service)
+                    <div class="info-row">
+                        <div class="info-label">Servicio de Hospitalización:</div>
+                        <div class="info-value">{{ $medicalConsultation->hospital_service }}</div>
+                    </div>
+                    @endif
+                    
+                    @if($medicalConsultation->final_status === 'referido')
+                        @if($medicalConsultation->reference_destination)
+                        <div class="info-row">
+                            <div class="info-label">Hospital de Destino:</div>
+                            <div class="info-value">{{ $medicalConsultation->reference_destination }}</div>
+                        </div>
+                        @endif
+                        @if($medicalConsultation->reference_reason)
+                        <div class="info-row">
+                            <div class="info-label">Motivo de Referencia:</div>
+                            <div class="info-value">{{ $medicalConsultation->reference_reason }}</div>
+                        </div>
+                        @endif
+                        @if($medicalConsultation->reference_contrareference)
+                        <div class="info-row">
+                            <div class="info-label">Detalles de Referencia:</div>
+                            <div class="info-value">
+                                <div class="text-content">{{ $medicalConsultation->reference_contrareference }}</div>
+                            </div>
+                        </div>
+                        @endif
+                    @endif
+                    
+                    @if($medicalConsultation->final_status === 'fallecido')
+                        @if($medicalConsultation->death_date)
+                        <div class="info-row">
+                            <div class="info-label">Fecha y Hora de Fallecimiento:</div>
+                            <div class="info-value">{{ $medicalConsultation->death_date->format('d/m/Y H:i') }}</div>
+                        </div>
+                        @endif
+                        @if($medicalConsultation->death_cause)
+                        <div class="info-row">
+                            <div class="info-label">Causa de Muerte:</div>
+                            <div class="info-value">{{ $medicalConsultation->death_cause }}</div>
+                        </div>
+                        @endif
+                    @endif
+                </div>
+            </div>
+            @endif
+            
             <!-- Instrucciones Importantes -->
             <div class="important-note">
-                <strong>Instrucciones para el Paciente:</strong><br>
-                • Seguir estrictamente las indicaciones médicas<br>
-                • Tomar los medicamentos según la prescripción<br>
-                • Realizar las pruebas de laboratorio y exámenes solicitados<br>
-                • Regresar para cita de seguimiento si es necesario<br>
-                • En caso de emergencia, acudir inmediatamente al hospital
+                <strong>
+                    @if($medicalConsultation->final_status === 'egresado')
+                        Instrucciones para el Paciente:
+                    @elseif($medicalConsultation->final_status === 'hospitalizado')
+                        Instrucciones de Hospitalización:
+                    @elseif($medicalConsultation->final_status === 'referido')
+                        Instrucciones de Referencia:
+                    @else
+                        Instrucciones para el Paciente:
+                    @endif
+                </strong><br>
+                
+                @if($medicalConsultation->final_status === 'egresado')
+                    • Seguir estrictamente las indicaciones médicas<br>
+                    • Tomar los medicamentos según la prescripción<br>
+                    • Realizar las pruebas de laboratorio y exámenes solicitados<br>
+                    • Regresar para cita de seguimiento si es necesario<br>
+                    • En caso de emergencia, acudir inmediatamente al hospital<br>
+                    @if($medicalConsultation->parent_instructions)
+                        • {{ $medicalConsultation->parent_instructions }}
+                    @endif
+                @elseif($medicalConsultation->final_status === 'hospitalizado')
+                    • El paciente permanecerá en el servicio de {{ $medicalConsultation->hospital_service ?? 'hospitalización' }}<br>
+                    • Los familiares deben respetar los horarios de visita<br>
+                    • Seguir las indicaciones del personal médico y de enfermería<br>
+                    • Informar cualquier cambio en el estado del paciente<br>
+                    • Mantener contacto con el médico tratante
+                @elseif($medicalConsultation->final_status === 'referido')
+                    • Dirigirse de inmediato al hospital de destino: {{ $medicalConsultation->reference_destination ?? 'hospital indicado' }}<br>
+                    • Llevar este documento y toda la documentación médica<br>
+                    • Motivo de referencia: {{ $medicalConsultation->reference_reason ?? 'según indicación médica' }}<br>
+                    • No demorar el traslado si es urgente<br>
+                    • Seguir las indicaciones médicas hasta llegar al destino
+                @else
+                    • Seguir estrictamente las indicaciones médicas<br>
+                    • Tomar los medicamentos según la prescripción<br>
+                    • Realizar las pruebas de laboratorio y exámenes solicitados<br>
+                    • Regresar para cita de seguimiento si es necesario<br>
+                    • En caso de emergencia, acudir inmediatamente al hospital
+                @endif
             </div>
 
             <!-- Información de Generación del PDF -->

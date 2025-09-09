@@ -6,29 +6,36 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Cache;
 
 class CheckUserAccess
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
     public function handle(Request $request, Closure $next): Response
     {
-        // Si el usuario está autenticado, verificar si puede acceder
         if (Auth::check()) {
             $user = Auth::user();
-            
-            // Si el usuario no puede acceder al sistema, cerrar sesión
-            if (!$user->canAccess()) {
+
+            $uSource = $user->permissions_updated_at ?? $user->updated_at ?? now();
+            $uStamp  = $uSource instanceof \DateTimeInterface ? $uSource->getTimestamp() : strtotime((string) $uSource);
+
+            $rStamp = 0;
+            if ($user->role) {
+                $rSource = $user->role->updated_at ?? null;
+                $rStamp  = $rSource instanceof \DateTimeInterface ? $rSource->getTimestamp() : ($rSource ? strtotime((string) $rSource) : 0);
+            }
+
+            $ns = sprintf('v2:u=%d:r=%s:tu=%s:tr=%s', $user->id, $user->role_id ?? 'null', $uStamp, $rStamp);
+            $ttl = now()->addSeconds(60);
+
+            $canAccess = Cache::tags(['usuarios'])->remember("user:can_access:{$ns}", $ttl, function () use ($user) {
+                return (bool) $user->canAccess();
+            });
+
+            if (!$canAccess) {
                 Auth::logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
-                
-                // Determinar el mensaje de error específico
+
                 if (!$user->is_active) {
                     $message = 'Su cuenta ha sido desactivada. Contacte al administrador.';
                 } elseif (!$user->role_id) {
@@ -38,15 +45,17 @@ class CheckUserAccess
                 } else {
                     $message = 'Ya no tiene permisos para acceder al sistema. Contacte al administrador.';
                 }
-                
-                return redirect('/login')->with('toast', [
-                    'type' => 'error',
-                    'title' => 'Acceso Denegado',
-                    'message' => $message
+
+                $loginUrl = app('router')->has('login') ? route('login') : '/login';
+
+                return redirect($loginUrl)->with('toast', [
+                    'type'    => 'error',
+                    'title'   => 'Acceso Denegado',
+                    'message' => $message,
                 ]);
             }
         }
-        
+
         return $next($request);
     }
 }

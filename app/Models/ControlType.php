@@ -19,17 +19,11 @@ class ControlType extends Model
         'is_active' => 'boolean',
     ];
 
-    /**
-     * Relación con consultas médicas
-     */
     public function medicalConsultations()
     {
         return $this->hasMany(MedicalConsultation::class);
     }
 
-    /**
-     * Obtener tipos de control activos
-     */
     public static function active()
     {
         return static::where('is_active', true)->orderBy('name');

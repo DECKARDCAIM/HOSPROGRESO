@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Doctor;
-use App\Models\Specialty;
 use App\Models\ScheduleType;
+use App\Models\Specialty;
 use Illuminate\Http\Request;
-use App\Services\NotificationService;
+use Illuminate\Support\Facades\Cache;
 
 class DoctorController extends Controller
 {
@@ -14,35 +14,47 @@ class DoctorController extends Controller
     {
         $status = $request->query('status', 'active');
         $search = $request->query('search', '');
+        $page = (int) ($request->query('page', 1));
 
-        $doctors = Doctor::with('specialty')
-            ->where('is_active', $status === 'active' ? 1 : 0)
-            ->when($search, function ($query, $search) {
-                $query->where(function($q) use ($search) {
-                    $q->where('first_name', 'like', "%$search%")
-                      ->orWhere('second_name', 'like', "%$search%")
-                      ->orWhere('third_name', 'like', "%$search%")
-                      ->orWhere('first_lastname', 'like', "%$search%")
-                      ->orWhere('second_lastname', 'like', "%$search%")
-                      ->orWhere('married_lastname', 'like', "%$search%")
-                      ->orWhere('cui', 'like', "%$search%")
-                      ->orWhere('license_number', 'like', "%$search%")
-                      ->orWhereHas('specialty', function($q2) use ($search) {
-                          $q2->where('name', 'like', "%$search%") ;
-                      });
-                });
-            })
-            ->orderBy('first_name')
-            ->paginate(25)
-            ->appends(['status' => $status, 'search' => $search]);
+        $ttl = now()->addMinutes(10);
+        $cacheKey = "doctores:index:v1:status={$status}:q=" . urlencode((string) $search) . ":p={$page}";
+        $doctors = Cache::tags(['doctores'])->remember($cacheKey, $ttl, function () use ($status, $search) {
+            return Doctor::with(['specialty:id,name'])
+                ->select('id', 'first_name', 'second_name', 'third_name', 'first_lastname', 'second_lastname', 'married_lastname', 'cui', 'license_number', 'specialty_id', 'is_active')
+                ->where('is_active', $status === 'active' ? 1 : 0)
+                ->when($search, function ($query, $search) {
+                    $query->where(function ($q) use ($search) {
+                        $q
+                            ->where('first_name', 'like', "%$search%")
+                            ->orWhere('second_name', 'like', "%$search%")
+                            ->orWhere('third_name', 'like', "%$search%")
+                            ->orWhere('first_lastname', 'like', "%$search%")
+                            ->orWhere('second_lastname', 'like', "%$search%")
+                            ->orWhere('married_lastname', 'like', "%$search%")
+                            ->orWhere('cui', 'like', "%$search%")
+                            ->orWhere('license_number', 'like', "%$search%")
+                            ->orWhereHas('specialty', function ($q2) use ($search) {
+                                $q2->where('name', 'like', "%$search%");
+                            });
+                    });
+                })
+                ->orderBy('first_name')
+                ->paginate(25);
+        });
+
+        $doctors->appends(['status' => $status, 'search' => $search]);
 
         return view('modules.doctors.index', compact('doctors', 'status', 'search'));
     }
 
     public function create()
     {
-        $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
-        $scheduleTypes = ScheduleType::with('specialty')->orderBy('name')->get();
+        $specialties = Cache::tags(['especialidades', 'catalogos'])->remember('especialidades:select:v2', now()->addHours(12), function () {
+            return Specialty::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        });
+        $scheduleTypes = Cache::tags(['tipos_horario', 'catalogos'])->remember('schedule-types:select:v1', now()->addHours(12), function () {
+            return ScheduleType::with('specialty:id,name')->orderBy('name')->get(['id', 'name', 'specialty_id']);
+        });
         return view('modules.doctors.create', compact('specialties', 'scheduleTypes'));
     }
 
@@ -62,9 +74,11 @@ class DoctorController extends Controller
         ]);
 
         $doctor = Doctor::create($request->all());
-        NotificationService::notifyCreate('Doctor', $doctor->first_name . ' ' . $doctor->first_lastname);
 
-        return redirect()->route('doctors.index')
+        Cache::tags(['doctores'])->flush();
+
+        return redirect()
+            ->route('doctors.index')
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Creación Éxitosa',
@@ -74,14 +88,25 @@ class DoctorController extends Controller
 
     public function edit(Doctor $doctor)
     {
-        $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
-        $scheduleTypes = ScheduleType::with('specialty')->orderBy('name')->get();
+        $specialties = Cache::tags(['especialidades', 'catalogos'])->remember('especialidades:select:v2', now()->addHours(12), function () {
+            return Specialty::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        });
+        $scheduleTypes = Cache::tags(['tipos_horario', 'catalogos'])->remember('schedule-types:select:v1', now()->addHours(12), function () {
+            return ScheduleType::with('specialty:id,name')->orderBy('name')->get(['id', 'name', 'specialty_id']);
+        });
         return view('modules.doctors.edit', compact('doctor', 'specialties', 'scheduleTypes'));
     }
 
     public function update(Request $request, Doctor $doctor)
     {
-        $request->validate([
+        // Verificar si el doctor está actualmente suplantando a otro
+        $isSubstituting = \App\Models\DoctorSubstitution::where('substitute_doctor_id', $doctor->id)
+            ->where('status', \App\Models\DoctorSubstitution::STATUS_ACTIVE)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->exists();
+
+        $validationRules = [
             'first_name' => 'required|string|max:255',
             'second_name' => 'nullable|string|max:255',
             'third_name' => 'nullable|string|max:255',
@@ -91,26 +116,43 @@ class DoctorController extends Controller
             'cui' => 'required|string|max:13|unique:doctors,cui,' . $doctor->id,
             'license_number' => 'required|string|max:255|unique:doctors,license_number,' . $doctor->id,
             'specialty_id' => 'required|exists:specialties,id',
-            'schedule_type_id' => 'required|exists:schedule_types,id',
-        ]);
+        ];
+
+        // Si el doctor está suplantando, el horario es opcional
+        if (!$isSubstituting) {
+            $validationRules['schedule_type_id'] = 'required|exists:schedule_types,id';
+        } else {
+            $validationRules['schedule_type_id'] = 'nullable|exists:schedule_types,id';
+        }
+
+        $request->validate($validationRules);
 
         $doctor->update($request->all());
-        NotificationService::notifyUpdate('Doctor', $doctor->first_name . ' ' . $doctor->first_lastname);
 
-        return redirect()->route('doctors.index')
+        Cache::tags(['doctores'])->flush();
+
+        $message = 'El doctor ' . $doctor->first_name . ' ' . $doctor->first_lastname . ' se ha actualizado correctamente.';
+        if ($isSubstituting && !$request->schedule_type_id) {
+            $message .= ' Nota: El horario fue removido porque el doctor está actualmente suplantando a otro doctor.';
+        }
+
+        return redirect()
+            ->route('doctors.index')
             ->with('toast', [
-                'type' => 'info',
+                'type' => 'success',
                 'title' => 'Actualización Éxitosa',
-                'message' => 'El doctor ' . $doctor->first_name . ' ' . $doctor->first_lastname . ' se ha actualizado correctamente.'
+                'message' => $message
             ]);
     }
 
     public function destroy(Doctor $doctor)
     {
         $doctor->update(['is_active' => false]);
-        NotificationService::notifyDelete('Doctor', $doctor->first_name . ' ' . $doctor->first_lastname);
 
-        return redirect()->route('doctors.index')
+        Cache::tags(['doctores', 'listados'])->flush();
+
+        return redirect()
+            ->route('doctors.index')
             ->with('toast', [
                 'type' => 'warning',
                 'title' => 'Eliminación Éxitosa',
@@ -123,12 +165,15 @@ class DoctorController extends Controller
         $doctor = Doctor::findOrFail($id);
         $doctor->is_active = true;
         $doctor->save();
-        NotificationService::notifyUpdate('Doctor', $doctor->first_name . ' ' . $doctor->first_lastname);
-        return redirect()->route('doctors.index', ['status' => 'inactive'])
+
+        Cache::tags(['doctores'])->flush();
+
+        return redirect()
+            ->route('doctors.index', ['status' => 'inactive'])
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Reactivación Éxitosa',
                 'message' => 'El doctor ' . $doctor->first_name . ' ' . $doctor->first_lastname . ' ha sido reactivado correctamente.'
             ]);
     }
-} 
+}

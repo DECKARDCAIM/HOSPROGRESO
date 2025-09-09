@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\LaboratoryTest;
-use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class LaboratoryTestController extends Controller
 {
@@ -12,13 +12,18 @@ class LaboratoryTestController extends Controller
     {
         $status = $request->query('status', 'active');
         $search = $request->query('search', '');
-        $laboratoryTests = LaboratoryTest::where('is_active', $status === 'active' ? 1 : 0)
-            ->when($search, function ($query, $search) {
-                $query->where('name', 'like', "%$search%");
-            })
-            ->orderBy('name')
-            ->paginate(25)
-            ->appends(['status' => $status, 'search' => $search]);
+        $page = (int) ($request->query('page', 1));
+        $key = "pruebas_laboratorio:index:v1:status={$status}:q=" . urlencode($search) . ":p={$page}";
+        $laboratoryTests = Cache::tags(['pruebas_laboratorio'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
+            return LaboratoryTest::select('id', 'name', 'description', 'is_active')
+                ->where('is_active', $status === 'active' ? 1 : 0)
+                ->when($search, function ($query, $search) {
+                    $query->where('name', 'like', "%$search%");
+                })
+                ->orderBy('name')
+                ->paginate(25);
+        });
+        $laboratoryTests->appends(['status' => $status, 'search' => $search]);
         return view('modules.laboratory_tests.index', compact('laboratoryTests', 'status', 'search'));
     }
 
@@ -38,8 +43,11 @@ class LaboratoryTestController extends Controller
             'description' => $request->description,
             'is_active' => true
         ]);
-        NotificationService::notifyCreate('Prueba de Laboratorio', $laboratoryTest->name);
-        return redirect()->route('laboratory-tests.index')
+
+        Cache::tags(['pruebas_laboratorio'])->flush();
+
+        return redirect()
+            ->route('laboratory-tests.index')
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Creación Éxitosa',
@@ -62,10 +70,13 @@ class LaboratoryTestController extends Controller
             'name' => $request->name,
             'description' => $request->description,
         ]);
-        NotificationService::notifyUpdate('Prueba de Laboratorio', $laboratoryTest->name);
-        return redirect()->route('laboratory-tests.index')
+
+        Cache::tags(['pruebas_laboratorio'])->flush();
+
+        return redirect()
+            ->route('laboratory-tests.index')
             ->with('toast', [
-                'type' => 'info',
+                'type' => 'success',
                 'title' => 'Actualización Éxitosa',
                 'message' => 'La prueba de laboratorio ' . $laboratoryTest->name . ' se ha actualizado correctamente.'
             ]);
@@ -76,9 +87,10 @@ class LaboratoryTestController extends Controller
         $laboratoryTestName = $laboratoryTest->name;
         $laboratoryTest->update(['is_active' => false]);
 
-        NotificationService::notifyDelete('Prueba de Laboratorio', $laboratoryTestName);
+        Cache::tags(['pruebas_laboratorio'])->flush();
 
-        return redirect()->route('laboratory-tests.index')
+        return redirect()
+            ->route('laboratory-tests.index')
             ->with('toast', [
                 'type' => 'warning',
                 'title' => 'Eliminación Éxitosa',
@@ -91,12 +103,15 @@ class LaboratoryTestController extends Controller
         $laboratoryTest = LaboratoryTest::findOrFail($id);
         $laboratoryTest->is_active = true;
         $laboratoryTest->save();
-        NotificationService::notifyUpdate('Prueba de Laboratorio', $laboratoryTest->name);
-        return redirect()->route('laboratory-tests.index', ['status' => 'inactive'])
+
+        Cache::tags(['pruebas_laboratorio'])->flush();
+
+        return redirect()
+            ->route('laboratory-tests.index', ['status' => 'inactive'])
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Reactivación Éxitosa',
                 'message' => 'La prueba de laboratorio ' . $laboratoryTest->name . ' ha sido reactivada correctamente.'
             ]);
     }
-} 
+}

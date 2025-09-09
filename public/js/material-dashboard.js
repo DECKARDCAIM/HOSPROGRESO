@@ -113,7 +113,7 @@ if (document.querySelector('[data-toggle="widget-calendar"]')) {
         title: 'Meeting with Mary',
         start: '2020-12-01',
         end: '2020-12-01',
-        className: 'bg-gradient-info'
+        className: 'bg-brand-header'
       },
 
       {
@@ -148,7 +148,7 @@ if (document.querySelector('[data-toggle="widget-calendar"]')) {
         title: 'Black Friday',
         start: '2020-12-23',
         end: '2020-12-23',
-        className: 'bg-gradient-info'
+        className: 'bg-brand-header'
       },
 
       {
@@ -1679,7 +1679,7 @@ var material = {
     if (type == 'basic') {
       const swalBasic = Swal.mixin({
         customClass: {
-          confirmButton: 'btn bg-gradient-info'
+          confirmButton: 'btn bg-brand-header'
         }
       });
       swalBasic.fire({

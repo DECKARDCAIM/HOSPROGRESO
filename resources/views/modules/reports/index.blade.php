@@ -27,7 +27,7 @@
                         </div>
                         <div class="col-4 text-end">
                             <div class="icon icon-shape bg-gradient-dark shadow text-center border-radius-md">
-                                <i class="fas fa-users text-lg opacity-10"></i>
+                                <i class="bi bi-people text-lg opacity-10"></i>
                             </div>
                         </div>
                     </div>
@@ -46,7 +46,7 @@
                         </div>
                         <div class="col-4 text-end">
                             <div class="icon icon-shape bg-gradient-danger shadow text-center border-radius-md">
-                                <i class="fas fa-ambulance text-lg opacity-10"></i>
+                                <i class="bi bi-heart-pulse text-lg opacity-10"></i>
                             </div>
                         </div>
                     </div>
@@ -65,7 +65,7 @@
                         </div>
                         <div class="col-4 text-end">
                             <div class="icon icon-shape bg-gradient-success shadow text-center border-radius-md">
-                                <i class="fas fa-stethoscope text-lg opacity-10"></i>
+                                <i class="bi bi-heart-pulse text-lg opacity-10"></i>
                             </div>
                         </div>
                     </div>
@@ -83,8 +83,8 @@
                             </div>
                         </div>
                         <div class="col-4 text-end">
-                            <div class="icon icon-shape bg-gradient-info shadow text-center border-radius-md">
-                                <i class="fas fa-user-plus text-lg opacity-10"></i>
+                            <div class="icon icon-shape bg-brand-header shadow text-center border-radius-md">
+                                <i class="bi bi-person-plus text-lg opacity-10"></i>
                             </div>
                         </div>
                     </div>
@@ -96,7 +96,7 @@
     <div class="row">
         <div class="col-12">
             <div class="card mb-4">
-                <div class="card-header pb-0 bg-info">
+                <div class="card-header pb-0 bg-brand-header">
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <h6 class="text-white mb-0">Reportes SIGSA 3H</h6>
@@ -111,7 +111,7 @@
                     <div class="px-3 pt-4 pb-3">
                         <div class="card border border-info">
                             <div class="card-header bg-light">
-                                <h6 class="mb-0 text-info">🔍 Filtros para Reporte SIGSA 3H</h6>
+                                <h6 class="mb-0 text-info"><i class="bi bi-search me-2"></i>Filtros para Reporte SIGSA 3H</h6>
                             </div>
                             <div class="card-body">
                                 <form method="POST" action="{{ route('reports.generate-sigsa') }}" id="reportForm">
@@ -121,7 +121,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group mb-3">
                                                 <label class="form-control-label mb-2">
-                                                    <i class="fas fa-calendar text-info me-2"></i>Fecha Inicio
+                                                    <i class="bi bi-calendar text-info me-2"></i>Fecha Inicio
                                                 </label>
                                                 <input type="date" name="start_date" class="form-control border border-info" required 
                                                        value="{{ old('start_date', now()->startOfMonth()->format('Y-m-d')) }}">
@@ -130,7 +130,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group mb-3">
                                                 <label class="form-control-label mb-2">
-                                                    <i class="fas fa-calendar text-info me-2"></i>Fecha Fin
+                                                    <i class="bi bi-calendar text-info me-2"></i>Fecha Fin
                                                 </label>
                                                 <input type="date" name="end_date" class="form-control border border-info" required
                                                        value="{{ old('end_date', now()->format('Y-m-d')) }}">
@@ -195,7 +195,7 @@
                                                 <button type="button" class="btn btn-outline-info" onclick="previewData()">
                                                     <i class="fas fa-eye me-1"></i> Vista Previa
                                                 </button>
-                                                <button type="submit" class="btn bg-gradient-info text-white" id="generateBtn">
+                                                <button type="submit" class="btn bg-brand-header text-white" id="generateBtn">
                                                     <i class="fas fa-file-excel me-1"></i> Generar Excel
                                                 </button>
                                             </div>
@@ -240,12 +240,48 @@
     </div>
 </div>
 
+<!-- Contenedor de Toasts -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
+
 @push('scripts')
 <script>
 // Cargar estadísticas al inicio
 document.addEventListener('DOMContentLoaded', function() {
     loadStatistics();
+    
+    // Verificar si se generó un reporte y mostrar toast
+    checkReportGenerated();
 });
+
+// Función para verificar si se generó un reporte
+function checkReportGenerated() {
+    // Verificar si hay datos de reporte en la sesión
+    @if(session('report_generated'))
+        const reportData = @json(session('report_generated'));
+        if (reportData.success) {
+            showSuccessToast(
+                reportData.message,
+                'Reporte Generado'
+            );
+        }
+    @endif
+    
+    // También verificar via AJAX por si el usuario regresa después de la descarga
+    fetch('{{ route("reports.show-toast") }}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.toast) {
+                showToast(
+                    data.toast.type,
+                    data.toast.title,
+                    data.toast.message
+                );
+            }
+        })
+        .catch(error => {
+            console.log('No hay toast pendiente');
+        });
+}
 
 // Función para cargar estadísticas
 function loadStatistics() {
@@ -271,7 +307,7 @@ function showValidationToast(message, type = 'warning') {
         <div class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true" id="${toastId}">
             <div class="d-flex">
                 <div class="toast-body">
-                    <strong><i class="fas fa-exclamation-triangle me-2"></i>Validación</strong><br>
+                    <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Validación</strong><br>
                     ${message}
                 </div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -337,7 +373,7 @@ function previewData() {
                 </div>
                 <div class="table-responsive">
                     <table class="table table-sm border">
-                        <thead class="bg-info text-white">
+                                                    <thead class="bg-brand-header text-white">
                             <tr>
                                 <th>Fecha</th>
                                 <th>Paciente</th>

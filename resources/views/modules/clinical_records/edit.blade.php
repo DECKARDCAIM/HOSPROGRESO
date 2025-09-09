@@ -8,7 +8,7 @@
     <div class="row">
         <div class="col-12">
             <div class="card mb-4 border">
-                <div class="card-header pb-0 bg-gradient-info">
+                <div class="card-header pb-0 bg-brand-header">
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <h6 class="text-white mb-0">Editar Expediente Clínico</h6>
@@ -102,15 +102,36 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="cui" class="form-control-label">CUI *</label>
-                                    <input type="text" class="form-control @error('cui') is-invalid @enderror" id="cui" name="cui" value="{{ old('cui', $clinicalRecord->cui) }}" maxlength="13" required>
+                                    <label for="cui" class="form-control-label">DPI (Opcional)</label>
+                                    <input type="text" class="form-control @error('cui') is-invalid @enderror" id="cui" name="cui" value="{{ old('cui', $clinicalRecord->cui) }}" maxlength="13">
                                     @error('cui')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="phone" class="form-control-label">Teléfono</label>
+                                                                            <input type="tel" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone', $clinicalRecord->phone) }}" placeholder="Ej: 12345678" maxlength="8">
+                                    @error('phone')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="email" class="form-control-label">Email</label>
+                                    <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $clinicalRecord->email) }}" placeholder="correo@ejemplo.com">
+                                    @error('email')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="birth_date" class="form-control-label">Fecha de Nacimiento *</label>
@@ -241,7 +262,9 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="country_id" class="form-control-label">País *</label>
-                                    <select class="form-control @error('country_id') is-invalid @enderror" id="country_id" name="country_id" required>
+                                    <select class="form-control @error('country_id') is-invalid @enderror" id="country_id" name="country_id" required 
+                                            data-old-department="{{ $clinicalRecord->department_id }}" 
+                                            data-old-municipality="{{ $clinicalRecord->municipality_id }}">
                                         <option value="">Seleccionar...</option>
                                         @foreach($countries as $country)
                                             <option value="{{ $country->id }}" {{ old('country_id', $clinicalRecord->country_id) == $country->id ? 'selected' : '' }}>{{ $country->name }}</option>
@@ -255,7 +278,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="department_id" class="form-control-label">Departamento *</label>
-                                    <select class="form-control @error('department_id') is-invalid @enderror" id="department_id" name="department_id" required>
+                                    <select class="form-control @error('department_id') is-invalid @enderror" id="department_id" name="department_id" required data-depends="country_id">
                                         <option value="">Seleccionar...</option>
                                         @foreach($departments as $department)
                                             <option value="{{ $department->id }}" {{ old('department_id', $clinicalRecord->department_id) == $department->id ? 'selected' : '' }}>{{ $department->name }}</option>
@@ -269,7 +292,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="municipality_id" class="form-control-label">Municipio *</label>
-                                    <select class="form-control @error('municipality_id') is-invalid @enderror" id="municipality_id" name="municipality_id" required>
+                                    <select class="form-control @error('municipality_id') is-invalid @enderror" id="municipality_id" name="municipality_id" required data-depends="department_id">
                                         <option value="">Seleccionar...</option>
                                         @foreach($municipalities as $municipality)
                                             <option value="{{ $municipality->id }}" {{ old('municipality_id', $clinicalRecord->municipality_id) == $municipality->id ? 'selected' : '' }}>{{ $municipality->name }}</option>
@@ -298,7 +321,7 @@
                             <button type="button" class="btn btn-secondary btn-lg me-2" onclick="window.location.href='{{ route('clinical-records.index') }}'">
                                 <i class="fas fa-times me-2"></i>Cancelar
                             </button>
-                            <button type="submit" class="btn bg-gradient-info btn-lg text-white">
+                            <button type="submit" class="btn bg-brand-header btn-lg text-white">
                                 <i class="fas fa-save me-2"></i>Guardar cambios
                             </button>
                         </div>
@@ -311,64 +334,86 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/plugins/choices.min.js') }}"></script>
 <script>
+// Datos globales para cascada de ubicación
+window.allDepartments = @json($departments);
+window.allMunicipalities = @json($municipalities);
+
 document.addEventListener('DOMContentLoaded', function() {
-    function setupMultiSelect(selectId) {
-        const select = document.getElementById(selectId);
-        new Choices(select, {
-            removeItemButton: true,
-            placeholder: true,
-            placeholderValue: 'Seleccionar...',
-            searchEnabled: true,
-            shouldSort: false,
-            itemSelectText: '',
-        });
-    }
-    setupMultiSelect('disability_id');
-    setupMultiSelect('allergy_id');
+    // Los multi-selects se configuran automáticamente por el archivo global multi-select-init.js
 
-    // --- UBICACIÓN EN CASCADA ---
-    const allDepartments = @json($departments);
-    const allMunicipalities = @json($municipalities);
-    const countrySelect = document.getElementById('country_id');
-    const departmentSelect = document.getElementById('department_id');
-    const municipalitySelect = document.getElementById('municipality_id');
-    const oldDepartment = '{{ old('department_id', $clinicalRecord->department_id) }}';
-    const oldMunicipality = '{{ old('municipality_id', $clinicalRecord->municipality_id) }}';
-
-    function filterDepartmentsByCountry(countryId, selectedId = null) {
-        departmentSelect.innerHTML = '<option value="">Seleccionar...</option>';
-        allDepartments.forEach(dep => {
-            if (dep.country_id == countryId) {
-                departmentSelect.innerHTML += `<option value="${dep.id}"${selectedId == dep.id ? ' selected' : ''}>${dep.name}</option>`;
-            }
-        });
-    }
-    function filterMunicipalitiesByDepartment(departmentId, selectedId = null) {
-        municipalitySelect.innerHTML = '<option value="">Seleccionar...</option>';
-        allMunicipalities.forEach(mun => {
-            if (mun.department_id == departmentId) {
-                municipalitySelect.innerHTML += `<option value="${mun.id}"${selectedId == mun.id ? ' selected' : ''}>${mun.name}</option>`;
-            }
-        });
-    }
-    countrySelect.addEventListener('change', function() {
-        filterDepartmentsByCountry(this.value);
-        municipalitySelect.innerHTML = '<option value="">Seleccionar...</option>';
-    });
-    departmentSelect.addEventListener('change', function() {
-        filterMunicipalitiesByDepartment(this.value);
-    });
-    // Inicialización automática si ya hay valores
-    if (countrySelect.value) {
-        filterDepartmentsByCountry(countrySelect.value, oldDepartment);
-        if (departmentSelect.value) {
-            filterMunicipalitiesByDepartment(departmentSelect.value, oldMunicipality);
+    // Cascada de ubicación geográfica
+    function initializeLocationCascade() {
+        const countrySelect = document.getElementById('country_id');
+        const departmentSelect = document.getElementById('department_id');
+        const municipalitySelect = document.getElementById('municipality_id');
+        
+        if (!countrySelect || !departmentSelect || !municipalitySelect) {
+            return;
         }
-    } else {
-        departmentSelect.innerHTML = '<option value="">Seleccionar...</option>';
-        municipalitySelect.innerHTML = '<option value="">Seleccionar...</option>';
+
+        const oldDepartment = countrySelect.dataset.oldDepartment || '';
+        const oldMunicipality = countrySelect.dataset.oldMunicipality || '';
+
+        function filterDepartmentsByCountry(countryId, selectedId = null) {
+            departmentSelect.innerHTML = '<option value="">Seleccionar...</option>';
+            let hasDepartments = false;
+            window.allDepartments.forEach(dep => {
+                if (dep.country_id == countryId) {
+                    departmentSelect.innerHTML += `<option value="${dep.id}"${selectedId == dep.id ? ' selected' : ''}>${dep.name}</option>`;
+                    hasDepartments = true;
+                }
+            });
+            if (!hasDepartments) departmentSelect.value = '';
+        }
+
+        function filterMunicipalitiesByDepartment(departmentId, selectedId = null) {
+            municipalitySelect.innerHTML = '<option value="">Seleccionar...</option>';
+            let hasMunicipalities = false;
+            window.allMunicipalities.forEach(mun => {
+                if (mun.department_id == departmentId) {
+                    municipalitySelect.innerHTML += `<option value="${mun.id}"${selectedId == mun.id ? ' selected' : ''}>${mun.name}</option>`;
+                    hasMunicipalities = true;
+                }
+            });
+            if (!hasMunicipalities) municipalitySelect.value = '';
+        }
+
+        // Event listeners
+        countrySelect.addEventListener('change', function() {
+            filterDepartmentsByCountry(this.value);
+            departmentSelect.value = '';
+            municipalitySelect.innerHTML = '<option value="">Seleccionar...</option>';
+            municipalitySelect.value = '';
+        });
+
+        departmentSelect.addEventListener('change', function() {
+            filterMunicipalitiesByDepartment(this.value);
+            municipalitySelect.value = '';
+        });
+
+        // Inicialización automática si ya hay valores
+        if (countrySelect.value) {
+            filterDepartmentsByCountry(countrySelect.value, oldDepartment);
+            if (departmentSelect.value) {
+                filterMunicipalitiesByDepartment(departmentSelect.value, oldMunicipality);
+            } else {
+                municipalitySelect.innerHTML = '<option value="">Seleccionar...</option>';
+            }
+        } else {
+            departmentSelect.innerHTML = '<option value="">Seleccionar...</option>';
+            municipalitySelect.innerHTML = '<option value="">Seleccionar...</option>';
+        }
+    }
+
+    // Inicializar cascada de ubicación
+    initializeLocationCascade();
+
+    // Establecer valores antiguos para cascada
+    const countrySelect = document.getElementById('country_id');
+    if (countrySelect) {
+        countrySelect.dataset.oldDepartment = '{{ old('department_id', $clinicalRecord->department_id) }}';
+        countrySelect.dataset.oldMunicipality = '{{ old('municipality_id', $clinicalRecord->municipality_id) }}';
     }
 });
 </script>

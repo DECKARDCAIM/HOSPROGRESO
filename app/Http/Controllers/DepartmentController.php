@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Country;
 use App\Models\Department;
-use App\Models\Country; 
-use App\Services\NotificationService;
-use Illuminate\Http\Request;
 use App\Models\Municipality;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class DepartmentController extends Controller
 {
@@ -14,43 +14,40 @@ class DepartmentController extends Controller
     {
         $this->middleware('auth');
     }
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index(Request $request)
     {
         $status = $request->query('status', 'active');
         $search = $request->query('search', '');
         $country_id = $request->country_id;
 
-        $countries = Country::all();
+        $countries = Cache::tags(['paises', 'catalogos'])->remember('paises:select:v1', now()->addHours(12), fn() => Country::where('is_active', true)->orderBy('name')->get(['id', 'name']));
 
-        $departments = Department::where('is_active', $status === 'active' ? 1 : 0)
-            ->when($country_id, function ($query) use ($country_id) {
-                return $query->where('country_id', $country_id);
-            })
-            ->when($search, function ($query, $search) {
-                $query->where('name', 'like', '%' . $search . '%');
-            })
-            ->paginate(25)
-            ->appends(['status' => $status, 'search' => $search, 'country_id' => $country_id]);
+        $page = (int) ($request->query('page', 1));
+        $key = "departamentos:index:v1:status={$status}:country={$country_id}:q=" . urlencode((string) $search) . ":p={$page}";
+        $departments = Cache::tags(['departamentos'])->remember($key, now()->addMinutes(10), function () use ($status, $country_id, $search) {
+            return Department::select('id', 'name', 'description', 'country_id', 'is_active')
+                ->where('is_active', $status === 'active' ? 1 : 0)
+                ->when($country_id, function ($query) use ($country_id) {
+                    return $query->where('country_id', $country_id);
+                })
+                ->when($search, function ($query, $search) {
+                    $query->where('name', 'like', '%' . $search . '%');
+                })
+                ->orderBy('name')
+                ->paginate(25);
+        });
+        $departments->appends(['status' => $status, 'search' => $search, 'country_id' => $country_id]);
 
         return view('modules.ubication.departments.index', compact('departments', 'countries', 'status', 'search', 'country_id'));
     }
 
-
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        $countries = Country::all(); // Carga todos los países desde la tabla `countries`
+        $countries = Cache::tags(['paises', 'catalogos'])->remember('paises:select:v1', now()->addHours(12), fn() => Country::where('is_active', true)->orderBy('name')->get(['id', 'name']));
         return view('modules.ubication.departments.create', compact('countries'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $rules = [
@@ -72,7 +69,7 @@ class DepartmentController extends Controller
         $departments->country_id = $request->input('country_id');
         $departments->save();
 
-        NotificationService::notifyCreate('Departamento', $departments->name);
+        Cache::tags(['departamentos', 'municipios'])->flush();
 
         return redirect()->route('departamentos.index')->with('toast', [
             'type' => 'success',
@@ -81,26 +78,17 @@ class DepartmentController extends Controller
         ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Department $department)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Department $department)
     {
-        $countries = Country::all(); // Carga todos los países desde la tabla `countries`
+        $countries = Cache::tags(['paises', 'catalogos'])->remember(
+            'paises:select:v1',
+            now()->addHours(12),
+            fn() => Country::where('is_active', true)->orderBy('name')->get(['id', 'name'])
+        );
+
         return view('modules.ubication.departments.edit', compact('department', 'countries'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Department $department)
     {
         $rules = [
@@ -121,10 +109,9 @@ class DepartmentController extends Controller
         $department->description = $request->input('description');
         $department->country_id = $request->input('country_id');
         $wasInactive = !$department->is_active;
-        $department->is_active = $request->has('is_active') ? (bool)$request->input('is_active') : $department->is_active;
+        $department->is_active = $request->has('is_active') ? (bool) $request->input('is_active') : $department->is_active;
         $department->save();
 
-        // Reactivar en cascada si se activa
         if ($department->is_active && $wasInactive) {
             $municipalities = Municipality::where('department_id', $department->id)->get();
             foreach ($municipalities as $municipality) {
@@ -133,32 +120,28 @@ class DepartmentController extends Controller
             }
         }
 
-        NotificationService::notifyUpdate('Departamento', $department->name);
+        Cache::tags(['departamentos', 'municipios'])->flush();
 
         return redirect()->route('departamentos.index')->with('toast', [
-            'type' => 'info',
+            'type' => 'success',
             'title' => 'Actualización Éxitosa',
             'message' => 'El departamento ' . $department->name . ' se ha actualizado correctamente.'
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Department $department)
     {
         $departmentName = $department->name;
         $department->is_active = false;
         $department->save();
 
-        // Eliminar lógicamente en cascada
         $municipalities = Municipality::where('department_id', $department->id)->get();
         foreach ($municipalities as $municipality) {
             $municipality->is_active = false;
             $municipality->save();
         }
 
-        NotificationService::notifyDelete('Departamento', $departmentName);
+        Cache::tags(['departamentos', 'municipios'])->flush();
 
         return redirect()->route('departamentos.index')->with('toast', [
             'type' => 'warning',
@@ -172,14 +155,16 @@ class DepartmentController extends Controller
         $department = Department::findOrFail($id);
         $department->is_active = true;
         $department->save();
-        // Reactivar municipios en cascada
         $municipalities = \App\Models\Municipality::where('department_id', $department->id)->get();
         foreach ($municipalities as $municipality) {
             $municipality->is_active = true;
             $municipality->save();
         }
-        \App\Services\NotificationService::notifyUpdate('Departamento', $department->name);
-        return redirect()->route('departamentos.index', ['status' => 'inactive'])
+
+        Cache::tags(['departamentos', 'municipios'])->flush();
+
+        return redirect()
+            ->route('departamentos.index', ['status' => 'inactive'])
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Reactivación Éxitosa',

@@ -9,7 +9,7 @@
     --warning-color: #ff9800;
     --error-color: #f44336;
     --info-color: #2196f3;
-    --text-primary: #212529;
+    --text-secondary: #212529;
     --text-secondary: #6c757d;
     --background-white: #ffffff;
     --background-light: #f8f9fa;
@@ -21,9 +21,10 @@
 
 /* ===== MODAL PROFESIONAL ===== */
 .modal-backdrop {
-    background-color: rgba(0, 0, 0, 0.85) !important;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(0, 0, 0, 0.3) 100%) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    transition: all 0.3s ease-in-out !important;
 }
 
 .modal-backdrop.show {
@@ -181,7 +182,7 @@
 
 .btn-professional-secondary:hover {
     background: var(--border-color);
-    color: var(--text-primary);
+    color: var(--text-secondary);
     transform: translateY(-1px);
 }
 
@@ -309,7 +310,7 @@
 .notification-title {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--text-secondary);
     margin: 0;
     line-height: 1.3;
 }
@@ -399,7 +400,7 @@
 .no-notifications-state h6 {
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--text-secondary);
     margin-bottom: 8px;
 }
 

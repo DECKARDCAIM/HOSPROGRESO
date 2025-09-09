@@ -472,7 +472,7 @@
                             </div>
                         </div>
 
-                        @if($history->reference_contrareference || $history->nursing_note || $history->admission_note)
+                        @if($history->reference_contrareference || $history->nursing_note)
                         <div class="info-grid" style="margin-top: 12px;">
                             @if($history->reference_contrareference)
                             <div class="info-row">
@@ -487,14 +487,6 @@
                                 <div class="info-label">Nota de Enfermería:</div>
                                 <div class="info-value">
                                     <div class="text-content">{{ $history->nursing_note }}</div>
-                                </div>
-                            </div>
-                            @endif
-                            @if($history->admission_note)
-                            <div class="info-row">
-                                <div class="info-label">Nota de Admisión:</div>
-                                <div class="info-value">
-                                    <div class="text-content">{{ $history->admission_note }}</div>
                                 </div>
                             </div>
                             @endif

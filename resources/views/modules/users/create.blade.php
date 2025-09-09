@@ -8,7 +8,7 @@
     <div class="row">
         <div class="col-12">
             <div class="card mb-4 border">
-                <div class="card-header pb-0 bg-gradient-info">
+                <div class="card-header pb-0 bg-brand-header">
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <h6 class="text-white mb-0">Nuevo Usuario</h6>
@@ -123,7 +123,8 @@
                                     <input type="text" name="phone" id="phone" 
                                         class="form-control form-control-lg border border-2 border-info shadow-sm" 
                                         placeholder="Número de teléfono" 
-                                        value="{{ old('phone')}}">
+                                        value="{{ old('phone')}} "
+                                        maxlength="8">
                                 </div>
 
                                 <div class="form-group mb-3">
@@ -186,7 +187,7 @@
                             <button type="button" class="btn btn-secondary btn-lg me-2" onclick="window.location.href='{{ route('usuarios.index') }}'">
                                 <i class="fas fa-times me-2"></i>Cancelar
                             </button>
-                            <button type="submit" class="btn bg-gradient-info btn-lg text-white">
+                            <button type="submit" class="btn bg-brand-header btn-lg text-white">
                                 <i class="fas fa-save me-2"></i>Crear usuario
                             </button>
                         </div>
@@ -196,4 +197,40 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordInput = document.getElementById('password');
+    const passwordConfirmationInput = document.getElementById('password_confirmation');
+    
+    // Generar contraseña automáticamente
+    const password = generateSecurePassword();
+    passwordInput.value = password;
+    passwordConfirmationInput.value = password;
+    
+    function generateSecurePassword() {
+        const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const numbers = '0123456789';
+        const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+        
+        let password = '';
+        
+        // Asegurar al menos un carácter de cada tipo
+        password += lowercase[Math.floor(Math.random() * lowercase.length)];
+        password += uppercase[Math.floor(Math.random() * uppercase.length)];
+        password += numbers[Math.floor(Math.random() * numbers.length)];
+        password += symbols[Math.floor(Math.random() * symbols.length)];
+        
+        // Completar hasta 12 caracteres con caracteres aleatorios
+        const allChars = lowercase + uppercase + numbers + symbols;
+        for (let i = 4; i < 12; i++) {
+            password += allChars[Math.floor(Math.random() * allChars.length)];
+        }
+        
+        // Mezclar la contraseña
+        return password.split('').sort(() => Math.random() - 0.5).join('');
+    }
+});
+</script>
 @endsection 

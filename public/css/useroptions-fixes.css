@@ -1,0 +1,391 @@
+:root {
+    --primary-blue: #1976d2;
+    --primary-blue-dark: #1565c0;
+    --primary-blue-light: #e3f2fd;
+    --secondary-blue: #42a5f5;
+    --success-color: #4caf50;
+    --warning-color: #ff9800;
+    --error-color: #f44336;
+    --info-color: #2196f3;
+    --text-secondary: #212529;
+    --text-secondary: #6c757d;
+    --background-white: #ffffff;
+    --background-light: #f8f9fa;
+    --border-color: #e0e0e0;
+    --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.15);
+    --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+
+/* DROPDOWN PROFESIONAL */
+.professional-dropdown {
+    border: none !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+    padding: 0 !important;
+    min-width: 380px !important;
+    max-width: 400px !important;
+    background: var(--background-white) !important;
+    overflow: hidden !important;
+    margin-top: 8px !important;
+}
+
+.dropdown-header-professional {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%) !important;
+    color: white !important;
+    padding: 20px !important;
+    margin: 0 !important;
+    border: none !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    position: relative !important;
+}
+
+.dropdown-header-professional::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid-small" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M 8 0 L 0 0 0 8" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid-small)"/></svg>');
+    opacity: 0.3;
+}
+
+.header-content {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+.header-icon {
+    width: 40px !important;
+    height: 40px !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.header-icon i {
+    font-size: 20px !important;
+    color: white !important;
+}
+
+.header-text h6 {
+    margin: 0 !important;
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    color: white !important;
+}
+
+.header-text small {
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-size: 0.85rem !important;
+}
+
+.btn-mini-professional {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.3s ease !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+.btn-mini-professional:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+    transform: scale(1.1) !important;
+    color: white !important;
+}
+
+.btn-mini-professional i {
+    font-size: 18px !important;
+}
+
+.dropdown-divider-professional {
+    height: 1px !important;
+    background: var(--border-color) !important;
+    margin: 0 !important;
+    border: none !important;
+}
+
+/* ===== MEJORAS ESPECÍFICAS ===== */
+
+/* Mejorar SOLO el dropdown del perfil (no tocar notificaciones) */
+.dropdown-menu:not(.professional-dropdown) {
+    border: none !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+    padding: 8px !important;
+    background: var(--background-white) !important;
+    overflow: hidden !important;
+}
+
+.dropdown-item:not(.notification-preview-item) {
+    border-radius: 8px !important;
+    padding: 12px 16px !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    margin: 2px 0 !important;
+}
+
+.dropdown-item:not(.notification-preview-item):hover {
+    background: var(--primary-blue-light) !important;
+    color: var(--primary-blue) !important;
+    transform: translateX(4px) !important;
+}
+
+.dropdown-item:not(.notification-preview-item) i {
+    transition: all 0.3s ease !important;
+    margin-right: 8px !important;
+}
+
+.dropdown-item:not(.notification-preview-item):hover i {
+    color: var(--primary-blue) !important;
+}
+
+/* Tamaño uniforme de texto en toda la aplicación */
+.nav-link-text, .sidenav-normal, .dropdown-item, 
+.notification-preview-title, .notification-title {
+    font-size: 0.875rem !important;
+    line-height: 1.4 !important;
+}
+
+/* ===== EFECTOS HOVER PARA EL MENÚ ===== */
+
+/* Efectos hover para items principales del menú */
+.navbar-nav .nav-item > .nav-link {
+    transition: all 0.3s ease !important;
+    border-radius: 8px !important;
+    margin: 2px 8px !important;
+    padding: 12px 16px !important;
+    position: relative !important;
+}
+
+.navbar-nav .nav-item > .nav-link:hover {
+    background: linear-gradient(135deg, var(--primary-blue-light) 0%, rgba(25, 118, 210, 0.1) 100%) !important;
+    color: var(--primary-blue) !important;
+    transform: translateX(4px) !important;
+    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15) !important;
+}
+
+.navbar-nav .nav-item > .nav-link:hover i {
+    color: var(--primary-blue) !important;
+    transform: scale(1.05) !important;
+}
+
+.navbar-nav .nav-item > .nav-link i {
+    transition: all 0.3s ease !important;
+}
+
+/* Efectos hover para submenús */
+.navbar-nav .nav .nav-item .nav-link {
+    transition: all 0.3s ease !important;
+    border-radius: 6px !important;
+    margin: 1px 8px !important;
+    padding: 8px 12px !important;
+    border-left: 3px solid transparent !important;
+}
+
+.navbar-nav .nav .nav-item .nav-link:hover {
+    background: rgba(25, 118, 210, 0.08) !important;
+    border-left-color: var(--primary-blue) !important;
+    color: var(--primary-blue) !important;
+    transform: translateX(3px) !important;
+}
+
+.navbar-nav .nav .nav-item .nav-link:hover i {
+    color: var(--primary-blue) !important;
+}
+
+/* Efectos hover para submenús de tercer nivel */
+.navbar-nav .nav .nav .nav-item .nav-link {
+    padding: 6px 10px !important;
+    margin: 1px 8px !important;
+}
+
+.navbar-nav .nav .nav .nav-item .nav-link:hover {
+    background: rgba(25, 118, 210, 0.05) !important;
+    border-left-color: var(--secondary-blue) !important;
+    transform: translateX(2px) !important;
+}
+
+/* Efecto para menús expandidos */
+.navbar-nav .nav-item > .nav-link[aria-expanded="true"] {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 16px rgba(25, 118, 210, 0.3) !important;
+}
+
+.navbar-nav .nav-item > .nav-link[aria-expanded="true"] i {
+    color: white !important;
+}
+
+/* ===== DIFERENCIACIÓN ENTRE MENÚS Y VISTAS ===== */
+
+/* Estilos para enlaces que abren menús (tienen data-bs-toggle) */
+.navbar-nav .nav-item > .nav-link[data-bs-toggle="collapse"] {
+    font-weight: 600 !important;
+    position: relative !important;
+}
+
+.navbar-nav .nav-item > .nav-link[data-bs-toggle="collapse"]::after {
+    content: '▼' !important;
+    position: absolute !important;
+    right: 16px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    font-size: 0.7rem !important;
+    transition: transform 0.3s ease !important;
+    opacity: 0.6 !important;
+}
+
+.navbar-nav .nav-item > .nav-link[data-bs-toggle="collapse"][aria-expanded="true"]::after {
+    transform: translateY(-50%) rotate(180deg) !important;
+    color: white !important;
+    opacity: 1 !important;
+}
+
+/* Estilos para enlaces de submenús que abren más submenús */
+.navbar-nav .nav .nav-item .nav-link[data-bs-toggle="collapse"] {
+    font-weight: 500 !important;
+    position: relative !important;
+}
+
+.navbar-nav .nav .nav-item .nav-link[data-bs-toggle="collapse"]::after {
+    content: '▶' !important;
+    position: absolute !important;
+    right: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    font-size: 0.6rem !important;
+    transition: transform 0.3s ease !important;
+    opacity: 0.5 !important;
+}
+
+.navbar-nav .nav .nav-item .nav-link[data-bs-toggle="collapse"][aria-expanded="true"]::after {
+    transform: translateY(-50%) rotate(90deg) !important;
+    opacity: 0.8 !important;
+}
+
+/* Estilos para enlaces directos a vistas (sin data-bs-toggle) */
+.navbar-nav .nav-item .nav-link:not([data-bs-toggle]) {
+    font-weight: 400 !important;
+    padding-left: 20px !important;
+}
+
+.navbar-nav .nav .nav-item .nav-link:not([data-bs-toggle]) {
+    padding-left: 16px !important;
+    font-size: 0.85rem !important;
+}
+
+.navbar-nav .nav .nav .nav-item .nav-link:not([data-bs-toggle]) {
+    padding-left: 24px !important;
+    font-size: 0.8rem !important;
+}
+
+/* Enlace activo (vista actual) */
+.active-menu-item {
+    background: linear-gradient(135deg, rgba(25, 118, 210, 0.15) 0%, rgba(25, 118, 210, 0.1) 100%) !important;
+    color: var(--primary-blue) !important;
+    font-weight: 600 !important;
+    border-left: 4px solid var(--primary-blue) !important;
+    box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2) !important;
+    border-radius: 0 8px 8px 0 !important;
+    margin-left: 4px !important;
+    margin-right: 8px !important;
+    position: relative !important;
+}
+
+.active-menu-item::after {
+    content: '•' !important;
+    position: absolute !important;
+    right: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    color: var(--primary-blue) !important;
+    font-size: 1.2rem !important;
+    font-weight: bold !important;
+    animation: pulse-dot 2s infinite !important;
+}
+
+.active-menu-item i {
+    color: var(--primary-blue) !important;
+    font-weight: 600 !important;
+    transform: scale(1.1) !important;
+}
+
+.active-menu-item .sidenav-normal {
+    color: var(--primary-blue) !important;
+    font-weight: 600 !important;
+}
+
+/* Animación para el indicador activo */
+@keyframes pulse-dot {
+    0%, 100% { 
+        opacity: 1; 
+        transform: translateY(-50%) scale(1); 
+    }
+    50% { 
+        opacity: 0.6; 
+        transform: translateY(-50%) scale(1.2); 
+    }
+}
+
+/* Efecto hover menos intenso para elementos activos */
+.active-menu-item:hover {
+    transform: translateX(2px) !important;
+    background: linear-gradient(135deg, rgba(25, 118, 210, 0.2) 0%, rgba(25, 118, 210, 0.15) 100%) !important;
+}
+
+/* Indicador visual para diferenciar tipo de elemento */
+.navbar-nav .nav-item .nav-link:not([data-bs-toggle])::before {
+    content: '•' !important;
+    position: absolute !important;
+    left: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    color: var(--primary-blue) !important;
+    opacity: 0.4 !important;
+    font-size: 0.8rem !important;
+}
+
+.navbar-nav .nav .nav-item .nav-link:not([data-bs-toggle])::before {
+    content: '→' !important;
+    left: 4px !important;
+    font-size: 0.7rem !important;
+}
+
+/* Ajustes responsive para el nuevo ancho del menú */
+@media (max-width: 1199px) {
+    .main-content {
+        margin-left: 0 !important;
+    }
+    
+    .sidenav {
+        transform: translateX(-100%);
+    }
+    
+    .g-sidenav-show .sidenav {
+        transform: translateX(0);
+    }
+}
+
+@media (min-width: 1200px) {
+    .g-sidenav-show .main-content {
+        margin-left: 296px !important;
+    }
+}

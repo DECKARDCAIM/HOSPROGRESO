@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Exam;
-use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ExamController extends Controller
 {
@@ -12,13 +12,18 @@ class ExamController extends Controller
     {
         $status = $request->query('status', 'active');
         $search = $request->query('search', '');
-        $exams = Exam::where('is_active', $status === 'active' ? 1 : 0)
-            ->when($search, function ($query, $search) {
-                $query->where('name', 'like', "%$search%");
-            })
-            ->orderBy('name')
-            ->paginate(25)
-            ->appends(['status' => $status, 'search' => $search]);
+        $page = (int) ($request->query('page', 1));
+        $key = "examenes:index:v1:status={$status}:q=" . urlencode($search) . ":p={$page}";
+        $exams = Cache::tags(['examenes'])->remember($key, now()->addMinutes(10), function () use ($status, $search) {
+            return Exam::select('id', 'name', 'description', 'is_active')
+                ->where('is_active', $status === 'active' ? 1 : 0)
+                ->when($search, function ($query, $search) {
+                    $query->where('name', 'like', "%$search%");
+                })
+                ->orderBy('name')
+                ->paginate(25);
+        });
+        $exams->appends(['status' => $status, 'search' => $search]);
         return view('modules.exams.index', compact('exams', 'status', 'search'));
     }
 
@@ -38,8 +43,11 @@ class ExamController extends Controller
             'description' => $request->description,
             'is_active' => true
         ]);
-        NotificationService::notifyCreate('Examen', $exam->name);
-        return redirect()->route('exams.index')
+
+        Cache::tags(['examenes'])->flush();
+
+        return redirect()
+            ->route('exams.index')
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Creación Éxitosa',
@@ -62,10 +70,13 @@ class ExamController extends Controller
             'name' => $request->name,
             'description' => $request->description,
         ]);
-        NotificationService::notifyUpdate('Examen', $exam->name);
-        return redirect()->route('exams.index')
+
+        Cache::tags(['examenes'])->flush();
+
+        return redirect()
+            ->route('exams.index')
             ->with('toast', [
-                'type' => 'info',
+                'type' => 'success',
                 'title' => 'Actualización Éxitosa',
                 'message' => 'El examen ' . $exam->name . ' se ha actualizado correctamente.'
             ]);
@@ -76,9 +87,10 @@ class ExamController extends Controller
         $examName = $exam->name;
         $exam->update(['is_active' => false]);
 
-        NotificationService::notifyDelete('Examen', $examName);
+        Cache::tags(['examenes'])->flush();
 
-        return redirect()->route('exams.index')
+        return redirect()
+            ->route('exams.index')
             ->with('toast', [
                 'type' => 'warning',
                 'title' => 'Eliminación Éxitosa',
@@ -91,12 +103,15 @@ class ExamController extends Controller
         $exam = Exam::findOrFail($id);
         $exam->is_active = true;
         $exam->save();
-        NotificationService::notifyUpdate('Examen', $exam->name);
-        return redirect()->route('exams.index', ['status' => 'inactive'])
+
+        Cache::tags(['examenes'])->flush();
+
+        return redirect()
+            ->route('exams.index', ['status' => 'inactive'])
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Reactivación Éxitosa',
                 'message' => 'El examen ' . $exam->name . ' ha sido reactivado correctamente.'
             ]);
     }
-} 
+}

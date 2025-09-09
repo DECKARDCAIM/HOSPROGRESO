@@ -11,13 +11,16 @@ return new class extends Migration
         Schema::create('clinical_records', function (Blueprint $table) {
             $table->id();
             $table->string('record_number')->unique();
+            $table->string('old_registration_number')->nullable();
             $table->string('first_name');
             $table->string('second_name')->nullable();
             $table->string('third_name')->nullable();
             $table->string('first_lastname');
             $table->string('second_lastname')->nullable();
             $table->string('married_lastname')->nullable();
-            $table->string('cui', 13)->unique();
+            $table->string('cui', 13)->nullable()->unique();
+            $table->string('phone', 20)->nullable();
+            $table->string('email', 100)->nullable();
             $table->foreignId('sex_id')->constrained('sexes');
             $table->foreignId('civil_status_id')->constrained('civil_statuses');
             $table->foreignId('linguistic_community_id')->constrained('linguistic_communities');

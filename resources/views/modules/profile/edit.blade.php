@@ -35,7 +35,7 @@
     }
 
     /* Estilos para las nuevas secciones de fotos */
-    .card-header.bg-info {
+                    .card-header.bg-brand-header {
         background: linear-gradient(135deg, #1e88e5 0%, #1976d2 100%) !important;
     }
 
@@ -56,18 +56,18 @@
         transition: all 0.2s ease;
     }
 
-    .btn.bg-gradient-info {
+                    .btn.bg-brand-header {
         background: linear-gradient(135deg, #1e88e5 0%, #1976d2 100%) !important;
         border: none;
         transition: all 0.3s ease;
     }
 
-    .btn.bg-gradient-info:hover {
+                    .btn.bg-brand-header:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(30, 136, 229, 0.4) !important;
     }
 
-    .btn.bg-gradient-info:disabled {
+                    .btn.bg-brand-header:disabled {
         opacity: 0.7;
         transform: none !important;
     }
@@ -94,12 +94,12 @@
                         {{ $user->email }}
                     </p>
                     <p class="mb-0 font-weight-normal text-sm">
-                        <span class="badge bg-info">{{ $user->getRoleName() }}</span>
+                        <span class="badge bg-brand-header">{{ $user->getRoleName() }}</span>
                     </p>
                 </div>
             </div>
             <div class="col-lg-4 col-md-6 my-sm-auto ms-sm-auto me-sm-0 mt-3 text-end">
-                <a class="btn btn-sm bg-gradient-info me-1" href="{{ route('profile.index') }}">
+                <a class="btn btn-sm bg-brand-header me-1" href="{{ route('profile.index') }}">
                     <i class="fas fa-arrow-left me-2"></i>Regresar
                 </a>
             </div>
@@ -159,7 +159,7 @@
                 @csrf
                 @method('PUT')
                 <div class="card" id="basic-info">
-                    <div class="card-header bg-info">
+                    <div class="card-header bg-brand-header">
                         <h6 class="text-white mb-0">
                             <i class="fas fa-user me-2"></i>Información Básica
                         </h6>
@@ -214,7 +214,7 @@
                         </div>
                     </div>
                     <div class="card-footer text-end">
-                        <button type="submit" class="btn bg-gradient-info">Guardar Cambios</button>
+                        <button type="submit" class="btn bg-brand-header">Guardar Cambios</button>
                     </div>
                 </div>
             </form>
@@ -224,7 +224,7 @@
                 @csrf
                 @method('PUT')
                 <div class="card mt-4" id="password">
-                    <div class="card-header bg-info">
+                    <div class="card-header bg-brand-header">
                         <h6 class="text-white mb-0">
                             <i class="fas fa-lock me-2"></i>Cambiar Contraseña
                         </h6>
@@ -246,14 +246,14 @@
                         </div>
                     </div>
                      <div class="card-footer text-end">
-                        <button type="submit" class="btn bg-gradient-info">Actualizar Contraseña</button>
+                        <button type="submit" class="btn bg-brand-header">Actualizar Contraseña</button>
                     </div>
                 </div>
             </form>
 
             <!-- Sección para cambiar foto de perfil -->
             <div class="card mt-4" id="profile-photo">
-                <div class="card-header bg-info">
+                <div class="card-header bg-brand-header">
                     <div class="row align-items-center">
                         <div class="col">
                             <h6 class="text-white mb-0">
@@ -313,7 +313,7 @@
                             </div>
                         </div>
                         <div class="text-end">
-                            <button type="submit" class="btn bg-gradient-info" id="upload-profile-photo-btn" disabled>
+                            <button type="submit" class="btn bg-brand-header" id="upload-profile-photo-btn" disabled>
                                 <i class="fas fa-upload me-2"></i>Subir Foto de Perfil
                             </button>
                         </div>
@@ -323,7 +323,7 @@
 
             <!-- Sección para cambiar banner -->
             <div class="card mt-4" id="banner-photo">
-                <div class="card-header bg-info">
+                <div class="card-header bg-brand-header">
                     <div class="row align-items-center">
                         <div class="col">
                             <h6 class="text-white mb-0">
@@ -383,7 +383,7 @@
                             </div>
                         </div>
                         <div class="text-end">
-                            <button type="submit" class="btn bg-gradient-info" id="upload-banner-photo-btn" disabled>
+                            <button type="submit" class="btn bg-brand-header" id="upload-banner-photo-btn" disabled>
                                 <i class="fas fa-upload me-2"></i>Subir Banner
                             </button>
                         </div>

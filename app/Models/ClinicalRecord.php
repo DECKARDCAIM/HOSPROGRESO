@@ -12,6 +12,7 @@ class ClinicalRecord extends Model
 
     protected $fillable = [
         'record_number',
+        'old_registration_number',
         'first_name',
         'second_name',
         'third_name',
@@ -19,6 +20,8 @@ class ClinicalRecord extends Model
         'second_lastname',
         'married_lastname',
         'cui',
+        'phone',
+        'email',
         'sex_id',
         'civil_status_id',
         'linguistic_community_id',
@@ -93,6 +96,7 @@ class ClinicalRecord extends Model
         return $this->hasMany(Appointment::class);
     }
 
+
     public function getFullNameAttribute()
     {
         $names = array_filter([
@@ -115,21 +119,19 @@ class ClinicalRecord extends Model
         return Carbon::parse($this->birth_date)->age;
     }
 
-    // Método para obtener la última consulta médica
     public function getLastConsultationAttribute()
     {
         return $this->medicalConsultations()->latest('consultation_date')->first();
     }
 
-    // Método para obtener consultas por estado
     public function getConsultationsByStatus($status)
     {
         return $this->medicalConsultations()->where('status', $status)->get();
     }
 
-    // Método para obtener el total de consultas
     public function getTotalConsultationsAttribute()
     {
         return $this->medicalConsultations()->count();
     }
+
 } 

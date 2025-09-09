@@ -32,11 +32,12 @@ class MarkMissedAppointments extends Command
         
         $this->info('🔍 Buscando citas vencidas...');
         
-        // Obtener citas pendientes o confirmadas que ya pasaron su fecha/hora
-        // Consideramos 2 horas de gracia después de la hora programada
-        $cutoffTime = Carbon::now()->subHours(2);
-        
-        $missedAppointments = Appointment::whereIn('status', ['pendiente', 'confirmada'])
+        // NUEVA LÓGICA: Marcar únicamente al día siguiente a las 00:00
+        // Se consideran perdidas las citas en estado PENDIENTE cuya fecha/hora
+        // sea estrictamente anterior al inicio del día actual (no durante el mismo día de la cita)
+        $cutoffTime = Carbon::now()->startOfDay();
+
+        $missedAppointments = Appointment::where('status', 'pendiente')
             ->where('appointment_date', '<', $cutoffTime)
             ->with(['clinicalRecord', 'doctor', 'specialty'])
             ->get();

@@ -5,12 +5,6 @@
 
 @section('content')
 
-    <!-- Alerta informativa sobre el proceso de registro -->
-    <div class="alert alert-info text-white" role="alert">
-        <strong><i class="fas fa-info-circle me-2"></i>Información importante:</strong>
-        <p class="mb-0 mt-2">Una vez que complete su registro, un administrador deberá asignarle un rol antes de que pueda acceder al sistema. Recibirá una notificación cuando su cuenta esté lista para usar.</p>
-    </div>
-
     @if ($errors->any())
         <div class="alert alert-danger text-white" role="alert">
             <strong>¡Ups! Ha ocurrido un problema:</strong>
@@ -71,13 +65,6 @@
             @error('password_confirmation')
                 <div id="password-confirmation-error" class="invalid-feedback">{{ $message }}</div>
             @enderror
-        </div>
-
-        <div class="text-center mb-3">
-            <small class="text-muted">
-                <i class="fas fa-info-circle me-1"></i>
-                Los campos marcados con * son obligatorios. Su contraseña debe tener al menos 8 caracteres.
-            </small>
         </div>
 
         {{-- BOTON DE ENVIAR --}}

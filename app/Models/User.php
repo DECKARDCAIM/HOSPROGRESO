@@ -180,4 +180,64 @@ class User extends Authenticatable
     {
         return $this->role_id === Role::ADMINISTRADOR_ID;
     }
+
+    /**
+     * Verificar si el usuario tiene un permiso específico
+     */
+    public function hasPermission($slug)
+    {
+        return $this->role && $this->role->permissions->contains('slug', $slug);
+    }
+
+    /**
+     * Obtener el área de trabajo del usuario (emergencia o consulta_externa)
+     */
+    public function getWorkArea()
+    {
+        if ($this->isAdmin()) {
+            return 'all'; // Administrador ve todo
+        }
+
+        $hasEmergencia = $this->hasAnyPermission([
+            'emergencia.acceso',
+            'emergencia.expedientes.ver', 'emergencia.expedientes.crear', 'emergencia.expedientes.editar', 'emergencia.expedientes.eliminar',
+            'emergencia.consultas.ver', 'emergencia.consultas.crear', 'emergencia.consultas.editar', 'emergencia.consultas.eliminar',
+            'emergencia.citas.ver', 'emergencia.citas.crear', 'emergencia.citas.editar', 'emergencia.citas.eliminar'
+        ]);
+
+        $hasConsultaExterna = $this->hasAnyPermission([
+            'consulta_externa.acceso',
+            'consulta_externa.expedientes.ver', 'consulta_externa.expedientes.crear', 'consulta_externa.expedientes.editar', 'consulta_externa.expedientes.eliminar',
+            'consulta_externa.consultas.ver', 'consulta_externa.consultas.crear', 'consulta_externa.consultas.editar', 'consulta_externa.consultas.eliminar',
+            'consulta_externa.citas.ver', 'consulta_externa.citas.crear', 'consulta_externa.citas.editar', 'consulta_externa.citas.eliminar'
+        ]);
+
+        if ($hasEmergencia && $hasConsultaExterna) {
+            return 'both';
+        } elseif ($hasEmergencia) {
+            return 'emergencia';
+        } elseif ($hasConsultaExterna) {
+            return 'consulta_externa';
+        }
+
+        return 'none';
+    }
+
+    /**
+     * Verificar si el usuario tiene alguno de los permisos especificados
+     */
+    public function hasAnyPermission(array $permissions)
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        foreach ($permissions as $permission) {
+            if ($this->hasPermission($permission)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

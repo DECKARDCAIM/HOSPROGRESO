@@ -8,14 +8,14 @@
     <div class="row">
         <div class="col-12">
             <div class="card mb-4 border">
-                <div class="card-header pb-0 bg-gradient-info">
+                <div class="card-header pb-0 bg-brand-header">
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <h6 class="text-white mb-0">Editar Usuario: {{ $user->name }}</h6>
                         </div>
                         <div class="col-md-4 text-end">
                             <a href="{{ route('usuarios.index') }}" class="btn btn-sm btn-white">
-                                <i class="fas fa-chevron-left me-2"></i>Regresar
+                                <i class="bi bi-chevron-left me-2"></i>Regresar
                             </a>
                         </div>
                     </div>
@@ -23,7 +23,7 @@
                 <div class="card-body">
                     @if ($errors->any())
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <span class="alert-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                        <span class="alert-icon"><i class="bi bi-exclamation-triangle"></i></span>
                         <span class="alert-text">
                             <strong>Por favor!</strong> Revisa los siguientes errores:
                             <ul class="mb-0">
@@ -52,11 +52,11 @@
                         <div class="row">
                             <!-- Información Personal -->
                             <div class="col-md-6">
-                                <h6 class="text-info mb-3"><i class="fas fa-user me-2"></i>Información Personal</h6>
+                                <h6 class="text-info mb-3"><i class="bi bi-person me-2"></i>Información Personal</h6>
                                 
                                 <div class="form-group mb-3">
                                     <label for="name" class="form-control-label mb-2">
-                                        <i class="fas fa-user text-info me-2"></i>Nombre completo *
+                                        <i class="bi bi-person text-info me-2"></i>Nombre completo *
                                     </label>
                                     <input type="text" name="name" id="name" 
                                         class="form-control form-control-lg border border-2 border-info shadow-sm" 
@@ -67,7 +67,7 @@
 
                                 <div class="form-group mb-3">
                                     <label for="cui" class="form-control-label mb-2">
-                                        <i class="fas fa-id-card text-info me-2"></i>CUI
+                                        <i class="bi bi-card-text text-info me-2"></i>CUI
                                     </label>
                                     <input type="text" name="cui" id="cui" 
                                         class="form-control form-control-lg border border-2 border-info shadow-sm" 
@@ -80,7 +80,7 @@
                                     <div class="col-md-6">
                                         <div class="form-group mb-3">
                                             <label for="birth_date" class="form-control-label mb-2">
-                                                <i class="fas fa-calendar text-info me-2"></i>Fecha de nacimiento
+                                                <i class="bi bi-calendar text-info me-2"></i>Fecha de nacimiento
                                             </label>
                                             <input type="date" name="birth_date" id="birth_date" 
                                                 class="form-control form-control-lg border border-2 border-info shadow-sm" 
@@ -90,7 +90,7 @@
                                     <div class="col-md-6">
                                         <div class="form-group mb-3">
                                             <label for="gender" class="form-control-label mb-2">
-                                                <i class="fas fa-venus-mars text-info me-2"></i>Género
+                                                <i class="bi bi-gender-ambiguous text-info me-2"></i>Género
                                             </label>
                                             <select name="gender" id="gender" class="form-select form-select-lg border border-2 border-info shadow-sm">
                                                 <option value="">Seleccionar género</option>
@@ -103,7 +103,7 @@
 
                                 <div class="form-group mb-3">
                                     <label for="address" class="form-control-label mb-2">
-                                        <i class="fas fa-map-marker-alt text-info me-2"></i>Dirección
+                                        <i class="bi bi-geo-alt text-info me-2"></i>Dirección
                                     </label>
                                     <textarea name="address" id="address" 
                                         class="form-control form-control-lg border border-2 border-info shadow-sm" 
@@ -114,11 +114,11 @@
 
                             <!-- Información de Contacto y Sistema -->
                             <div class="col-md-6">
-                                <h6 class="text-info mb-3"><i class="fas fa-cog me-2"></i>Información de Sistema</h6>
+                                <h6 class="text-info mb-3"><i class="bi bi-gear me-2"></i>Información de Sistema</h6>
                                 
                                 <div class="form-group mb-3">
                                     <label for="email" class="form-control-label mb-2">
-                                        <i class="fas fa-envelope text-info me-2"></i>Correo electrónico *
+                                        <i class="bi bi-envelope text-info me-2"></i>Correo electrónico *
                                     </label>
                                     <input type="email" name="email" id="email" 
                                         class="form-control form-control-lg border border-2 border-info shadow-sm" 
@@ -129,7 +129,7 @@
 
                                 <div class="form-group mb-3">
                                     <label for="phone" class="form-control-label mb-2">
-                                        <i class="fas fa-phone text-info me-2"></i>Teléfono
+                                        <i class="bi bi-telephone text-info me-2"></i>Teléfono
                                     </label>
                                     <input type="text" name="phone" id="phone" 
                                         class="form-control form-control-lg border border-2 border-info shadow-sm" 
@@ -139,7 +139,7 @@
 
                                 <div class="form-group mb-3">
                                     <label for="role_id" class="form-control-label mb-2">
-                                        <i class="fas fa-user-tag text-info me-2"></i>Rol del usuario *
+                                        <i class="bi bi-person-badge text-info me-2"></i>Rol del usuario *
                                     </label>
                                     <select name="role_id" id="role_id" class="form-select form-select-lg border border-2 border-info shadow-sm" required>
                                         <option value="">Seleccionar rol</option>
@@ -153,7 +153,7 @@
 
                                 <div class="form-group mb-3">
                                     <label for="profile_photo" class="form-control-label mb-2">
-                                        <i class="fas fa-camera text-info me-2"></i>Nueva foto de perfil
+                                        <i class="bi bi-camera text-info me-2"></i>Nueva foto de perfil
                                     </label>
                                     <input type="file" name="profile_photo" id="profile_photo" 
                                         class="form-control form-control-lg border border-2 border-info shadow-sm"
@@ -165,18 +165,18 @@
 
                         <div class="d-flex justify-content-end mt-4">
                             <button type="button" class="btn btn-secondary btn-lg me-2" onclick="window.location.href='{{ route('usuarios.index') }}'">
-                                <i class="fas fa-times me-2"></i>Cancelar
+                                <i class="bi bi-x me-2"></i>Cancelar
                             </button>
-                            <button type="submit" class="btn bg-gradient-info btn-lg text-white">
-                                <i class="fas fa-save me-2"></i>Guardar cambios
+                            <button type="submit" class="btn bg-brand-header btn-lg text-white">
+                                <i class="bi bi-save me-2"></i>Guardar cambios
                             </button>
                         </div>
                     </form>
 
                     <!-- Sección de restablecimiento de contraseña -->
                     <div class="card mt-4 border border-info">
-                        <div class="card-header bg-info">
-                            <h6 class="text-white mb-0"><i class="fas fa-lock me-2"></i>Restablecer Contraseña</h6>
+                        <div class="card-header bg-brand-header">
+                            <h6 class="text-white mb-0"><i class="bi bi-lock me-2"></i>Restablecer Contraseña</h6>
                         </div>
                         <div class="card-body">
                             <form action="{{ route('usuarios.reset-password', $user->id) }}" method="POST" id="reset-password-form">
@@ -186,7 +186,7 @@
                                     <div class="col-md-6">
                                         <div class="form-group mb-3">
                                             <label for="password" class="form-control-label mb-2">
-                                                <i class="fas fa-key text-info me-2"></i>Nueva contraseña
+                                                <i class="bi bi-key text-info me-2"></i>Nueva contraseña
                                             </label>
                                             <input type="password" name="password" id="password" 
                                                 class="form-control form-control-lg border border-2 border-info shadow-sm" 
@@ -197,7 +197,7 @@
                                     <div class="col-md-6">
                                         <div class="form-group mb-3">
                                             <label for="password_confirmation" class="form-control-label mb-2">
-                                                <i class="fas fa-key text-info me-2"></i>Confirmar nueva contraseña
+                                                <i class="bi bi-key text-info me-2"></i>Confirmar nueva contraseña
                                             </label>
                                             <input type="password" name="password_confirmation" id="password_confirmation" 
                                                 class="form-control form-control-lg border border-2 border-info shadow-sm" 
@@ -206,8 +206,8 @@
                                     </div>
                                 </div>
                                 <div class="text-end">
-                                    <button type="submit" class="btn bg-gradient-info btn-lg text-white">
-                                        <i class="fas fa-sync me-2"></i>Restablecer contraseña
+                                    <button type="submit" class="btn bg-brand-header btn-lg text-white">
+                                        <i class="bi bi-arrow-clockwise me-2"></i>Restablecer contraseña
                                     </button>
                                 </div>
                             </form>
