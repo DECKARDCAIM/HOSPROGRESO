@@ -61,3 +61,13 @@
 /* Avatares circulares con azul de marca */
 .avatar.bg-brand{ background: var(--primary-blue) !important; color:#fff; }
 
+/* Checkboxes con el mismo azul que los borders de los inputs */
+.form-check-input:checked {
+  background-color: #007bff !important;
+  border-color: #007bff !important;
+}
+
+.form-check-input:focus {
+  border-color: #007bff !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+}

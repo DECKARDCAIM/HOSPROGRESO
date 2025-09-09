@@ -27,35 +27,22 @@ use App\Models\Municipality;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        //
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         Paginator::useBootstrap();
-        
-        // Registrar políticas globales para permisos
+
         $this->registerPermissionGates();
 
-        // Registrar observers de catálogos
         $this->registerCatalogObservers();
     }
 
-    /**
-     * Registrar Gates dinámicos para todos los permisos
-     */
     private function registerPermissionGates(): void
     {
         try {
-            // Obtener todos los permisos y registrar gates
             $permissions = Permission::all();
             
             foreach ($permissions as $permission) {
@@ -64,8 +51,6 @@ class AppServiceProvider extends ServiceProvider
                 });
             }
         } catch (\Exception $e) {
-            // Si las tablas no existen aún (durante migraciones), no hacer nada
-            // Esto evita errores durante php artisan migrate
         }
     }
 
@@ -90,7 +75,6 @@ class AppServiceProvider extends ServiceProvider
             Department::observe(CatalogObserver::class);
             Municipality::observe(CatalogObserver::class);
         } catch (\Throwable $e) {
-            // Evitar fallas en arranque por migraciones pendientes
         }
     }
 }

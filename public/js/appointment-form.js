@@ -184,7 +184,7 @@ function proceedToStep2() {
     const selectedRadio = document.querySelector('.patient-radio:checked');
     
     if (!selectedRadio) {
-        alert('Por favor, selecciona un paciente antes de continuar.');
+        showErrorToast('Por favor, selecciona un paciente antes de continuar.', 'Paciente Requerido');
         return;
     }
     
@@ -224,28 +224,28 @@ function submitForm() {
     
     // Validaciones
     if (!selectedPatientId) {
-        alert('Por favor, selecciona un paciente.');
+        showErrorToast('Por favor, selecciona un paciente.', 'Paciente Requerido');
         backToStep1();
         return false;
     }
     
     if (!specialtyId) {
-        alert('Por favor, selecciona una especialidad.');
+        showErrorToast('Por favor, selecciona una especialidad.', 'Especialidad Requerida');
         return false;
     }
     
     if (!doctorId) {
-        alert('Por favor, selecciona un doctor.');
+        showErrorToast('Por favor, selecciona un doctor.', 'Doctor Requerido');
         return false;
     }
     
     if (!attentionType) {
-        alert('Por favor, selecciona el tipo de atención.');
+        showErrorToast('Por favor, selecciona el tipo de atención.', 'Tipo de Atención Requerido');
         return false;
     }
     
     if (submitBtn.disabled) {
-        alert('Por favor, espera a que se cargue la información del cupo disponible.');
+        showWarningToast('Por favor, espera a que se cargue la información del cupo disponible.', 'Esperando Información');
         return false;
     }
     
@@ -259,7 +259,7 @@ function submitForm() {
     } catch (error) {
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="fas fa-calendar-plus me-2"></i>Agendar Cita';
-        alert('Error al enviar el formulario. Por favor, intenta de nuevo.');
+        showErrorToast('Error al enviar el formulario. Por favor, intenta de nuevo.', 'Error del Sistema');
     }
 }
 
