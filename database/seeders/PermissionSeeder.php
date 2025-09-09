@@ -101,6 +101,23 @@ class PermissionSeeder extends Seeder
                 ['name' => 'Reactivar tipos de horario', 'slug' => 'tipos_horario.reactivar'],
             ],
 
+            'Sustituciones de Doctores' => [
+                ['name' => 'Ver sustituciones de doctores', 'slug' => 'doctores.sustituciones.ver'],
+                ['name' => 'Crear sustituciones de doctores', 'slug' => 'doctores.sustituciones.crear'],
+                ['name' => 'Editar sustituciones de doctores', 'slug' => 'doctores.sustituciones.editar'],
+                ['name' => 'Eliminar sustituciones de doctores', 'slug' => 'doctores.sustituciones.eliminar'],
+                ['name' => 'Completar sustituciones de doctores', 'slug' => 'doctores.sustituciones.completar'],
+                ['name' => 'Cancelar sustituciones de doctores', 'slug' => 'doctores.sustituciones.cancelar'],
+            ],
+
+            'Días Festivos' => [
+                ['name' => 'Ver días festivos', 'slug' => 'dias_festivos.ver'],
+                ['name' => 'Crear días festivos', 'slug' => 'dias_festivos.crear'],
+                ['name' => 'Editar días festivos', 'slug' => 'dias_festivos.editar'],
+                ['name' => 'Eliminar días festivos', 'slug' => 'dias_festivos.eliminar'],
+                ['name' => 'Reactivar días festivos', 'slug' => 'dias_festivos.reactivar'],
+            ],
+
             // ========== CATÁLOGOS MÉDICOS ==========
             'Sexos' => [
                 ['name' => 'Ver sexos', 'slug' => 'sexos.ver'],
@@ -219,13 +236,6 @@ class PermissionSeeder extends Seeder
                 ['name' => 'Reactivar municipios', 'slug' => 'municipios.reactivar'],
             ],
 
-            // ========== ARCHIVO CLÍNICO ==========
-            'Archivo Clínico' => [
-                ['name' => 'Acceso archivo clínico', 'slug' => 'archivo_clinico.acceso'],
-                ['name' => 'Ver expedientes recientes', 'slug' => 'archivo_clinico.expedientes_recientes'],
-                ['name' => 'Ver expedientes archivados', 'slug' => 'archivo_clinico.expedientes_archivados'],
-                ['name' => 'Mostrar expedientes específicos', 'slug' => 'archivo_clinico.mostrar'],
-            ],
 
             // ========== ADMINISTRACIÓN ==========
             'Administración' => [
@@ -294,31 +304,6 @@ class PermissionSeeder extends Seeder
             $this->command->info('✅ Todos los permisos asignados al rol Administrador');
         }
 
-        // Asignar permisos específicos al rol Archivo Clínico
-        $archivoRole = Role::where('name', 'Archivo Clínico')->first();
-        if ($archivoRole) {
-            $archivoPermissions = Permission::whereIn('slug', [
-                // Permisos propios del archivo clínico
-                'archivo_clinico.acceso',
-                'archivo_clinico.expedientes_recientes',
-                'archivo_clinico.expedientes_archivados',
-                'archivo_clinico.mostrar',
-                // Permisos para VER expedientes clínicos (solo lectura)
-                'emergencia.expedientes.ver',
-                'consulta_externa.expedientes.ver',
-                // Permiso para imprimir expedientes
-                'emergencia.expedientes.imprimir',
-                'consulta_externa.expedientes.imprimir',
-                // Permiso para VER la página de importación (sin importar)
-                'import.acceso',
-                // Permiso para VER usuarios (solo lectura, sin crear/editar/eliminar)
-                'usuarios.ver',
-            ])->get();
-            
-            $archivoRole->permissions()->sync($archivoPermissions->pluck('id'));
-            
-            $this->command->info('✅ Permisos específicos asignados al rol Archivo Clínico');
-        }
 
         $totalPermissions = collect($permissionsData)->flatten(1)->count();
         $this->command->info("✅ $totalPermissions permisos creados exitosamente");

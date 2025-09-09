@@ -9,7 +9,6 @@ class Role extends Model
 {
     use HasFactory;
 
-    // IDs fijos de roles críticos del sistema (NO CAMBIAR)
     public const CONSULTA_EXTERNA_ID = 1;
     public const EMERGENCIA_ID = 2;
     public const ADMINISTRADOR_ID = 5;
@@ -25,26 +24,17 @@ class Role extends Model
         'is_active' => 'boolean',
     ];
 
-    /**
-     * Relación con usuarios
-     */
     public function users()
     {
         return $this->hasMany(User::class);
     }
 
-    /**
-     * Relación con permisos
-     */
     public function permissions()
     {
         return $this->belongsToMany(Permission::class, 'permission_role')
                     ->withTimestamps();
     }
 
-    /**
-     * Roles predefinidos del sistema
-     */
     public static function getSystemRoles()
     {
         return [

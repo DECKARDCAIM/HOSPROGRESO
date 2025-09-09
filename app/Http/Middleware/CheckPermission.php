@@ -10,47 +10,51 @@ use Illuminate\Support\Facades\Cache;
 
 class CheckPermission
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
     public function handle(Request $request, Closure $next, string $permission): Response
     {
-        // Verificar si el usuario está autenticado
         if (!Auth::check()) {
             return redirect()->route('login');
         }
 
         $user = Auth::user();
 
-        // Verificar si hay múltiples permisos separados por | (OR lógico)
-        if (str_contains($permission, '|')) {
-            $permissions = explode('|', $permission);
-            $hasAnyPermission = false;
-            
-            foreach ($permissions as $perm) {
-                // Cache per-user permission checks for 60s to reduce DB
-                $has = Cache::tags(['permisos'])
-                    ->remember("perm:{$user->id}:".trim($perm), now()->addSeconds(60), fn() => $user->hasPermission(trim($perm)));
-                if ($has) {
-                    $hasAnyPermission = true;
-                    break;
-                }
+        if (method_exists($user, 'isAdmin') && $user->isAdmin()) {
+            return $next($request);
+        }
+
+        $perms = str_contains($permission, '|')
+            ? array_map('trim', explode('|', $permission))
+            : [trim($permission)];
+
+        $stampSource = $user->permissions_updated_at ?? $user->updated_at ?? now();
+        $stamp = is_object($stampSource) && method_exists($stampSource, 'timestamp')
+            ? $stampSource->timestamp
+            : strtotime((string) $stampSource);
+        $ns = sprintf('v2:u=%d:r=%s:t=%s', $user->id, $user->role_id ?? 'null', $stamp);
+
+        $ttl = now()->addSeconds(60);
+
+        $authorized = false;
+        foreach ($perms as $perm) {
+            if ($perm === '') {
+                continue;
             }
-            
-            if (!$hasAnyPermission) {
-                return redirect()->route('permission.denied')
-                               ->with('error', 'No tienes permiso para acceder a esta página.');
+            $key = "perm:{$ns}:p=" . urlencode($perm);
+
+            $has = Cache::tags(['permisos'])->remember($key, $ttl, function () use ($user, $perm) {
+                return (bool) $user->hasPermission($perm);
+            });
+
+            if ($has) {
+                $authorized = true;
+                break;
             }
-        } else {
-            // Verificar si el usuario tiene el permiso requerido (modo original)
-            $has = Cache::tags(['permisos'])
-                ->remember("perm:{$user->id}:{$permission}", now()->addSeconds(60), fn() => $user->hasPermission($permission));
-            if (!$has) {
-                return redirect()->route('permission.denied')
-                               ->with('error', 'No tienes permiso para acceder a esta página.');
-            }
+        }
+
+        if (!$authorized) {
+            return redirect()
+                ->route('permission.denied')
+                ->with('error', 'No tienes permiso para acceder a esta página.');
         }
 
         return $next($request);

@@ -50,10 +50,10 @@
             <button type="submit" class="btn bg-gradient-dark w-100 my-4 mb-2">Iniciar sesión</button>
         </div>
 
-        {{-- CREAR CUENTA --}}
-        <p class="mt-4 text-sm text-center">
+        {{-- REGISTRO DESHABILITADO --}}
+        {{-- <p class="mt-4 text-sm text-center">
             ¿No tiene una cuenta?
             <a href="{{ route('register') }}" class="sign-up-link text-decoration-none">Registrarse</a>
-        </p>
+        </p> --}}
     </form>
 @endsection

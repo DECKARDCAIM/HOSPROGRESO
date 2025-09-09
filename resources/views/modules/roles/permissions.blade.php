@@ -1,36 +1,46 @@
 @extends('layouts.panel')
 
 @section('title', 'Permisos del Rol: ' . $role->name)
+@section('breadcrumb', 'Permisos / ' . $role->name)
 
 @section('content')
 <div class="container-fluid">
     
-    <!-- Encabezado -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="text-primary mb-1">
-                <i class="fas fa-key"></i> Gestión de Permisos
-            </h2>
-            <p class="text-muted mb-0">Configurar permisos para el rol: <strong>{{ $role->name }}</strong></p>
-        </div>
-        <div>
-            <a href="{{ route('roles.index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left"></i> Volver a Roles
-            </a>
+    <!-- Header Principal -->
+    <div class="bg-brand-header text-white p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="text-white mb-1 fw-bold">
+                    <i class="bi bi-shield-lock"></i> Gestión de Permisos
+                </h2>
+                <p class="text-white-50 mb-0">Configurar permisos para el rol: <strong>{{ $role->name }}</strong></p>
+            </div>
+            <div>
+                <a href="{{ route('roles.index') }}" class="btn btn-light">
+                    <i class="bi bi-arrow-left"></i> Volver a Roles
+                </a>
+            </div>
         </div>
     </div>
 
     <!-- Información del rol -->
-    <div class="card mb-4">
+    <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <h5 class="card-title mb-1">{{ $role->name }}</h5>
-                    <p class="card-text text-muted mb-0">{{ $role->description ?? 'Sin descripción' }}</p>
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                            <i class="bi bi-person-badge fs-4"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-1 text-dark">{{ $role->name }}</h5>
+                            <p class="card-text text-muted mb-0">{{ $role->description ?? 'Sin descripción' }}</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-md-4 text-end">
-                    <span class="badge bg-{{ $role->is_active ? 'success' : 'danger' }} fs-6">
-                        {{ $role->is_active ? 'Activo' : 'Inactivo' }}
+                    <span class="badge bg-{{ $role->is_active ? 'brand-header' : 'danger' }} fs-6 px-3 py-2">
+                        {{ $role->is_active ? 'ACTIVO' : 'INACTIVO' }}
                     </span>
                 </div>
             </div>
@@ -43,27 +53,39 @@
         @method('PUT')
 
         <div class="row">
-            <!-- Botones de control -->
+            <!-- Controles Rápidos -->
             <div class="col-12 mb-4">
-                <div class="card bg-light">
+                <div class="card border-0 shadow-sm">
                     <div class="card-body">
-                        <h6 class="card-title text-primary mb-3">
-                            <i class="fas fa-tools"></i> Controles Rápidos
-                        </h6>
-                        <div class="d-flex gap-2 flex-wrap">
-                            <button type="button" class="btn btn-success btn-sm" id="selectAll">
-                                <i class="fas fa-check-double"></i> Activar Todos
-                            </button>
-                            <button type="button" class="btn btn-warning btn-sm" id="deselectAll">
-                                <i class="fas fa-times"></i> Desactivar Todos
-                            </button>
-                            <button type="button" class="btn btn-info btn-sm" id="toggleModules">
-                                <i class="fas fa-exchange-alt"></i> Alternar por Módulos
-                            </button>
-                            <div class="ms-auto">
-                                <small class="text-muted">
-                                    <strong id="selectedCount">0</strong> permisos seleccionados
-                                </small>
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <h6 class="text-secondary mb-3">
+                                    <i class="bi bi-gear"></i> Controles Rápidos
+                                </h6>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button type="button" class="btn bg-brand-header text-white" id="selectAll">
+                                        <i class="bi bi-check-all"></i> Activar Todos
+                                    </button>
+                                    <button type="button" class="btn bg-secondary text-white" id="deselectAll">
+                                        <i class="bi bi-x-square"></i> Desactivar Todos
+                                    </button>
+                                    <button type="button" class="btn bg-brand-header text-white" id="toggleModules">
+                                        <i class="bi bi-arrow-left-right"></i> Alternar por Módulos
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center justify-content-end h-100">
+                                    <div class="text-end">
+                                        <div class="d-flex align-items-center justify-content-end mb-2">
+                                            <i class="bi bi-check-circle text-primary me-2 fs-5"></i>
+                                            <span class="text-muted">Permisos seleccionados</span>
+                                        </div>
+                                        <h4 class="text-primary mb-0">
+                                            <strong id="selectedCount">0</strong>
+                                        </h4>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -73,11 +95,25 @@
             <!-- Permisos por módulo -->
             @foreach($permissions as $module => $perms)
             <div class="col-lg-6 col-xl-4 mb-4">
-                <div class="card h-100 shadow-sm module-card" data-module="{{ $module }}">
-                    <div class="card-header bg-gradient-primary text-white">
+                <div class="card h-100 border-0 shadow-sm module-card" data-module="{{ $module }}">
+                    <div class="card-header bg-brand-header text-white border-0">
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="d-flex align-items-center">
-                                <div class="form-check form-switch me-3">
+                                <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                    <i class="bi bi-shield-check fs-5"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-white mb-0 fw-bold">{{ $module }}</h6>
+                                    <small class="text-white-50">{{ $perms->count() }} permisos</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="text-end me-3">
+                                    <small class="module-status text-white-50 d-block" data-module="{{ $module }}">
+                                        <span class="selected-count">{{ $perms->filter(fn($p) => in_array($p->id, $rolePermissions))->count() }}</span>/{{ $perms->count() }} activos
+                                    </small>
+                                </div>
+                                <div class="form-check form-switch">
                                     <input 
                                         class="form-check-input module-toggle" 
                                         type="checkbox" 
@@ -85,23 +121,13 @@
                                         data-module="{{ $module }}"
                                         {{ $perms->filter(fn($p) => in_array($p->id, $rolePermissions))->count() > 0 ? 'checked' : '' }}
                                     >
-                                    <label class="form-check-label text-white fw-bold" for="module_{{ Str::slug($module) }}">
-                                        {{ $module }}
-                                    </label>
                                 </div>
-                            </div>
-                            <div class="text-end">
-                                <small class="text-white-50">{{ $perms->count() }} permisos</small>
-                                <br>
-                                <small class="module-status text-white" data-module="{{ $module }}">
-                                    <span class="selected-count">{{ $perms->filter(fn($p) => in_array($p->id, $rolePermissions))->count() }}</span>/{{ $perms->count() }} activos
-                                </small>
                             </div>
                         </div>
                     </div>
                     <div class="card-body permission-list" data-module="{{ $module }}">
                         @foreach($perms as $perm)
-                        <div class="form-check form-switch mb-3 permission-item">
+                        <div class="form-check form-switch mb-3 permission-item border-bottom pb-3">
                             <input 
                                 class="form-check-input permission-checkbox" 
                                 type="checkbox" 
@@ -111,23 +137,28 @@
                                 data-module="{{ $module }}"
                                 @checked(in_array($perm->id, $rolePermissions))
                             >
-                            <label class="form-check-label" for="perm{{ $perm->id }}">
-                                <strong>{{ $perm->name }}</strong>
-                                <br>
-                                <small class="text-muted">
-                                    <code>{{ $perm->slug }}</code>
-                                </small>
+                            <label class="form-check-label w-100" for="perm{{ $perm->id }}">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong class="text-dark">{{ $perm->name }}</strong>
+                                        <br>
+                                        <small class="text-muted">
+                                            <code class="bg-light px-2 py-1 rounded">{{ $perm->slug }}</code>
+                                        </small>
+                                    </div>
+                                    <i class="bi bi-info-circle text-primary ms-2"></i>
+                                </div>
                             </label>
                         </div>
                         @endforeach
                     </div>
-                    <div class="card-footer bg-light">
-                        <div class="d-flex justify-content-between">
-                            <button type="button" class="btn btn-outline-success btn-sm select-module" data-module="{{ $module }}">
-                                <i class="fas fa-check"></i> Activar Módulo
+                    <div class="card-footer bg-light border-0">
+                        <div class="d-flex justify-content-between gap-2">
+                            <button type="button" class="btn bg-brand-header text-white btn-sm flex-fill select-module" data-module="{{ $module }}">
+                                <i class="bi bi-check-circle"></i> Activar
                             </button>
-                            <button type="button" class="btn btn-outline-danger btn-sm deselect-module" data-module="{{ $module }}">
-                                <i class="fas fa-times"></i> Desactivar
+                            <button type="button" class="btn bg-secondary text-white btn-sm flex-fill deselect-module" data-module="{{ $module }}">
+                                <i class="bi bi-x-circle"></i> Desactivar
                             </button>
                         </div>
                     </div>
@@ -139,14 +170,20 @@
         <!-- Botón de guardar -->
         <div class="row">
             <div class="col-12">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <button type="submit" class="btn btn-primary btn-lg px-5">
-                            <i class="fas fa-save"></i> Guardar Cambios
-                        </button>
-                        <p class="text-muted mt-2 mb-0">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-4">
+                            <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <i class="bi bi-shield-check fs-1"></i>
+                            </div>
+                        </div>
+                        <h4 class="text-dark mb-3">Confirmar Cambios de Permisos</h4>
+                        <p class="text-muted mb-4">
                             Los cambios se aplicarán inmediatamente para todos los usuarios con este rol
                         </p>
+                        <button type="submit" class="btn bg-brand-header text-white btn-lg px-5 py-3">
+                            <i class="bi bi-check-circle-fill"></i> Guardar Cambios
+                        </button>
                     </div>
                 </div>
             </div>
@@ -341,22 +378,108 @@ document.addEventListener('DOMContentLoaded', function() {
 
 @push('styles')
 <style>
-.form-check-input:checked {
-    background-color: #28a745;
-    border-color: #28a745;
+
+/* Quitar definitivamente el azul de Bootstrap */
+input.form-check-input[type="checkbox"]:checked,
+input.form-check-input[type="checkbox"]:indeterminate {
+    background-image: none !important;
 }
 
-.card:hover {
-    transform: translateY(-2px);
-    transition: transform 0.2s ease-in-out;
+/* Switch normal */
+input.form-check-input[type="checkbox"]:checked {
+    background-color: #28a745 !important; /* verde */
 }
 
-.permission-checkbox {
-    transform: scale(1.2);
+/* Switch intermedio */
+input.form-check-input[type="checkbox"]:indeterminate {
+    background-color: #ffc107 !important; /* amarillo */
 }
 
-.form-check-label {
+/* Switch módulo */
+input.form-check-input.module-toggle[type="checkbox"]:checked {
+    background-color: #007bff !important; /* azul */
+}
+
+/* Switch permiso */
+input.form-check-input.permission-checkbox[type="checkbox"]:checked {
+    background-color: #764ba2 !important; /* morado */
+}
+
+
+/* ===== SWITCH BASE (override Bootstrap) ===== */
+.form-check-input {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    position: relative;
+    width: 3rem;
+    height: 1.6rem;
+    background: #ccc !important;
+    border-radius: 1rem;
     cursor: pointer;
+    outline: none;
+    border: none !important;
+    transition: background 0.3s ease;
+}
+
+/* Circulito interno */
+.form-check-input::before {
+    content: "";
+    position: absolute;
+    top: 0.15rem;
+    left: 0.15rem;
+    width: 1.3rem;
+    height: 1.3rem;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    z-index: 2;
+}
+
+/* Estado Activo */
+.form-check-input:checked {
+    background: #28a745 !important;  /* verde pista */
+    background-image: none !important; /* quitar fondo azul de bootstrap */
+}
+.form-check-input:checked::before {
+    transform: translateX(1.4rem);
+}
+
+/* Estado intermedio */
+.form-check-input:indeterminate {
+    background: #ffc107 !important;
+    background-image: none !important;
+}
+.form-check-input:indeterminate::before {
+    transform: translateX(0.7rem);
+}
+
+/* ===== VARIACIONES ===== */
+
+/* Switch de módulos */
+.module-toggle {
+    width: 3.5rem;
+    height: 1.8rem;
+}
+.module-toggle:checked {
+    background: #007bff !important;
+    background-image: none !important;
+}
+
+/* Switch de permisos */
+.permission-checkbox {
+    width: 2.5rem;
+    height: 1.2rem;
+}
+.permission-checkbox:checked {
+    background: #764ba2 !important;
+    background-image: none !important;
+}
+
+/* Animación rebote */
+.form-check-input,
+.form-check-input::before {
+    transition: all 0.35s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 </style>
 @endpush
