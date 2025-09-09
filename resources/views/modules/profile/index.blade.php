@@ -53,12 +53,12 @@
                         {{ $user->email }}
                     </p>
                     <p class="mb-0 font-weight-normal text-sm">
-                        <span class="badge bg-info">{{ $user->getRoleName() }}</span>
+                        <span class="badge bg-brand-header">{{ $user->getRoleName() }}</span>
                     </p>
                 </div>
             </div>
             <div class="col-lg-4 col-md-6 my-sm-auto ms-sm-auto me-sm-0 mt-3 text-end">
-                <a class="btn btn-sm bg-gradient-info me-1" href="{{ route('profile.edit') }}">
+                <a class="btn btn-sm bg-brand-header me-1" href="{{ route('profile.edit') }}">
                     <i class="fas fa-edit me-2"></i>Editar Perfil
                 </a>
             </div>
@@ -90,7 +90,7 @@
         <div class="col-lg-9 mt-lg-0 mt-4">
             <!-- Card Basic Info -->
             <div class="card card-profile" id="basic-info">
-                <div class="card-header bg-info pb-0 p-3">
+                <div class="card-header bg-brand-header pb-0 p-3">
                     <div class="row">
                         <div class="col-md-8 d-flex align-items-center">
                             <h6 class="mb-0 text-white">
@@ -129,7 +129,7 @@
 
             <!-- Card Sessions -->
             <div class="card mt-4" id="sessions">
-                <div class="card-header bg-info pb-3">
+                <div class="card-header bg-brand-header pb-3">
                     <h6 class="text-white mb-2">
                         <i class="fas fa-desktop me-2"></i>Sesiones Activas
                         <p class="text-sm mb-0">Esta es una lista de dispositivos que han iniciado sesión en tu cuenta. Revoca las sesiones que no reconozcas.</p>
