@@ -107,8 +107,37 @@ class SigsaReportExport implements
 
         // Edad calculada a la FECHA DE LA CONSULTA (no "ahora")
         $years  = $bd ? $bd->diffInYears($date) : 0;
-        $months = $bd ? $bd->diffInMonths($date) : 0;
-        $days   = $bd ? $bd->diffInDays($date) : 0;
+        
+        // Calcular meses restantes después de los años completos
+        $ageInMonths = 0;
+        if ($bd && $years > 0) {
+            $ageInMonths = $bd->copy()->addYears($years)->diffInMonths($date);
+        } elseif ($bd && $years == 0) {
+            $ageInMonths = $bd->diffInMonths($date);
+        }
+        
+        // Calcular días restantes después de los meses completos
+        $ageInDays = 0;
+        if ($bd) {
+            if ($years > 0) {
+                // Si tiene años, calcular días desde el último cumpleaños
+                $lastBirthday = $bd->copy()->addYears($years);
+                $ageInDays = $lastBirthday->diffInDays($date);
+            } elseif ($ageInMonths > 0) {
+                // Si solo tiene meses, calcular días desde el último "mes cumpleaños"
+                $lastMonthBirthday = $bd->copy()->addMonths($ageInMonths);
+                $ageInDays = $lastMonthBirthday->diffInDays($date);
+            } else {
+                // Si es menor a un mes, calcular días totales
+                $ageInDays = $bd->diffInDays($date);
+            }
+        }
+        
+        // Formatear DPI a 13 dígitos (rellenar con ceros a la izquierda si es necesario)
+        $dpi = $cr->cui ?? '';
+        if ($dpi && is_numeric($dpi)) {
+            $dpi = str_pad($dpi, 13, '0', STR_PAD_LEFT);
+        }
 
         return [
             // A-D: fecha completa/día/mes/año (devolvemos Carbon para formatear por columna)
@@ -120,7 +149,7 @@ class SigsaReportExport implements
             // Identificación
             (string)($cr->record_number ?? ''),   // E
             (string)($cr->id ?? ''),              // F
-            (string)($cr->cui ?? ''),             // G
+            $dpi,                                 // G - DPI formateado a 13 dígitos
             $cr->first_name ?? '',                // H
             $cr->second_name ?? '',               // I
             $cr->first_lastname ?? '',            // J
@@ -130,47 +159,42 @@ class SigsaReportExport implements
             // Personales
             $cr->sex->name ?? '',                 // M
             $bd ?: null,                          // N (Carbon o null)
-            $years >= 1 ? $years : '',            // O
-            $years < 1 && $months >= 1 ? $months : '', // P
-            $months < 1 ? $days : '',             // Q
+            $years,                               // O - Edad en años
+            $ageInMonths,                         // P - Edad en meses
+            $ageInDays,                           // Q - Edad en días
             $cr->civilStatus->name ?? '',         // R
             $cr->ethnicity->name ?? '',           // S
             $cr->linguisticCommunity->name ?? '', // T
-            $cr->disabilities?->pluck('name')->join(', ') ?: '', // U
+            $cr->disabilities?->pluck('name')->join(', ') ?: '', // U - Discapacidades
 
             // Ubicación
             $cr->country->name ?? 'Guatemala',    // V
             $cr->department->name ?? '',          // W
             $cr->municipality->name ?? '',        // X
             $cr->specific_residence ?? '',        // Y
-            $cr->phone ?? '',                     // Z
+            $cr->phone ?? '',                     // Z - Teléfono
 
-            // Clínica
+            // Clínica (removidos: control type, CIE-10, destino ref, motivo ref, observaciones)
             ucfirst($c->attention_type ?? ''),    // AA
             $c->is_new_patient ? 'Sí' : 'No',     // AB
             $c->specialty->name ?? '',            // AC
             $c->doctor->full_name ?? '',          // AD
-            $c->controlType->name ?? '',          // AE
-            $c->medical_diagnosis ?? '',          // AF
-            $c->diagnosis_cie10_code ?? '',       // AG
-            $c->prescribed_treatment ?? '',       // AH
-            $c->medications?->pluck('name')->join(', ') ?: '',     // AI
-            $c->laboratoryTests?->pluck('name')->join(', ') ?: '',  // AJ
-            $c->exams?->pluck('name')->join(', ') ?: '',            // AK
+            $c->medical_diagnosis ?? '',          // AE - Diagnóstico (movido)
+            $c->prescribed_treatment ?? '',       // AF - Tratamiento (movido)
+            $c->medications?->pluck('name')->join(', ') ?: '',     // AG - Medicamentos (movido)
+            $c->laboratoryTests?->pluck('name')->join(', ') ?: '',  // AH - Laboratorio (movido)
+            $c->exams?->pluck('name')->join(', ') ?: '',            // AI - Exámenes (movido)
 
-            // Referencia/seguimiento
-            $c->was_referred ? 'Sí' : 'No',       // AL
-            $c->reference_destination ?? '',      // AM
-            $c->reference_reason ?? '',           // AN
-            $c->comes_referred ? 'Sí' : 'No',     // AO
-            $c->comes_counter_referred ? 'Sí' : 'No', // AP
-            $c->has_igss ? 'Sí' : 'No',           // AQ
-            $c->gestation_weeks ?? '',            // AR
+            // Referencia/seguimiento (removidos: destino ref, motivo ref)
+            $c->was_referred ? 'Sí' : 'No',       // AJ
+            $c->comes_referred ? 'Sí' : 'No',     // AK
+            $c->comes_counter_referred ? 'Sí' : 'No', // AL
+            $c->has_igss ? 'Sí' : 'No',           // AM
+            $c->gestation_weeks ?? '',            // AN
 
-            // Adicional
-            $cr->allergies?->pluck('name')->join(', ') ?: '', // AS
-            $c->sigsa_observations ?? '',          // AT
-            $c->created_at,                         // AU (Carbon)
+            // Adicional (incluye alergias del expediente clínico)
+            $cr->allergies?->pluck('name')->join(', ') ?: '', // AO - Alergias
+            $c->created_at,                         // AP - Fecha Registro (movido)
         ];
     }
 
@@ -193,11 +217,11 @@ class SigsaReportExport implements
         return [
             'A'  => NumberFormat::FORMAT_DATE_DDMMYYYY,
             'N'  => NumberFormat::FORMAT_DATE_DDMMYYYY,
-            'AU' => NumberFormat::FORMAT_DATE_DATETIME,
+            'AP' => NumberFormat::FORMAT_DATE_DATETIME, // Movido de AU a AP
             // Texto para evitar notación científica / pérdida de ceros
             'E'  => NumberFormat::FORMAT_TEXT,
             'F'  => NumberFormat::FORMAT_TEXT,
-            'G'  => NumberFormat::FORMAT_TEXT,
+            'G'  => NumberFormat::FORMAT_TEXT, // DPI formateado
         ];
     }
 
@@ -222,12 +246,12 @@ class SigsaReportExport implements
                     'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1E3A8A']],
                 ]);
 
-                // Info de reporte (derecha)
+                // Info de reporte (derecha) - Movido a columnas más a la derecha
                 $total = $this->estimatedTotal ?: max(0, $sheet->getHighestRow() - 10);
-                $sheet->setCellValue('AO1', 'Generado por: ' . ($this->filters['user']->name ?? 'Sistema'));
-                $sheet->setCellValue('AO2', 'Generado el: ' . now()->format('d/m/Y H:i'));
-                $sheet->setCellValue('AO3', 'Total de Registros: ' . number_format($total));
-                $sheet->getStyle('AO1:AU3')->applyFromArray([
+                $sheet->setCellValue('AM1', 'Generado por: ' . ($this->filters['user']->name ?? 'Sistema'));
+                $sheet->setCellValue('AM2', 'Generado el: ' . now()->format('d/m/Y H:i'));
+                $sheet->setCellValue('AM3', 'Total de Registros: ' . number_format($total));
+                $sheet->getStyle('AM1:AP3')->applyFromArray([
                     'font' => ['bold' => true, 'size' => 10, 'color' => ['rgb' => '1E3A8A']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT, 'vertical' => Alignment::VERTICAL_CENTER],
                     'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'E0F2FE']],
@@ -235,8 +259,8 @@ class SigsaReportExport implements
 
                 // Título
                 $sheet->setCellValue('A5', 'REPORTE DETALLADO DE CONSULTAS MÉDICAS');
-                $sheet->mergeCells('A5:AU5');
-                $sheet->getStyle('A5:AU5')->applyFromArray([
+                $sheet->mergeCells('A5:AP5');
+                $sheet->getStyle('A5:AP5')->applyFromArray([
                     'font' => ['bold' => true, 'size' => 20, 'color' => ['rgb' => 'FFFFFF']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
                     'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '3B82F6']],
@@ -249,8 +273,8 @@ class SigsaReportExport implements
                     $this->filters['end_date']->format('d/m/Y')
                 );
                 $sheet->setCellValue('A6', $periodo);
-                $sheet->mergeCells('A6:AU6');
-                $sheet->getStyle('A6:AU6')->applyFromArray([
+                $sheet->mergeCells('A6:AP6');
+                $sheet->getStyle('A6:AP6')->applyFromArray([
                     'font' => ['bold' => true, 'size' => 13, 'color' => ['rgb' => '1E3A8A']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
                     'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'DBEAFE']],
@@ -262,31 +286,31 @@ class SigsaReportExport implements
                 if (!empty($this->filters['specialty_id']))  $parts[] = 'Especialidad ID: ' . $this->filters['specialty_id'];
                 if (!empty($this->filters['control_type_id'])) $parts[] = 'Tipo Control ID: ' . $this->filters['control_type_id'];
                 $sheet->setCellValue('A7', 'Filtros: ' . (count($parts) ? implode(' | ', $parts) : 'Ninguno'));
-                $sheet->mergeCells('A7:AU7');
-                $sheet->getStyle('A7:AU7')->applyFromArray([
+                $sheet->mergeCells('A7:AP7');
+                $sheet->getStyle('A7:AP7')->applyFromArray([
                     'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => '374151']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
                     'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F3F4F6']],
                 ]);
 
                 // ====== Encabezados (filas 9 y 10) ======
-                // Grupo principal
+                // Grupo principal - Actualizado según nuevos campos
                 $sheet->setCellValue('A9',  'FECHA DE CONSULTA');
                 $sheet->setCellValue('E9',  'IDENTIFICACIÓN DEL PACIENTE');
                 $sheet->setCellValue('M9',  'DATOS PERSONALES');
                 $sheet->setCellValue('V9',  'UBICACIÓN GEOGRÁFICA');
                 $sheet->setCellValue('AA9', 'INFORMACIÓN CLÍNICA');
-                $sheet->setCellValue('AL9', 'REFERENCIAS Y SEGUIMIENTO');
-                $sheet->setCellValue('AS9', 'INFORMACIÓN ADICIONAL');
+                $sheet->setCellValue('AJ9', 'REFERENCIAS Y SEGUIMIENTO');
+                $sheet->setCellValue('AO9', 'INFORMACIÓN ADICIONAL');
 
-                foreach (['A9:D9','E9:L9','M9:U9','V9:Z9','AA9:AK9','AL9:AR9','AS9:AU9'] as $range) {
+                foreach (['A9:D9','E9:L9','M9:U9','V9:Z9','AA9:AI9','AJ9:AN9','AO9:AP9'] as $range) {
                     $sheet->mergeCells($range);
                 }
 
-                // Encabezados específicos (fila 10)
+                // Encabezados específicos (fila 10) - Actualizados según nuevos campos
                 $headers = [
                     'A10' => 'Fecha', 'B10' => 'Día', 'C10' => 'Mes', 'D10' => 'Año',
-                    'E10' => 'No. Expediente', 'F10' => 'No. Historia', 'G10' => 'CUI/DPI',
+                    'E10' => 'No. Expediente', 'F10' => 'No. Historia', 'G10' => 'DPI (13 dígitos)',
                     'H10' => 'Primer Nombre', 'I10' => 'Segundo Nombre', 'J10' => 'Primer Apellido',
                     'K10' => 'Segundo Apellido', 'L10' => 'Apellido Casada',
                     'M10' => 'Sexo', 'N10' => 'Fecha Nac.', 'O10' => 'Edad (años)',
@@ -295,27 +319,25 @@ class SigsaReportExport implements
                     'V10' => 'País', 'W10' => 'Departamento', 'X10' => 'Municipio',
                     'Y10' => 'Dirección', 'Z10' => 'Teléfono',
                     'AA10' => 'Tipo Consulta', 'AB10' => 'Paciente Nuevo', 'AC10' => 'Especialidad',
-                    'AD10' => 'Doctor', 'AE10' => 'Tipo Control', 'AF10' => 'Diagnóstico',
-                    'AG10' => 'CIE-10', 'AH10' => 'Tratamiento', 'AI10' => 'Medicamentos',
-                    'AJ10' => 'Lab. Laboratorio', 'AK10' => 'Exámenes',
-                    'AL10' => 'Fue Referido', 'AM10' => 'Destino Ref.', 'AN10' => 'Motivo Ref.',
-                    'AO10' => 'Viene Ref.', 'AP10' => 'Contra Ref.', 'AQ10' => 'Derecho IGSS',
-                    'AR10' => 'Sem. Gestación',
-                    'AS10' => 'Alergias', 'AT10' => 'Observaciones', 'AU10' => 'Fecha Registro',
+                    'AD10' => 'Doctor', 'AE10' => 'Diagnóstico', 'AF10' => 'Tratamiento',
+                    'AG10' => 'Medicamentos', 'AH10' => 'Lab. Laboratorio', 'AI10' => 'Exámenes',
+                    'AJ10' => 'Fue Referido', 'AK10' => 'Viene Ref.', 'AL10' => 'Contra Ref.',
+                    'AM10' => 'Derecho IGSS', 'AN10' => 'Sem. Gestación',
+                    'AO10' => 'Alergias', 'AP10' => 'Fecha Registro',
                 ];
                 foreach ($headers as $cell => $text) {
                     $sheet->setCellValue($cell, $text);
                 }
 
-                // Estilos de encabezados
-                $sheet->getStyle('A9:AU9')->applyFromArray([
+                // Estilos de encabezados - Actualizado para nuevas columnas
+                $sheet->getStyle('A9:AP9')->applyFromArray([
                     'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
                     'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => '1E3A8A']]],
                     'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1E40AF']],
                 ]);
 
-                $sheet->getStyle('A10:AU10')->applyFromArray([
+                $sheet->getStyle('A10:AP10')->applyFromArray([
                     'font' => ['bold' => true, 'size' => 10, 'color' => ['rgb' => 'FFFFFF']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
                     'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '1E3A8A']]],
@@ -325,25 +347,25 @@ class SigsaReportExport implements
                 // ====== Estilo del cuerpo ======
                 $last = $sheet->getHighestRow();
                 if ($last >= 11) {
-                    $sheet->getStyle("A11:AU{$last}")->applyFromArray([
+                    $sheet->getStyle("A11:AP{$last}")->applyFromArray([
                         'font' => ['size' => 9, 'color' => ['rgb' => '374151']],
                         'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
                         'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'D1D5DB']]],
                     ]);
 
                     // Centrar algunas columnas
-                    foreach (['B','C','D','M','O','P','Q','AB','AL','AO','AP','AQ'] as $col) {
+                    foreach (['B','C','D','M','O','P','Q','AB','AJ','AK','AL','AM'] as $col) {
                         $sheet->getStyle("{$col}11:{$col}{$last}")
                               ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                     }
                 }
 
-                // ====== Ancho de columnas (sin autosize) ======
+                // ====== Ancho de columnas (sin autosize) - Actualizado para nuevas columnas ======
                 $widths = [
                     'A'=>14,'B'=>6,'C'=>6,'D'=>8,'E'=>12,'F'=>12,'G'=>18,'H'=>15,'I'=>15,'J'=>15,'K'=>15,'L'=>15,
                     'M'=>10,'N'=>12,'O'=>8,'P'=>8,'Q'=>8,'R'=>15,'S'=>16,'T'=>18,'U'=>20,'V'=>14,'W'=>16,'X'=>16,
-                    'Y'=>26,'Z'=>14,'AA'=>14,'AB'=>12,'AC'=>18,'AD'=>20,'AE'=>16,'AF'=>28,'AG'=>12,'AH'=>24,'AI'=>24,
-                    'AJ'=>20,'AK'=>20,'AL'=>12,'AM'=>18,'AN'=>20,'AO'=>12,'AP'=>12,'AQ'=>12,'AR'=>12,'AS'=>20,'AT'=>26,'AU'=>18,
+                    'Y'=>26,'Z'=>14,'AA'=>14,'AB'=>12,'AC'=>18,'AD'=>20,'AE'=>28,'AF'=>24,'AG'=>24,'AH'=>20,'AI'=>20,
+                    'AJ'=>12,'AK'=>12,'AL'=>12,'AM'=>12,'AN'=>12,'AO'=>20,'AP'=>18,
                 ];
                 foreach ($widths as $col => $w) {
                     $sheet->getColumnDimension($col)->setWidth($w);

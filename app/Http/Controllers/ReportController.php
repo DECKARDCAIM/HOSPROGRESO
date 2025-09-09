@@ -45,7 +45,7 @@ class ReportController extends Controller
         GenerateSigsaReportJob::dispatch($request->only(['start_date','end_date','attention_type','specialty_id','control_type_id']), auth()->id());
 
         return back()->with('toast', [
-            'type' => 'info',
+            'type' => 'success',
             'title' => 'Reporte en cola',
             'message' => 'Tu reporte SIGSA 3H fue encolado. Recibirás notificación cuando esté listo.'
         ]);
@@ -98,6 +98,7 @@ class ReportController extends Controller
             'clinicalRecord.ethnicity', 
             'clinicalRecord.linguisticCommunity',
             'clinicalRecord.disabilities',
+            'clinicalRecord.allergies',
             'clinicalRecord.country',
             'clinicalRecord.department',
             'clinicalRecord.municipality',
@@ -176,13 +177,18 @@ class ReportController extends Controller
                 'generated_at' => now()
             ];
 
-            session()->flash('toast', [
-                'type' => 'success',
-                'title' => 'Reporte Generado',
-                'message' => 'El reporte SIGSA 3H se ha generado exitosamente con ' . number_format($consultations->count()) . ' registros.'
+            // Crear el archivo Excel
+            $excelFile = Excel::download(new SigsaReportExport($reportData), $fileName);
+            
+            // Guardar información del reporte generado en sesión para mostrar toast al regresar
+            session()->flash('report_generated', [
+                'success' => true,
+                'message' => 'El reporte SIGSA 3H se ha generado exitosamente con ' . number_format($consultations->count()) . ' registros.',
+                'filename' => $fileName,
+                'records_count' => $consultations->count()
             ]);
-
-            return Excel::download(new SigsaReportExport($reportData), $fileName);
+            
+            return $excelFile;
 
         } catch (\Exception $e) {
             return back()->with('toast', [
@@ -209,7 +215,18 @@ class ReportController extends Controller
             $startDate = Carbon::parse($request->start_date);
             $endDate = Carbon::parse($request->end_date);
             
-            $query = MedicalConsultation::with(['clinicalRecord', 'doctor', 'specialty'])
+            $query = MedicalConsultation::with([
+                'clinicalRecord.sex',
+                'clinicalRecord.ethnicity', 
+                'clinicalRecord.linguisticCommunity',
+                'clinicalRecord.disabilities',
+                'clinicalRecord.allergies',
+                'clinicalRecord.country',
+                'clinicalRecord.department',
+                'clinicalRecord.municipality',
+                'doctor', 
+                'specialty'
+            ])
                 ->whereBetween('consultation_date', [$startDate->startOfDay(), $endDate->endOfDay()])
                 ->where('status', 'finalizada');
 
@@ -306,5 +323,25 @@ class ReportController extends Controller
                 'referrals' => 0
             ]);
         }
+    }
+
+    /**
+     * Mostrar toast de reporte generado cuando el usuario regresa a la página
+     */
+    public function showReportToast()
+    {
+        if (session('report_generated')) {
+            $reportData = session('report_generated');
+            return response()->json([
+                'success' => true,
+                'toast' => [
+                    'type' => 'success',
+                    'title' => 'Reporte Generado',
+                    'message' => $reportData['message']
+                ]
+            ]);
+        }
+        
+        return response()->json(['success' => false]);
     }
 }
