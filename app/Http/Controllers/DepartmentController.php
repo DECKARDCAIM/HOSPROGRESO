@@ -123,7 +123,7 @@ class DepartmentController extends Controller
         Cache::tags(['departamentos', 'municipios'])->flush();
 
         return redirect()->route('departamentos.index')->with('toast', [
-            'type' => 'info',
+            'type' => 'success',
             'title' => 'Actualización Éxitosa',
             'message' => 'El departamento ' . $department->name . ' se ha actualizado correctamente.'
         ]);

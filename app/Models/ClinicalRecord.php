@@ -19,7 +19,7 @@ class ClinicalRecord extends Model
         'first_lastname',
         'second_lastname',
         'married_lastname',
-        'cui', // DPI - Campo opcional
+        'cui',
         'phone',
         'email',
         'sex_id',
@@ -96,6 +96,7 @@ class ClinicalRecord extends Model
         return $this->hasMany(Appointment::class);
     }
 
+
     public function getFullNameAttribute()
     {
         $names = array_filter([
@@ -118,27 +119,19 @@ class ClinicalRecord extends Model
         return Carbon::parse($this->birth_date)->age;
     }
 
-    // Método para obtener la última consulta médica
     public function getLastConsultationAttribute()
     {
         return $this->medicalConsultations()->latest('consultation_date')->first();
     }
 
-    // Método para obtener consultas por estado
     public function getConsultationsByStatus($status)
     {
         return $this->medicalConsultations()->where('status', $status)->get();
     }
 
-    // Método para obtener el total de consultas
     public function getTotalConsultationsAttribute()
     {
         return $this->medicalConsultations()->count();
     }
 
-    // Relación con seguimiento de archivo clínico
-    public function clinicalFileTracking()
-    {
-        return $this->hasOne(ClinicalFileTracking::class);
-    }
 } 

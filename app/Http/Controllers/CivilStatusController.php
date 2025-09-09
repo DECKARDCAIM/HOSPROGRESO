@@ -79,7 +79,7 @@ class CivilStatusController extends Controller
         return redirect()
             ->route('civil-statuses.index')
             ->with('toast', [
-                'type' => 'info',
+                'type' => 'success',
                 'title' => 'Actualización Éxitosa',
                 'message' => 'El estado civil ' . $civilStatus->name . ' se ha actualizado correctamente.'
             ]);

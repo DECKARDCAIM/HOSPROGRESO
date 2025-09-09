@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Allergy;
 use App\Models\CivilStatus;
-use App\Models\ClinicalFileTracking;
 use App\Models\ClinicalRecord;
 use App\Models\Country;
 use App\Models\Department;
@@ -313,10 +312,6 @@ class ClinicalRecordController extends Controller
                 }
             }
 
-            ClinicalFileTracking::create([
-                'clinical_record_id' => $clinicalRecord->id
-            ]);
-
             DB::commit();
 
             Cache::tags(['expedientes'])->flush();
@@ -392,7 +387,7 @@ class ClinicalRecordController extends Controller
         return redirect()
             ->route('clinical-records.index')
             ->with('toast', [
-                'type' => 'info',
+                'type' => 'success',
                 'title' => 'Actualización Éxitosa',
                 'message' => 'El expediente clínico ' . $clinicalRecord->record_number . ' se ha actualizado correctamente.'
             ]);
@@ -409,7 +404,28 @@ class ClinicalRecordController extends Controller
             'appointments.scheduleType'
         ])->findOrFail($id);
 
-        return view('modules.clinical_records.show', compact('clinicalRecord'));
+        // Obtener doctores y especialidades para los modales
+        $doctors = Cache::tags(['doctores','catalogos'])->remember('doctores:active:full:v1', now()->addHours(6), function () {
+            return \App\Models\Doctor::with('specialty:id,name')
+                ->where('is_active', true)
+                ->orderBy('first_name')
+                ->orderBy('first_lastname')
+                ->get();
+        });
+
+            $specialties = Cache::tags(['especialidades','catalogos'])->remember(
+                'especialidades:select:v2',
+                now()->addHours(12),
+                fn()=> \App\Models\Specialty::where('is_active', true)->orderBy('name')->get(['id','name'])
+            );
+
+            $companionRelationships = Cache::tags(['relaciones_acompanantes','catalogos'])->remember(
+                'relaciones_acompanantes:select:v1',
+                now()->addHours(12),
+                fn()=> \App\Models\CompanionRelationship::where('is_active', true)->orderBy('name')->get(['id','name'])
+            );
+
+            return view('modules.clinical_records.show', compact('clinicalRecord', 'doctors', 'specialties', 'companionRelationships'));
     }
 
     public function printPdf(ClinicalRecord $clinicalRecord)

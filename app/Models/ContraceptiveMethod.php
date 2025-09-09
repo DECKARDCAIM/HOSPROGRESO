@@ -17,17 +17,11 @@ class ContraceptiveMethod extends Model
         'is_active' => 'boolean',
     ];
 
-    /**
-     * Scope para obtener solo los métodos activos
-     */
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
-    /**
-     * Obtener la etiqueta del tipo de método
-     */
     public function getTypeLabel()
     {
         $labels = [

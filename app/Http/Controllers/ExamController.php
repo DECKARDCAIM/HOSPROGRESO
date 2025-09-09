@@ -76,7 +76,7 @@ class ExamController extends Controller
         return redirect()
             ->route('exams.index')
             ->with('toast', [
-                'type' => 'info',
+                'type' => 'success',
                 'title' => 'Actualización Éxitosa',
                 'message' => 'El examen ' . $exam->name . ' se ha actualizado correctamente.'
             ]);

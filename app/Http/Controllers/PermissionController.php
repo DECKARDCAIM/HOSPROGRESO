@@ -2,30 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Role;
 use App\Models\Permission;
+use App\Models\Role;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class PermissionController extends Controller
 {
-    /**
-     * Mostrar formulario para asignar permisos a un rol
-     */
     public function edit(Role $role)
     {
-        // Obtener todos los permisos agrupados por módulo (cache 12h)
-        $permissions = Cache::tags(['permisos','catalogos'])->remember('permisos:all:v1', now()->addHours(12), fn() => Permission::all())->groupBy('module');
-        
-        // Obtener los IDs de permisos que ya tiene el rol
+        $permissions = Cache::tags(['permisos'])->remember('permisos:all:v1', now()->addHours(12), fn() => Permission::all())->groupBy('module');
+
         $rolePermissions = $role->permissions->pluck('id')->toArray();
-        
+
         return view('modules.roles.permissions', compact('role', 'permissions', 'rolePermissions'));
     }
 
-    /**
-     * Actualizar permisos de un rol
-     */
     public function update(Request $request, Role $role)
     {
         $request->validate([
@@ -33,11 +25,17 @@ class PermissionController extends Controller
             'permissions.*' => 'exists:permissions,id'
         ]);
 
-        // Sincronizar permisos (esto removerá los no seleccionados y agregará los nuevos)
         $role->permissions()->sync($request->permissions ?? []);
 
+        // Limpiar cache de permisos
+        \Illuminate\Support\Facades\Cache::tags(['permisos'])->flush();
+
         return redirect()
-            ->route('roles.index')
-            ->with('success', "Permisos actualizados correctamente para el rol: {$role->name}");
+            ->route('roles.permissions.edit', $role)
+            ->with('toast', [
+                'type'    => 'success',
+                'title'   => 'Permisos Actualizados',
+                'message' => "Los permisos del rol <strong>{$role->name}</strong> se han actualizado correctamente."
+            ]);
     }
 }

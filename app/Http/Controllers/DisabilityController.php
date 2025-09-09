@@ -76,7 +76,7 @@ class DisabilityController extends Controller
         return redirect()
             ->route('disabilities.index')
             ->with('toast', [
-                'type' => 'info',
+                'type' => 'success',
                 'title' => 'Actualización Éxitosa',
                 'message' => 'La discapacidad ' . $disability->name . ' se ha actualizado correctamente.'
             ]);

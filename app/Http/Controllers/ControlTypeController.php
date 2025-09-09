@@ -99,7 +99,7 @@ class ControlTypeController extends Controller
         Cache::tags(['tipos_control'])->flush();
 
         return redirect()->route('control-types.index')->with('toast', [
-            'type' => 'info',
+            'type' => 'success',
             'title' => 'Actualización Éxitosa',
             'message' => 'El tipo de control ' . $controlType->name . ' se ha actualizado correctamente.'
         ]);

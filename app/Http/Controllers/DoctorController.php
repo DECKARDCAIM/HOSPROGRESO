@@ -99,7 +99,14 @@ class DoctorController extends Controller
 
     public function update(Request $request, Doctor $doctor)
     {
-        $request->validate([
+        // Verificar si el doctor está actualmente suplantando a otro
+        $isSubstituting = \App\Models\DoctorSubstitution::where('substitute_doctor_id', $doctor->id)
+            ->where('status', \App\Models\DoctorSubstitution::STATUS_ACTIVE)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->exists();
+
+        $validationRules = [
             'first_name' => 'required|string|max:255',
             'second_name' => 'nullable|string|max:255',
             'third_name' => 'nullable|string|max:255',
@@ -109,19 +116,32 @@ class DoctorController extends Controller
             'cui' => 'required|string|max:13|unique:doctors,cui,' . $doctor->id,
             'license_number' => 'required|string|max:255|unique:doctors,license_number,' . $doctor->id,
             'specialty_id' => 'required|exists:specialties,id',
-            'schedule_type_id' => 'required|exists:schedule_types,id',
-        ]);
+        ];
+
+        // Si el doctor está suplantando, el horario es opcional
+        if (!$isSubstituting) {
+            $validationRules['schedule_type_id'] = 'required|exists:schedule_types,id';
+        } else {
+            $validationRules['schedule_type_id'] = 'nullable|exists:schedule_types,id';
+        }
+
+        $request->validate($validationRules);
 
         $doctor->update($request->all());
 
         Cache::tags(['doctores'])->flush();
 
+        $message = 'El doctor ' . $doctor->first_name . ' ' . $doctor->first_lastname . ' se ha actualizado correctamente.';
+        if ($isSubstituting && !$request->schedule_type_id) {
+            $message .= ' Nota: El horario fue removido porque el doctor está actualmente suplantando a otro doctor.';
+        }
+
         return redirect()
             ->route('doctors.index')
             ->with('toast', [
-                'type' => 'info',
+                'type' => 'success',
                 'title' => 'Actualización Éxitosa',
-                'message' => 'El doctor ' . $doctor->first_name . ' ' . $doctor->first_lastname . ' se ha actualizado correctamente.'
+                'message' => $message
             ]);
     }
 

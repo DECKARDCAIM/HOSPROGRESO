@@ -112,7 +112,7 @@ class CountryController extends Controller
         Cache::tags(['paises','departamentos','municipios'])->flush();
 
         return redirect()->route('paises.index')->with('toast', [
-            'type' => 'info',
+            'type' => 'success',
             'title' => 'Actualización Éxitosa',
             'message' => 'El país ' . $country->name . ' se ha actualizado correctamente.'
         ]);

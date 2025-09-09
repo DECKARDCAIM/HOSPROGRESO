@@ -76,7 +76,7 @@ class SexController extends Controller
         return redirect()
             ->route('sexes.index')
             ->with('toast', [
-                'type' => 'info',
+                'type' => 'success',
                 'title' => 'Actualización Éxitosa',
                 'message' => 'El sexo ' . $sex->name . ' se ha actualizado correctamente.'
             ]);

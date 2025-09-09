@@ -129,7 +129,7 @@ class ContraceptiveMethodController extends Controller
         return redirect()
             ->route('contraceptive-methods.index')
             ->with('toast', [
-                'type' => 'info',
+                'type' => 'success',
                 'title' => 'Actualización Éxitosa',
                 'message' => 'El método ' . $contraceptiveMethod->name . ' se ha actualizado correctamente.'
             ]);

@@ -48,9 +48,6 @@ class TemporaryPatient extends Model
         'import_errors' => 'array'
     ];
 
-    /**
-     * Obtener el nombre completo del paciente
-     */
     public function getFullNameAttribute()
     {
         $names = array_filter([
@@ -68,25 +65,16 @@ class TemporaryPatient extends Model
         return implode(' ', $names) . ' ' . implode(' ', $lastnames);
     }
 
-    /**
-     * Scope para obtener solo pacientes no procesados
-     */
     public function scopeNotProcessed($query)
     {
         return $query->where('is_processed', false);
     }
 
-    /**
-     * Scope para buscar por número de registro
-     */
     public function scopeByRegistrationNumber($query, $registrationNumber)
     {
         return $query->where('registration_number', $registrationNumber);
     }
 
-    /**
-     * Marcar como procesado
-     */
     public function markAsProcessed()
     {
         $this->update(['is_processed' => true]);

@@ -11,7 +11,6 @@ class Country extends Model
 
     protected $fillable = ['name', 'description'];
 
-    // Relación: un país tiene muchos departamentos
     public function departments()
     {
         return $this->hasMany(Department::class);

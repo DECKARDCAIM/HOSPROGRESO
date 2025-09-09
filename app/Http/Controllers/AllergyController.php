@@ -76,7 +76,7 @@ class AllergyController extends Controller
         return redirect()
             ->route('allergies.index')
             ->with('toast', [
-                'type' => 'info',
+                'type' => 'success',
                 'title' => 'Actualización Éxitosa',
                 'message' => 'La alergia ' . $allergy->name . ' se ha actualizado correctamente.'
             ]);

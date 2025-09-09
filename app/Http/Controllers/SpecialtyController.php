@@ -95,7 +95,7 @@ class SpecialtyController extends Controller
         Cache::tags(['especialidades'])->flush();
 
         return redirect()->route('especialidades.index')->with('toast', [
-            'type' => 'info',
+            'type' => 'success',
             'title' => 'Actualización Éxitosa',
             'message' => 'La especialidad ' . $specialty->name . ' se ha actualizado correctamente.'
         ]);

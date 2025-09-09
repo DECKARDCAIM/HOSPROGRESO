@@ -75,7 +75,7 @@ class EthnicityController extends Controller
         return redirect()
             ->route('ethnicities.index')
             ->with('toast', [
-                'type' => 'info',
+                'type' => 'success',
                 'title' => 'Actualización Éxitosa',
                 'message' => 'La etnia ' . $ethnicity->name . ' se ha actualizado correctamente.'
             ]);

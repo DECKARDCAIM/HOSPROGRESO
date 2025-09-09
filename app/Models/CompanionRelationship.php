@@ -16,9 +16,6 @@ class CompanionRelationship extends Model
         'is_active' => 'boolean',
     ];
 
-    /**
-     * Scope para obtener solo las relaciones activas
-     */
     public function scopeActive($query)
     {
         return $query->where('is_active', true);

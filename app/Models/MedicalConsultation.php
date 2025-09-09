@@ -17,7 +17,6 @@ class MedicalConsultation extends Model
         'consultation_reason',
         'medical_diagnosis',
         'nursing_note',
-        'admission_note',
         'prescribed_medications',
         'reference_contrareference',
         'status',
@@ -80,7 +79,11 @@ class MedicalConsultation extends Model
         // Campos de Estados Finales
         'hospital_service',
         'death_date',
-        'death_cause'
+        'death_cause',
+        'substitution_id',
+        'is_substituted',
+        'substituted_at',
+        'returned_to_original_at'
     ];
 
     protected $casts = [
@@ -107,6 +110,9 @@ class MedicalConsultation extends Model
         'current_height' => 'decimal:1',
         'head_circumference' => 'decimal:1',
         'gestation_weeks' => 'integer',
+        'is_substituted' => 'boolean',
+        'substituted_at' => 'datetime',
+        'returned_to_original_at' => 'datetime',
     ];
 
     // Estados de consulta
@@ -140,9 +146,19 @@ class MedicalConsultation extends Model
         return $this->belongsTo(Specialty::class);
     }
 
+    public function substitution()
+    {
+        return $this->belongsTo(DoctorSubstitution::class);
+    }
+
     public function controlType()
     {
         return $this->belongsTo(ControlType::class);
+    }
+
+    public function companionRelationship()
+    {
+        return $this->belongsTo(CompanionRelationship::class, 'companion_relationship_id');
     }
 
     public function laboratoryTests()
@@ -204,10 +220,6 @@ class MedicalConsultation extends Model
     }
 
     // Relaciones con catálogos
-    public function companionRelationship()
-    {
-        return $this->belongsTo(CompanionRelationship::class, 'companion_relationship_id');
-    }
 
     public function guardianRelationship()
     {

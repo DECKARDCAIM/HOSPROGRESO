@@ -76,7 +76,7 @@ class LaboratoryTestController extends Controller
         return redirect()
             ->route('laboratory-tests.index')
             ->with('toast', [
-                'type' => 'info',
+                'type' => 'success',
                 'title' => 'Actualización Éxitosa',
                 'message' => 'La prueba de laboratorio ' . $laboratoryTest->name . ' se ha actualizado correctamente.'
             ]);

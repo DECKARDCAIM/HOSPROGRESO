@@ -76,7 +76,7 @@ class LinguisticCommunityController extends Controller
         return redirect()
             ->route('linguistic-communities.index')
             ->with('toast', [
-                'type' => 'info',
+                'type' => 'success',
                 'title' => 'Actualización Éxitosa',
                 'message' => 'La comunidad lingüística ' . $linguisticCommunity->name . ' se ha actualizado correctamente.'
             ]);

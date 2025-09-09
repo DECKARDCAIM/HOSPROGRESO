@@ -42,6 +42,21 @@ class Doctor extends Model
         return $this->hasMany(MedicalConsultation::class);
     }
 
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
+    }
+
+    public function originalSubstitutions()
+    {
+        return $this->hasMany(DoctorSubstitution::class, 'original_doctor_id');
+    }
+
+    public function substituteSubstitutions()
+    {
+        return $this->hasMany(DoctorSubstitution::class, 'substitute_doctor_id');
+    }
+
     public function getFullNameAttribute()
     {
         $names = array_filter([

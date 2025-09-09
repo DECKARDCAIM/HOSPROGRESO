@@ -116,7 +116,7 @@ class CompanionRelationshipController extends Controller
         return redirect()
             ->route('companion-relationships.index')
             ->with('toast', [
-                'type' => 'info',
+                'type' => 'success',
                 'title' => 'Actualización Éxitosa',
                 'message' => 'La relación ' . $companionRelationship->name . ' se ha actualizado correctamente.'
             ]);
