@@ -11,7 +11,7 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
-                <div class="card-header bg-success text-white">
+                <div class="card-header bg-brand-header text-white">
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <h6 class="text-white mb-0">
@@ -48,7 +48,7 @@
                         {{-- Selector de archivo visible --}}
                         <div class="mb-3">
                             <label for="excel_file" class="form-label fw-bold">
-                                <i class="bi bi-file-earmark-excel text-success me-2"></i>
+                                <i class="bi bi-file-earmark-excel me-2"></i>
                                 Seleccionar Archivo Excel
                             </label>
                             <input
@@ -93,7 +93,7 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header bg-info text-white">
+                <div class="card-header bg-brand-header text-white">
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <h6 class="text-white mb-0">
@@ -123,7 +123,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-info mb-0">
+                    <div class="alert bg-brand-header mb-0 text-white">
                         <i class="bi bi-info-circle me-2"></i>
                         La exportación se generará en formato SQL y se descargará automáticamente.
                     </div>
@@ -152,7 +152,7 @@
         <h5 id="modalTitle">Procesando archivo Excel...</h5>
         <p id="modalMessage" class="text-muted mb-3">Preparando archivo para importación...</p>
         <div class="progress mb-2" style="height:10px;">
-          <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" style="width:0%; transition:width .3s ease-out;"></div>
+                          <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-brand-header" role="progressbar" style="width:0%; transition:width .3s ease-out;"></div>
         </div>
         <small id="progressText" class="text-info fw-bold">Iniciando...</small>
         <div><small id="processingSpeed" class="text-muted"></small></div>
@@ -176,7 +176,7 @@
         <h5 id="backupModalTitle">Generando backup de la base de datos...</h5>
         <p class="text-muted mb-3" id="backupModalMessage">Este proceso puede tomar varios minutos dependiendo del tamaño de la base de datos.</p>
         <div class="progress mb-3" style="height:10px;">
-          <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" id="backupProgressBar" style="width:0%"></div>
+                          <div class="progress-bar progress-bar-striped progress-bar-animated bg-brand-header" role="progressbar" id="backupProgressBar" style="width:0%"></div>
         </div>
         <small class="text-muted" id="backupProgressText">Iniciando generación de backup...</small>
       </div>
@@ -387,7 +387,7 @@ function updateProgressUI(data) {
       progressText.textContent = 'Error';
       modalMessage.textContent = data.message || 'Ocurrió un error durante el proceso.';
       processingSpeed.textContent = '❌ Error';
-      progressBar.classList.remove('bg-info');
+                      progressBar.classList.remove('bg-brand-header');
       progressBar.classList.add('bg-danger');
       break;
   }

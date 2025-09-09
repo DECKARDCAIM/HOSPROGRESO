@@ -6,6 +6,7 @@ use App\Models\TemporaryPatient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Exception;
 
@@ -75,6 +76,10 @@ class ImportController extends Controller
             $duplicates = [];
             $errors = [];
             $processedCount = 0;
+            
+            // Inicializar log de errores detallado
+            $errorLogFile = storage_path("app/logs/import_errors_{$sessionId}.log");
+            $this->initializeErrorLog($errorLogFile, $sessionId);
 
             $batchSize = 100;
             $chunks = array_chunk($validRows, $batchSize, true);
@@ -102,12 +107,14 @@ class ImportController extends Controller
                     $validation = $this->validateRowData($data, $rowNumber);
                     if (!$validation['valid']) {
                         $errors = array_merge($errors, $validation['errors']);
+                        $this->logValidationError($errorLogFile, $rowNumber, $data, $validation['errors']);
                         continue;
                     }
 
                     $regNo = $data['registration_number'];
                     if (in_array($regNo, $already, true) || in_array($regNo, $processedSet, true)) {
                         $duplicates[] = "Fila {$rowNumber} duplicada: {$regNo}";
+                        $this->logDuplicateError($errorLogFile, $rowNumber, $data, $regNo);
                     } else {
                         $processedSet[] = $regNo;
                         $batchInsert[] = $data;
@@ -138,9 +145,12 @@ class ImportController extends Controller
                 );
             }
 
+            // Generar resumen final de errores
+            $this->generateErrorSummary($errorLogFile, $totalRows, $imported, count($errors), count($duplicates));
+            
             $this->updateProgress(
                 $progressKey, $totalRows, $totalRows, 100,
-                'completed', "¡Importación completada! {$imported} registros.", true
+                'completed', "¡Importación completada! Se importaron {$imported} registros exitosamente.", true
             );
 
             return response()->json([
@@ -148,7 +158,7 @@ class ImportController extends Controller
                 'current' => $totalRows,
                 'total' => $totalRows,
                 'percentage' => 100,
-                'message' => "¡Importación completada! {$imported} registros.",
+                'message' => "¡Importación completada! Se importaron {$imported} registros exitosamente.",
                 'session_id' => $sessionId
             ]);
         } catch (Exception $e) {
@@ -279,6 +289,7 @@ class ImportController extends Controller
     {
         $errors = [];
 
+        // Validaciones básicas
         if (empty($data['first_name'])) {
             $errors[] = "Fila {$rowNumber}: Primer nombre es requerido";
         }
@@ -287,10 +298,182 @@ class ImportController extends Controller
             $errors[] = "Fila {$rowNumber}: Primer apellido es requerido";
         }
 
+        // Validaciones para datos inconsistentes en nombres
+        if ($this->isInconsistentNameData($data['first_name'])) {
+            $errors[] = "Fila {$rowNumber}: Primer nombre contiene datos inconsistentes (XX, datos temporales, etc.)";
+        }
+
+        if ($this->isInconsistentNameData($data['first_lastname'])) {
+            $errors[] = "Fila {$rowNumber}: Primer apellido contiene datos inconsistentes (XX, datos temporales, etc.)";
+        }
+
+        if (!empty($data['second_name']) && $this->isInconsistentNameData($data['second_name'])) {
+            $errors[] = "Fila {$rowNumber}: Segundo nombre contiene datos inconsistentes (XX, datos temporales, etc.)";
+        }
+
+        if (!empty($data['second_lastname']) && $this->isInconsistentNameData($data['second_lastname'])) {
+            $errors[] = "Fila {$rowNumber}: Segundo apellido contiene datos inconsistentes (XX, datos temporales, etc.)";
+        }
+
+        if (!empty($data['specific_residence']) && $this->isInconsistentData($data['specific_residence'])) {
+            $errors[] = "Fila {$rowNumber}: Residencia contiene datos inconsistentes (XX, datos temporales, etc.)";
+        }
+
+        // Validar edad si está presente
+        if (!empty($data['birth_date'])) {
+            $age = $this->calculateAge($data['birth_date']);
+            if ($age === 0) {
+                $errors[] = "Fila {$rowNumber}: La edad calculada es 0 años, posible dato inconsistente";
+            }
+        }
+
         return [
             'valid' => empty($errors),
             'errors' => $errors
         ];
+    }
+
+    /**
+     * Verifica si un dato contiene patrones inconsistentes (para nombres)
+     */
+    private function isInconsistentNameData($value)
+    {
+        if (empty($value)) {
+            return false;
+        }
+
+        $value = trim($value);
+        
+        // Patrones de datos inconsistentes específicos para nombres
+        $inconsistentPatterns = [
+            // Patrones con XX
+            '/^XX\s+XX\s+XX\s+XX$/i',
+            '/^XX\s+XX$/i',
+            '/^XX\s+[a-zA-Z]+\s+XX$/i',
+            '/^XX\s+[a-zA-Z]+\s+[a-zA-Z]+\s+XX$/i',
+            '/^XX\s+[a-zA-Z]+\s+XX\s+[a-zA-Z]+$/i',
+            '/^XX\s+[a-zA-Z]+\s+XX\s+\d+\s+AÑOS$/i',
+            '/^XX\s+[a-zA-Z]+\s+XX\s+[a-zA-Z]+\s+[a-zA-Z]+$/i',
+            '/^XX\s+[a-zA-Z]+\s+XX\s+[a-zA-Z]+\s+\d+\s+AÑOS$/i',
+            
+            // Patrones con Xx (variaciones)
+            '/^Xx\s+Xx\s+Xx\s+Xx$/i',
+            '/^Xx\s+Xx\s+Xx$/i',
+            '/^Xx\s+Xx$/i',
+            
+            // Patrones con datos temporales
+            '/datos\s+temporales/i',
+            '/temporal/i',
+            
+            // Patrones con información adicional no válida en nombres
+            '/fallecido/i',
+            '/fugado/i',
+            '/indigente/i',
+            '/masculino/i',
+            '/femenino/i',
+            '/alias/i',
+            
+            // Patrones con solo caracteres repetidos
+            '/^[Xx]{2,}$/',
+            '/^[Xx]\s+[Xx]$/',
+            '/^[Xx]\s+[Xx]\s+[Xx]$/',
+            '/^[Xx]\s+[Xx]\s+[Xx]\s+[Xx]$/',
+        ];
+
+        foreach ($inconsistentPatterns as $pattern) {
+            if (preg_match($pattern, $value)) {
+                return true;
+            }
+        }
+
+        // Verificar si contiene solo caracteres X o x
+        if (preg_match('/^[Xx\s]+$/', $value)) {
+            return true;
+        }
+
+        // Verificar si es muy corto y contiene caracteres sospechosos
+        if (strlen($value) <= 3 && preg_match('/[Xx]/', $value)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Verifica si un dato contiene patrones inconsistentes (para ubicaciones y otros campos)
+     */
+    private function isInconsistentData($value)
+    {
+        if (empty($value)) {
+            return false;
+        }
+
+        $value = trim($value);
+        
+        // Patrones de datos inconsistentes
+        $inconsistentPatterns = [
+            // Patrones con XX
+            '/^XX\s+XX\s+XX\s+XX$/i',
+            '/^XX\s+XX$/i',
+            '/^XX\s+[a-zA-Z]+\s+XX$/i',
+            '/^XX\s+[a-zA-Z]+\s+[a-zA-Z]+\s+XX$/i',
+            '/^XX\s+[a-zA-Z]+\s+XX\s+[a-zA-Z]+$/i',
+            '/^XX\s+[a-zA-Z]+\s+XX\s+\d+\s+AÑOS$/i',
+            '/^XX\s+[a-zA-Z]+\s+XX\s+[a-zA-Z]+\s+[a-zA-Z]+$/i',
+            '/^XX\s+[a-zA-Z]+\s+XX\s+[a-zA-Z]+\s+\d+\s+AÑOS$/i',
+            
+            // Patrones con Xx (variaciones)
+            '/^Xx\s+Xx\s+Xx\s+Xx$/i',
+            '/^Xx\s+Xx\s+Xx$/i',
+            '/^Xx\s+Xx$/i',
+            
+            // Patrones con datos temporales
+            '/datos\s+temporales/i',
+            '/temporal/i',
+            
+            // Patrones con solo caracteres repetidos
+            '/^[Xx]{2,}$/',
+            '/^[Xx]\s+[Xx]$/',
+            '/^[Xx]\s+[Xx]\s+[Xx]$/',
+            '/^[Xx]\s+[Xx]\s+[Xx]\s+[Xx]$/',
+        ];
+
+        foreach ($inconsistentPatterns as $pattern) {
+            if (preg_match($pattern, $value)) {
+                return true;
+            }
+        }
+
+        // Verificar si contiene solo caracteres X o x
+        if (preg_match('/^[Xx\s]+$/', $value)) {
+            return true;
+        }
+
+        // Verificar si es muy corto y contiene caracteres sospechosos
+        if (strlen($value) <= 3 && preg_match('/[Xx]/', $value)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Calcula la edad basada en la fecha de nacimiento
+     */
+    private function calculateAge($birthDate)
+    {
+        if (empty($birthDate)) {
+            return null;
+        }
+
+        try {
+            $birth = new \DateTime($birthDate);
+            $today = new \DateTime();
+            $age = $today->diff($birth)->y;
+            return $age;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     private function mapSexToId($sexString)
@@ -471,5 +654,124 @@ class ImportController extends Controller
                 @unlink($file);
             }
         }
+    }
+
+    /**
+     * Inicializa el archivo de log de errores
+     */
+    private function initializeErrorLog(string $logFile, string $sessionId): void
+    {
+        $logDir = dirname($logFile);
+        if (!is_dir($logDir)) {
+            mkdir($logDir, 0755, true);
+        }
+
+        $header = "=== LOG DE ERRORES DE IMPORTACIÓN ===\n";
+        $header .= "Session ID: {$sessionId}\n";
+        $header .= "Fecha: " . date('Y-m-d H:i:s') . "\n";
+        $header .= "=====================================\n\n";
+
+        file_put_contents($logFile, $header, LOCK_EX);
+    }
+
+    /**
+     * Registra errores de validación en el log
+     */
+    private function logValidationError(string $logFile, int $rowNumber, array $data, array $errors): void
+    {
+        $logEntry = "ERROR DE VALIDACIÓN - Fila {$rowNumber}:\n";
+        $logEntry .= "  Número de Registro: " . ($data['registration_number'] ?? 'VACÍO') . "\n";
+        $logEntry .= "  Primer Nombre: " . ($data['first_name'] ?? 'VACÍO') . "\n";
+        $logEntry .= "  Primer Apellido: " . ($data['first_lastname'] ?? 'VACÍO') . "\n";
+        $logEntry .= "  Segundo Nombre: " . ($data['second_name'] ?? 'VACÍO') . "\n";
+        $logEntry .= "  Segundo Apellido: " . ($data['second_lastname'] ?? 'VACÍO') . "\n";
+        $logEntry .= "  Residencia: " . ($data['specific_residence'] ?? 'VACÍO') . "\n";
+        $logEntry .= "  Sexo: " . ($data['sex'] ?? 'VACÍO') . "\n";
+        $logEntry .= "  Fecha de Nacimiento: " . ($data['birth_date'] ?? 'VACÍO') . "\n";
+        
+        // Calcular edad si es posible
+        if (!empty($data['birth_date'])) {
+            $age = $this->calculateAge($data['birth_date']);
+            $logEntry .= "  Edad Calculada: " . ($age !== null ? $age . ' años' : 'No calculable') . "\n";
+        }
+        
+        $logEntry .= "  Errores encontrados:\n";
+        
+        foreach ($errors as $error) {
+            $logEntry .= "    - {$error}\n";
+        }
+        
+        // Agregar información adicional sobre datos inconsistentes
+        $inconsistentFields = [];
+        if ($this->isInconsistentNameData($data['first_name'] ?? '')) {
+            $inconsistentFields[] = "Primer Nombre";
+        }
+        if ($this->isInconsistentNameData($data['first_lastname'] ?? '')) {
+            $inconsistentFields[] = "Primer Apellido";
+        }
+        if ($this->isInconsistentNameData($data['second_name'] ?? '')) {
+            $inconsistentFields[] = "Segundo Nombre";
+        }
+        if ($this->isInconsistentNameData($data['second_lastname'] ?? '')) {
+            $inconsistentFields[] = "Segundo Apellido";
+        }
+        if ($this->isInconsistentData($data['specific_residence'] ?? '')) {
+            $inconsistentFields[] = "Residencia";
+        }
+        
+        if (!empty($inconsistentFields)) {
+            $logEntry .= "  Campos con datos inconsistentes: " . implode(', ', $inconsistentFields) . "\n";
+        }
+        
+        $logEntry .= "\n" . str_repeat("-", 80) . "\n\n";
+        
+        file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
+    }
+
+    /**
+     * Registra errores de duplicados en el log
+     */
+    private function logDuplicateError(string $logFile, int $rowNumber, array $data, string $registrationNumber): void
+    {
+        $logEntry = "ERROR DE DUPLICADO - Fila {$rowNumber}:\n";
+        $logEntry .= "  Número de Registro: {$registrationNumber}\n";
+        $logEntry .= "  Primer Nombre: " . ($data['first_name'] ?? 'VACÍO') . "\n";
+        $logEntry .= "  Primer Apellido: " . ($data['first_lastname'] ?? 'VACÍO') . "\n";
+        $logEntry .= "  Segundo Nombre: " . ($data['second_name'] ?? 'VACÍO') . "\n";
+        $logEntry .= "  Segundo Apellido: " . ($data['second_lastname'] ?? 'VACÍO') . "\n";
+        $logEntry .= "  Residencia: " . ($data['specific_residence'] ?? 'VACÍO') . "\n";
+        $logEntry .= "  Sexo: " . ($data['sex'] ?? 'VACÍO') . "\n";
+        $logEntry .= "  Fecha de Nacimiento: " . ($data['birth_date'] ?? 'VACÍO') . "\n";
+        $logEntry .= "  Motivo: Este número de registro ya existe en la base de datos o en el archivo\n";
+        $logEntry .= "\n" . str_repeat("-", 80) . "\n\n";
+        
+        file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
+    }
+
+    /**
+     * Genera un resumen final de errores
+     */
+    private function generateErrorSummary(string $logFile, int $totalRows, int $imported, int $errorCount, int $duplicateCount): void
+    {
+        $summary = "\n" . str_repeat("=", 80) . "\n";
+        $summary .= "RESUMEN FINAL DE IMPORTACIÓN\n";
+        $summary .= str_repeat("=", 80) . "\n";
+        $summary .= "Total de filas procesadas: {$totalRows}\n";
+        $summary .= "Registros importados exitosamente: {$imported}\n";
+        $summary .= "Registros rechazados por datos inconsistentes: {$errorCount}\n";
+        $summary .= "Registros rechazados por duplicados: {$duplicateCount}\n";
+        $summary .= "Total de registros rechazados: " . ($errorCount + $duplicateCount) . "\n";
+        $summary .= "Porcentaje de éxito: " . ($totalRows > 0 ? round(($imported / $totalRows) * 100, 2) : 0) . "%\n";
+        $summary .= "Porcentaje de fallo: " . ($totalRows > 0 ? round((($errorCount + $duplicateCount) / $totalRows) * 100, 2) : 0) . "%\n";
+        $summary .= "\nNOTA: Los registros rechazados por datos inconsistentes incluyen:\n";
+        $summary .= "- Nombres con patrones 'XX XX XX XX', 'XX xx', etc.\n";
+        $summary .= "- Datos temporales o genéricos\n";
+        $summary .= "- Información adicional no válida (fallecido, fugado, etc.)\n";
+        $summary .= "- Edades calculadas en 0 años\n";
+        $summary .= "- Campos con solo caracteres X o x\n";
+        $summary .= "\nFecha de finalización: " . date('Y-m-d H:i:s') . "\n";
+        $summary .= str_repeat("=", 80) . "\n";
+        
+        file_put_contents($logFile, $summary, FILE_APPEND | LOCK_EX);
     }
 }
