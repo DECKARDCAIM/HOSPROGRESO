@@ -8,7 +8,7 @@
     <div class="row">
         <div class="col-12">
             <div class="card mb-4 border">
-                <div class="card-header pb-0 bg-gradient-info">
+                <div class="card-header pb-0 bg-brand-header">
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <h6 class="text-white mb-0">Editar Usuario: {{ $user->name }}</h6>
@@ -167,7 +167,7 @@
                             <button type="button" class="btn btn-secondary btn-lg me-2" onclick="window.location.href='{{ route('usuarios.index') }}'">
                                 <i class="bi bi-x me-2"></i>Cancelar
                             </button>
-                            <button type="submit" class="btn bg-gradient-info btn-lg text-white">
+                            <button type="submit" class="btn bg-brand-header btn-lg text-white">
                                 <i class="bi bi-save me-2"></i>Guardar cambios
                             </button>
                         </div>
@@ -175,7 +175,7 @@
 
                     <!-- Sección de restablecimiento de contraseña -->
                     <div class="card mt-4 border border-info">
-                        <div class="card-header bg-info">
+                        <div class="card-header bg-brand-header">
                             <h6 class="text-white mb-0"><i class="bi bi-lock me-2"></i>Restablecer Contraseña</h6>
                         </div>
                         <div class="card-body">
@@ -206,7 +206,7 @@
                                     </div>
                                 </div>
                                 <div class="text-end">
-                                    <button type="submit" class="btn bg-gradient-info btn-lg text-white">
+                                    <button type="submit" class="btn bg-brand-header btn-lg text-white">
                                         <i class="bi bi-arrow-clockwise me-2"></i>Restablecer contraseña
                                     </button>
                                 </div>

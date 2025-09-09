@@ -19,7 +19,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="card mb-4">
-                    <div class="card-header pb-0 bg-info">
+                    <div class="card-header pb-0 bg-brand-header">
                         <div class="row align-items-center">
                             <div class="col-md-8">
                             <h6 class="text-white mb-0">Usuarios</h6>
@@ -46,20 +46,19 @@
                                 </div>
                             <div class="col-md-6 col-lg-5 mb-2 mb-md-0">
                                     <div class="input-group input-group-lg">
-                                        <span class="input-group-text bg-info text-white border-info">
-                                            <i class="bi bi-search"></i>
+                                        <span class="input-group-text bg-brand-header text-white border-info">
                                         </span>
                                     <input type="text" name="search" class="form-control border border-info" placeholder="Buscar por nombre o email..." value="{{ $search }}">
-                                        <button type="submit" class="btn bg-gradient-info text-white">
+                                        <button type="submit" class="btn bg-brand-header text-white">
                                             <i class="bi bi-funnel me-2"></i>Filtrar
                                         </button>
                                     </div>
                                 </div>
                             @if($search)
                                 <div class="col-auto ms-2">
-                                <a href="{{ url('/usuarios?status=' . $status) }}" class="btn btn-outline-secondary">
+                                                                <a href="{{ url('/usuarios?status=' . $status) }}" class="btn btn-outline-secondary">
                                     <i class="bi bi-x me-2"></i>Limpiar búsqueda
-                                    </a>
+                                </a>
                                 </div>
                                 @endif
                             </div>
@@ -71,63 +70,67 @@
                         <table class="table align-items-center mb-0 dataTable-table" id="datatable-basic" data-datatable="true">
                                 <thead>
                                     <tr>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Usuario</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Email</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Rol</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Estado</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3 text-center">Acciones</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2 text-center">Usuario</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2 text-center">Email</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2 text-center">Estado</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2 text-center">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                 @forelse($users as $user)
                                         <tr>
-                                            <td>
-                                                <div class="d-flex px-3 py-2">
-                                            <div class="avatar avatar-sm me-3 bg-info rounded-circle">
+                                            <td class="text-center">
+                                                <div class="d-flex justify-content-center px-2 py-2">
+                                            <div class="avatar avatar-sm me-3 bg-brand-header rounded-circle flex-shrink-0">
                                                 <span class="text-white font-weight-bold">{{ substr($user->name, 0, 1) }}</span>
                                                     </div>
-                                                    <div class="d-flex flex-column justify-content-center">
+                                                    <div class="d-flex flex-column justify-content-center text-start">
                                                         <h6 class="mb-0 text-sm">{{ $user->name }}</h6>
                                                 @if($user->cui)
                                                     <p class="text-xs text-secondary mb-0">CUI: {{ $user->cui }}</p>
                                                 @endif
+                                                @if($user->role)
+                                                    <p class="text-xs text-secondary mb-0">
+                                                        <span class="badge bg-brand-header">{{ $user->role->name }}</span>
+                                                    </p>
+                                                @else
+                                                    <p class="text-xs text-secondary mb-0">
+                                                        <span class="badge bg-secondary">Sin rol</span>
+                                                    </p>
+                                                @endif
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="px-3 py-2">
+                                            <td class="px-2 py-2 text-center">
                                         <span class="text-sm text-secondary">{{ $user->email }}</span>
                                     </td>
-                                    <td class="px-3 py-2">
-                                        @if($user->role)
-                                            <span class="badge bg-gradient-info">{{ $user->role->name }}</span>
-                                                    @else
-                                            <span class="badge bg-secondary">Sin rol</span>
-                                                @endif
-                                            </td>
-                                            <td class="px-3 py-2">
+                                            <td class="px-2 py-2 text-center">
                                         @if($user->is_active)
                                             <span class="badge bg-success">Activo</span>
                                                 @else
                                             <span class="badge bg-secondary">Inactivo</span>
                                                 @endif
                                             </td>
-                                            <td class="align-middle text-center">
+                                            <td class="align-middle text-center px-2">
                                                 @if ($status === 'active')
-                                            <a href="{{ route('usuarios.edit', $user) }}" class="btn btn-info rounded-pill px-3 py-2 me-2">
-                                                <i class="bi bi-pencil me-1"></i>Editar
+                                                    <a href="{{ route('usuarios.edit', $user) }}" class="btn bg-brand-header rounded-pill px-3 py-2 me-2 text-white">
+                                                        <i class="bi bi-pencil me-1"></i>Editar
                                                     </a>
-                                            <form action="{{ route('usuarios.destroy', $user) }}" method="POST" class="d-inline">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-danger rounded-pill px-3 py-2">
-                                                    <i class="bi bi-trash me-1"></i>Eliminar
-                                                            </button>
-                                                        </form>
+                                                    <a href="{{ route('usuarios.print-credentials', $user) }}" target="_blank" class="btn btn-secondary rounded-pill px-3 py-2 me-2 text-white">
+                                                        <i class="bi bi-printer me-1"></i>Imprimir
+                                                    </a>
+                                                    <form action="{{ route('usuarios.destroy', $user) }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger rounded-pill px-3 py-2 text-white">
+                                                            <i class="bi bi-trash me-1"></i>Eliminar
+                                                        </button>
+                                                    </form>
                                                 @else
                                                     <form action="{{ route('usuarios.reactivate', $user->id) }}" method="POST" class="d-inline">
                                                         @csrf
-                                                        <button type="submit" class="btn btn-success rounded-pill px-3 py-2">
-                                                    <i class="bi bi-power me-1"></i>Reactivar
+                                                                                                                <button type="submit" class="btn btn-success rounded-pill px-3 py-2 text-white">
+                                                            <i class="bi bi-power me-1"></i>Reactivar
                                                         </button>
                                                     </form>
                                                 @endif
@@ -135,7 +138,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                    <td colspan="5" class="text-center py-4">
+                                    <td colspan="4" class="text-center py-4">
                                                 <span class="text-muted">No hay usuarios registrados.</span>
                                             </td>
                                         </tr>

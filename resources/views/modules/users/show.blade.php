@@ -8,7 +8,7 @@
     <div class="row">
         <div class="col-12">
             <div class="card mb-4 border">
-                <div class="card-header pb-0 bg-gradient-info">
+                <div class="card-header pb-0 bg-brand-header">
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <h6 class="text-white mb-0">Detalles del Usuario</h6>
@@ -89,7 +89,7 @@
                                             <label class="text-sm font-weight-bold text-secondary">Género:</label>
                                             <p class="text-sm mb-0">
                                                 @if($user->gender === 'M')
-                                                    <i class="bi bi-gender-male text-primary me-1"></i>Masculino
+                                                    <i class="bi bi-gender-male text-secondary me-1"></i>Masculino
                                                 @elseif($user->gender === 'F')
                                                     <i class="bi bi-gender-female text-pink me-1"></i>Femenino
                                                 @else
@@ -194,7 +194,7 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="d-flex flex-wrap gap-2">
-                                        <a href="{{ route('usuarios.edit', $user->id) }}" class="btn btn-info">
+                                        <a href="{{ route('usuarios.edit', $user->id) }}" class="btn bg-brand-header">
                                             <i class="bi bi-pencil me-1"></i>Editar información
                                         </a>
                                         
