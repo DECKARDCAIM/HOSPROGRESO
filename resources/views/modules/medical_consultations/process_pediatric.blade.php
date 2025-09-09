@@ -8,7 +8,7 @@
     <div class="row">
         <div class="col-12">
             <div class="card mb-4">
-                <div class="card-header pb-0 bg-gradient-primary text-white">
+                <div class="card-header pb-0 bg-brand-header text-white">
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <h6 class="text-white mb-0">
@@ -33,32 +33,125 @@
                         @csrf
                         @method('PUT')
 
+                        <!-- Datos Precargados de Enfermería -->
+                        @if($medicalConsultation->nursing_note)
+                            <div class="card mb-4">
+                                <div class="card-header bg-brand-header text-white">
+                                    <h6 class="mb-0 text-white"><i class="fas fa-user-nurse me-2"></i>Datos Registrados por Enfermería</h6>
+                                </div>
+                                <div class="card-body">
+                                    @php
+                                        $nursingData = json_decode($medicalConsultation->nursing_note, true);
+                                    @endphp
+                                    
+                                    @if(isset($nursingData['signos_vitales']))
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <h6 class="text-secondary mb-2"><i class="fas fa-heartbeat me-2"></i>Signos Vitales</h6>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Presión Arterial</label>
+                                                <input type="text" class="form-control" value="{{ $nursingData['signos_vitales']['presion_arterial'] ?? '' }}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Frecuencia Cardíaca</label>
+                                                <input type="text" class="form-control" value="{{ $nursingData['signos_vitales']['frecuencia_cardiaca'] ?? '' }}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Temperatura (°C)</label>
+                                                <input type="text" class="form-control" value="{{ $nursingData['signos_vitales']['temperatura'] ?? '' }}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Frecuencia Respiratoria</label>
+                                                <input type="text" class="form-control" value="{{ $nursingData['signos_vitales']['frecuencia_respiratoria'] ?? '' }}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Peso (kg)</label>
+                                                <input type="text" class="form-control" value="{{ $nursingData['signos_vitales']['peso'] ?? '' }}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Talla (cm)</label>
+                                                <input type="text" class="form-control" value="{{ $nursingData['signos_vitales']['talla'] ?? '' }}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Saturación O2 (%)</label>
+                                                <input type="text" class="form-control" value="{{ $nursingData['signos_vitales']['saturacion_o2'] ?? '' }}" readonly>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Glicemia (mg/dl)</label>
+                                                <input type="text" class="form-control" value="{{ $nursingData['signos_vitales']['glicemia'] ?? '' }}" readonly>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    @if(isset($nursingData['acompanante']))
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <h6 class="text-secondary mb-2"><i class="fas fa-user-friends me-2"></i>Datos del Acompañante</h6>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Nombre del Acompañante</label>
+                                                <input type="text" class="form-control" value="{{ $nursingData['acompanante']['nombre'] ?? '' }}" readonly>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Parentesco</label>
+                                                <input type="text" class="form-control" value="{{ $medicalConsultation->companionRelationship->name ?? '' }}" readonly>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Teléfono</label>
+                                                <input type="text" class="form-control" value="{{ $nursingData['acompanante']['telefono'] ?? '' }}" readonly>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Email</label>
+                                                <input type="text" class="form-control" value="{{ $nursingData['acompanante']['email'] ?? '' }}" readonly>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">DPI</label>
+                                                <input type="text" class="form-control" value="{{ $nursingData['acompanante']['dpi'] ?? '' }}" readonly>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Dirección</label>
+                                                <input type="text" class="form-control" value="{{ $nursingData['acompanante']['direccion'] ?? '' }}" readonly>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    @if(isset($nursingData['notas_adicionales']))
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <h6 class="text-secondary mb-2"><i class="fas fa-sticky-note me-2"></i>Notas Adicionales de Enfermería</h6>
+                                                <textarea class="form-control" rows="3" readonly>{{ $nursingData['notas_adicionales'] ?? '' }}</textarea>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    @if(isset($nursingData['fecha_registro']))
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    Registrado el {{ $nursingData['fecha_registro'] }} por {{ $nursingData['registrado_por'] ?? 'Enfermería' }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+
                         <!-- Información Básica de la Consulta -->
                         <div class="card mb-4">
-                            <div class="card-header">
-                                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información Básica de la Consulta</h6>
+                            <div class="card-header bg-brand-header text-white">
+                                <h6 class="mb-0 text-white"><i class="fas fa-info-circle me-2"></i>Información Básica de la Consulta</h6>
                             </div>
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="doctor_id" class="form-control-label">Doctor *</label>
-                                            <select class="form-control @error('doctor_id') is-invalid @enderror" 
-                                                    id="doctor_id" name="doctor_id" required>
-                                                <option value="">Seleccionar doctor...</option>
-                                                @foreach($doctors as $doctor)
-                                                    <option value="{{ $doctor->id }}" 
-                                                            data-specialty="{{ $doctor->specialty->name ?? '' }}"
-                                                            data-specialty-id="{{ $doctor->specialty_id ?? '' }}"
-                                                            {{ old('doctor_id', $medicalConsultation->doctor_id) == $doctor->id ? 'selected' : '' }}>
-                                                        {{ $doctor->first_name }} {{ $doctor->first_lastname }} 
-                                                        - {{ $doctor->specialty->name ?? 'Sin especialidad' }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            @error('doctor_id')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
+                                            <label for="doctor_id" class="form-control-label">Doctor</label>
+                                            <input type="text" class="form-control" readonly 
+                                                   value="{{ $medicalConsultation->doctor->first_name ?? '' }} {{ $medicalConsultation->doctor->first_lastname ?? '' }} - {{ $medicalConsultation->doctor->specialty->name ?? 'Sin especialidad' }}">
+                                            <input type="hidden" id="doctor_id" name="doctor_id" value="{{ $medicalConsultation->doctor_id }}">
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -67,7 +160,7 @@
                                             <input type="text" class="form-control" id="specialty_name" readonly 
                                                    value="{{ $medicalConsultation->specialty->name ?? '' }}">
                                             <input type="hidden" id="specialty_id" name="specialty_id" 
-                                                   value="{{ old('specialty_id', $medicalConsultation->specialty_id) }}">
+                                                   value="{{ $medicalConsultation->specialty_id }}">
                                         </div>
                                     </div>
                                 </div>
@@ -75,132 +168,28 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="consultation_date" class="form-control-label">Fecha y Hora de Consulta *</label>
-                                            <input type="datetime-local" class="form-control @error('consultation_date') is-invalid @enderror" 
-                                                   id="consultation_date" name="consultation_date" 
-                                                   value="{{ old('consultation_date', $medicalConsultation->consultation_date ? $medicalConsultation->consultation_date->format('Y-m-d\TH:i') : now()->format('Y-m-d\TH:i')) }}" required>
-                                            @error('consultation_date')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
+                                            <label for="consultation_date" class="form-control-label">Fecha y Hora de Consulta</label>
+                                            <input type="text" class="form-control" readonly 
+                                                   value="{{ $medicalConsultation->consultation_date ? $medicalConsultation->consultation_date->format('d/m/Y H:i') : 'N/A' }}">
+                                            <input type="hidden" id="consultation_date" name="consultation_date" 
+                                                   value="{{ $medicalConsultation->consultation_date ? $medicalConsultation->consultation_date->format('Y-m-d\TH:i') : '' }}">
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="consultation_reason" class="form-control-label">Motivo de Consulta *</label>
-                                            <textarea class="form-control @error('consultation_reason') is-invalid @enderror" 
-                                                      id="consultation_reason" name="consultation_reason" rows="3" required>{{ old('consultation_reason', $medicalConsultation->consultation_reason) }}</textarea>
-                                            @error('consultation_reason')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
+                                            <label for="consultation_reason" class="form-control-label">Motivo de Consulta</label>
+                                            <textarea class="form-control" rows="3" readonly>{{ $medicalConsultation->consultation_reason }}</textarea>
+                                            <input type="hidden" id="consultation_reason" name="consultation_reason" value="{{ $medicalConsultation->consultation_reason }}">
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Información del Tutor/Padre/Madre -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-warning text-dark">
-                                <h6 class="mb-0"><i class="fas fa-users me-2"></i>Información del Tutor/Padre/Madre *</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label for="guardian_name" class="form-control-label">Nombre Completo *</label>
-                                            <input type="text" class="form-control @error('guardian_name') is-invalid @enderror" 
-                                                   id="guardian_name" name="guardian_name" 
-                                                   value="{{ old('guardian_name') }}" required>
-                                            @error('guardian_name')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="form-group">
-                                            <label for="guardian_relationship_id" class="form-control-label">Relación con el Paciente *</label>
-                                            <select class="form-control @error('guardian_relationship_id') is-invalid @enderror" 
-                                                    id="guardian_relationship_id" name="guardian_relationship_id" required>
-                                                <option value="">Seleccionar...</option>
-                                                @foreach($companionRelationships as $relationship)
-                                                    <option value="{{ $relationship->id }}" 
-                                                            {{ old('guardian_relationship_id', $medicalConsultation->guardian_relationship_id) == $relationship->id ? 'selected' : '' }}>
-                                                        {{ $relationship->name }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            @error('guardian_relationship_id')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-2">
-                                        <div class="form-group">
-                                            <label for="guardian_phone" class="form-control-label">Teléfono *</label>
-                                            <input type="tel" class="form-control @error('guardian_phone') is-invalid @enderror" 
-                                                   id="guardian_phone" name="guardian_phone" 
-                                                   value="{{ old('guardian_phone') }}" required
-                                                   placeholder="Ej: 12345678" maxlength="8">
-                                            @error('guardian_phone')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="form-group">
-                                            <label for="guardian_email" class="form-control-label">Email</label>
-                                            <input type="email" class="form-control @error('guardian_email') is-invalid @enderror" 
-                                                   id="guardian_email" name="guardian_email" 
-                                                   value="{{ old('guardian_email') }}">
-                                            @error('guardian_email')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label for="guardian_dpi" class="form-control-label">DPI/CUI del Tutor</label>
-                                            <input type="text" class="form-control @error('guardian_dpi') is-invalid @enderror" 
-                                                   id="guardian_dpi" name="guardian_dpi" 
-                                                   value="{{ old('guardian_dpi') }}"
-                                                   placeholder="Ej: 1234567890123" maxlength="13">
-                                            @error('guardian_dpi')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label for="guardian_address" class="form-control-label">Dirección del Tutor</label>
-                                            <input type="text" class="form-control @error('guardian_address') is-invalid @enderror" 
-                                                   id="guardian_address" name="guardian_address" 
-                                                   value="{{ old('guardian_address') }}">
-                                            @error('guardian_address')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label for="emergency_contact" class="form-control-label">Contacto de Emergencia</label>
-                                            <input type="tel" class="form-control @error('emergency_contact') is-invalid @enderror" 
-                                                   id="emergency_contact" name="emergency_contact" 
-                                                   value="{{ old('emergency_contact') }}"
-                                                   placeholder="Ej: 12345678" maxlength="8">
-                                            @error('emergency_contact')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
                         <!-- Información Pediátrica Específica -->
                         <div class="card mb-4">
-                            <div class="card-header bg-info text-white">
+                            <div class="card-header bg-brand-header text-white">
                                 <h6 class="mb-0 text-white"><i class="fas fa-baby me-2"></i>Información Pediátrica</h6>
                             </div>
                             <div class="card-body">
@@ -320,56 +309,10 @@
                         </div>
 
                         <!-- Evaluación Médica -->
-                        @if($medicalConsultation->attention_type === 'emergencia')
                         <div class="card mb-4">
-                            <div class="card-header bg-danger text-white">
-                                <h6 class="mb-0 text-white"><i class="fas fa-ambulance me-2"></i>Evaluación de Emergencia Pediátrica</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="emergency_vital_signs" class="form-control-label">Signos Vitales Pediátricos</label>
-                                            <textarea class="form-control @error('emergency_vital_signs') is-invalid @enderror" 
-                                                      id="emergency_vital_signs" name="emergency_vital_signs" rows="4" 
-                                                      placeholder="FC, FR, Temp, TA, SatO2, Glucemia, etc.">{{ old('emergency_vital_signs', $medicalConsultation->emergency_vital_signs) }}</textarea>
-                                            @error('emergency_vital_signs')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="emergency_trauma_assessment" class="form-control-label">Evaluación de Trauma/Estado General</label>
-                                            <textarea class="form-control @error('emergency_trauma_assessment') is-invalid @enderror" 
-                                                      id="emergency_trauma_assessment" name="emergency_trauma_assessment" rows="4" 
-                                                      placeholder="Nivel de conciencia, estado general, lesiones, etc.">{{ old('emergency_trauma_assessment', $medicalConsultation->emergency_trauma_assessment) }}</textarea>
-                                            @error('emergency_trauma_assessment')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12">
-                                        <div class="form-group">
-                                            <label for="emergency_treatment_plan" class="form-control-label">Plan de Tratamiento de Emergencia</label>
-                                            <textarea class="form-control @error('emergency_treatment_plan') is-invalid @enderror" 
-                                                      id="emergency_treatment_plan" name="emergency_treatment_plan" rows="4" 
-                                                      placeholder="Medidas inmediatas, medicamentos, procedimientos, etc.">{{ old('emergency_treatment_plan', $medicalConsultation->emergency_treatment_plan) }}</textarea>
-                                            @error('emergency_treatment_plan')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        @else
-                        <div class="card mb-4">
-                            <div class="card-header bg-info text-white">
+                            <div class="card-header bg-brand-header text-white">
                                 <h6 class="mb-0 text-white"><i class="fas fa-stethoscope me-2"></i>Evaluación Pediátrica</h6>
-                            </div>
+                </div>
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-md-6">
@@ -383,26 +326,14 @@
                                             @enderror
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="consultation_treatment_plan" class="form-control-label">Plan de Tratamiento</label>
-                                            <textarea class="form-control @error('consultation_treatment_plan') is-invalid @enderror" 
-                                                      id="consultation_treatment_plan" name="consultation_treatment_plan" rows="6" 
-                                                      placeholder="Medicamentos, dosis pediátricas, indicaciones para padres, etc.">{{ old('consultation_treatment_plan', $medicalConsultation->consultation_treatment_plan) }}</textarea>
-                                            @error('consultation_treatment_plan')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
-                        @endif
 
                         <!-- Diagnóstico y Tratamiento -->
                         <div class="card mb-4">
-                            <div class="card-header">
-                                <h6 class="mb-0"><i class="fas fa-diagnoses me-2"></i>Diagnóstico y Tratamiento</h6>
+                            <div class="card-header bg-brand-header text-white">
+                                <h6 class="mb-0 text-white"><i class="fas fa-diagnoses me-2"></i>Diagnóstico y Tratamiento</h6>
                             </div>
                             <div class="card-body">
                                 <div class="row">
@@ -410,7 +341,7 @@
                                         <div class="form-group">
                                             <label for="medical_diagnosis" class="form-control-label">Diagnóstico Médico *</label>
                                             <textarea class="form-control @error('medical_diagnosis') is-invalid @enderror" 
-                                                      id="medical_diagnosis" name="medical_diagnosis" rows="4" required>{{ old('medical_diagnosis', $medicalConsultation->medical_diagnosis) }}</textarea>
+                                                      id="medical_diagnosis" name="medical_diagnosis" rows="6" required>{{ old('medical_diagnosis', $medicalConsultation->medical_diagnosis) }}</textarea>
                                             @error('medical_diagnosis')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -418,22 +349,9 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="diagnosis_cie10_code" class="form-control-label">Código CIE-10</label>
-                                            <input type="text" class="form-control @error('diagnosis_cie10_code') is-invalid @enderror" 
-                                                   id="diagnosis_cie10_code" name="diagnosis_cie10_code" 
-                                                   value="{{ old('diagnosis_cie10_code', $medicalConsultation->diagnosis_cie10_code) }}">
-                                            @error('diagnosis_cie10_code')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12">
-                                        <div class="form-group">
-                                            <label for="prescribed_treatment" class="form-control-label">Tratamiento Prescrito</label>
+                                            <label for="prescribed_treatment" class="form-control-label">Plan de Tratamiento</label>
                                             <textarea class="form-control @error('prescribed_treatment') is-invalid @enderror" 
-                                                      id="prescribed_treatment" name="prescribed_treatment" rows="4" 
+                                                      id="prescribed_treatment" name="prescribed_treatment" rows="6" 
                                                       placeholder="Medicamentos con dosis pediátricas, cuidados en casa, recomendaciones para padres, etc.">{{ old('prescribed_treatment', $medicalConsultation->prescribed_treatment) }}</textarea>
                                             @error('prescribed_treatment')
                                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -446,8 +364,8 @@
 
                         <!-- Pruebas y Exámenes -->
                         <div class="card mb-4">
-                            <div class="card-header">
-                                <h6 class="mb-0"><i class="fas fa-vials me-2"></i>Pruebas y Exámenes</h6>
+                            <div class="card-header bg-brand-header text-white">
+                                <h6 class="mb-0 text-white"><i class="fas fa-vials me-2"></i>Pruebas y Exámenes</h6>
                             </div>
                             <div class="card-body">
                                 <div class="row">
@@ -497,53 +415,10 @@
                             </div>
                         </div>
 
-                        <!-- Notas Adicionales -->
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h6 class="mb-0"><i class="fas fa-notes-medical me-2"></i>Notas Adicionales</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="nursing_note" class="form-control-label">Nota de Enfermería</label>
-                                            <textarea class="form-control @error('nursing_note') is-invalid @enderror" 
-                                                      id="nursing_note" name="nursing_note" rows="4">{{ old('nursing_note', $medicalConsultation->nursing_note) }}</textarea>
-                                            @error('nursing_note')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="admission_note" class="form-control-label">Nota de Ingreso</label>
-                                            <textarea class="form-control @error('admission_note') is-invalid @enderror" 
-                                                      id="admission_note" name="admission_note" rows="4">{{ old('admission_note', $medicalConsultation->admission_note) }}</textarea>
-                                            @error('admission_note')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12">
-                                        <div class="form-group">
-                                            <label for="parent_instructions" class="form-control-label">Instrucciones para Padres/Tutor</label>
-                                            <textarea class="form-control @error('parent_instructions') is-invalid @enderror" 
-                                                      id="parent_instructions" name="parent_instructions" rows="3" 
-                                                      placeholder="Cuidados en casa, signos de alarma, cuándo regresar, etc.">{{ old('parent_instructions') }}</textarea>
-                                            @error('parent_instructions')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
                         <!-- Estado Final -->
                         <div class="card mb-4">
-                            <div class="card-header bg-success text-white">
+                            <div class="card-header bg-brand-header text-white">
                                 <h6 class="mb-0 text-white"><i class="fas fa-flag-checkered me-2"></i>Estado Final de la Consulta</h6>
                             </div>
                             <div class="card-body">
@@ -653,8 +528,8 @@
 
                         <!-- Estado del Paciente y Notas Adicionales -->
                         <div class="card mb-4">
-                            <div class="card-header">
-                                <h6 class="mb-0"><i class="bi bi-activity me-2"></i>Estado del Paciente y Notas Adicionales</h6>
+                            <div class="card-header bg-brand-header text-white">
+                                <h6 class="mb-0 text-white"><i class="bi bi-activity me-2"></i>Estado del Paciente y Notas Adicionales</h6>
                             </div>
                             <div class="card-body">
                                 <div class="row">
@@ -678,17 +553,6 @@
                                             @enderror
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="admission_note" class="form-control-label">Nota de Admisión</label>
-                                            <textarea class="form-control @error('admission_note') is-invalid @enderror" 
-                                                      id="admission_note" name="admission_note" rows="3"
-                                                      placeholder="Ingrese observaciones sobre la admisión del paciente...">{{ old('admission_note', $medicalConsultation->admission_note) }}</textarea>
-                                            @error('admission_note')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -699,7 +563,7 @@
                                class="btn btn-secondary btn-lg me-3">
                                 <i class="fas fa-times me-2"></i>Cancelar
                             </a>
-                            <button type="submit" class="btn btn-success btn-lg">
+                            <button type="submit" class="btn bg-brand-header text-white btn-lg">
                                 <i class="fas fa-check me-2"></i>Finalizar Consulta
                             </button>
                         </div>
@@ -714,57 +578,6 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Los multi-selects se configuran automáticamente por el archivo global multi-select-init.js
-    
-    // Autocompletar especialidad al seleccionar doctor
-    document.getElementById('doctor_id').addEventListener('change', function() {
-        const selected = this.options[this.selectedIndex];
-        const specialtyName = selected.getAttribute('data-specialty') || '';
-        const specialtyId = selected.getAttribute('data-specialty-id') || '';
-        
-        document.getElementById('specialty_name').value = specialtyName;
-        document.getElementById('specialty_id').value = specialtyId;
-    });
-
-    // Manejo del estado final
-    const finalStatusSelect = document.getElementById('final_status');
-    const hospitalServiceContainer = document.getElementById('hospital_service_container');
-    const deathFields = document.getElementById('death_fields');
-    const referralFields = document.getElementById('referral_fields');
-
-    finalStatusSelect.addEventListener('change', function() {
-        const status = this.value;
-        
-        // Ocultar todos los campos adicionales
-        hospitalServiceContainer.style.display = 'none';
-        deathFields.style.display = 'none';
-        referralFields.style.display = 'none';
-
-        if (status === 'hospitalizado') {
-            // Mostrar servicio de hospitalización (siempre Pediatría para menores)
-            hospitalServiceContainer.style.display = 'block';
-        } else if (status === 'fallecido') {
-            deathFields.style.display = 'block';
-            // Hacer campos obligatorios
-            document.getElementById('death_date').required = true;
-            document.getElementById('death_cause').required = true;
-        } else if (status === 'referido') {
-            referralFields.style.display = 'block';
-            // Hacer campos obligatorios
-            document.getElementById('reference_destination').required = true;
-            document.getElementById('reference_reason').required = true;
-        } else {
-            // Remover requerimientos si no es necesario
-            document.getElementById('death_date').required = false;
-            document.getElementById('death_cause').required = false;
-            document.getElementById('reference_destination').required = false;
-            document.getElementById('reference_reason').required = false;
-        }
-    });
-
-    // Inicializar estado si ya hay uno seleccionado
-    if (finalStatusSelect.value) {
-        finalStatusSelect.dispatchEvent(new Event('change'));
-    }
 });
 </script>
 @endpush

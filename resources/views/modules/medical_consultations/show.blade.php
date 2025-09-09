@@ -8,7 +8,7 @@
     <div class="row">
         <div class="col-12">
             <div class="card mb-4">
-                <div class="card-header pb-0 bg-info d-flex justify-content-between align-items-center">
+                <div class="card-header pb-0 bg-brand-header d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="text-white mb-0">Historia Clínica #{{ $medicalConsultation->id }}</h6>
                         <p class="text-sm text-white opacity-8 mb-0">
@@ -112,7 +112,7 @@
                         @endif
                         
                         <div class="timeline-block mb-3">
-                            <span class="timeline-step {{ $medicalConsultation->doctor_id ? 'bg-info' : 'bg-success' }} p-3">
+                            <span class="timeline-step {{ $medicalConsultation->doctor_id ? 'bg-brand-header' : 'bg-success' }} p-3">
                                 @if($medicalConsultation->doctor_id)
                                 <i class="bi bi-person-badge text-white"></i>
                                 @else
@@ -164,7 +164,7 @@
                         <!-- Información Gineco-Obstétrica -->
                         @if($medicalConsultation->is_pregnant !== null || $medicalConsultation->pregnancies_count || $medicalConsultation->gynecological_history)
                         <div class="timeline-block mb-3">
-                            <span class="timeline-step bg-pink p-3">
+                            <span class="timeline-step bg-danger p-3">
                                 <i class="bi bi-gender-female text-white"></i>
                             </span>
                             <div class="timeline-content pt-1">
@@ -245,51 +245,96 @@
                             </div>
                         </div>
                         @endif
-                        @if($medicalConsultation->doctor_id)
-                            {{-- Consulta con Doctor --}}
-                            @if($medicalConsultation->isEmergency())
-                            <div class="timeline-block mb-3">
-                                <span class="timeline-step bg-danger p-3">
-                                    <i class="bi bi-ambulance text-white"></i>
-                                </span>
-                                <div class="timeline-content pt-1">
-                                    <h6 class="text-dark text-sm font-weight-bold mb-0">Datos de Emergencia</h6>
-                                <p class="text-sm text-dark mt-3 mb-2">
-                                    <strong>Signos Vitales:</strong> {{ $medicalConsultation->emergency_vital_signs ?? '-' }}<br>
-                                    <strong>Evaluación de Trauma:</strong> {{ $medicalConsultation->emergency_trauma_assessment ?? '-' }}<br>
-                                    <strong>Plan de Tratamiento de Emergencia:</strong> {{ $medicalConsultation->emergency_treatment_plan ?? '-' }}
-                                </p>
-                            </div>
-                        </div>
-                        @else
+                        
+                        <!-- Evaluación Física Ginecológica -->
+                        @if($medicalConsultation->consultation_physical_exam)
                         <div class="timeline-block mb-3">
-                            <span class="timeline-step bg-info p-3">
-                                    <i class="bi bi-capsule text-white"></i>
+                            <span class="timeline-step bg-warning p-3">
+                                <i class="bi bi-heart-pulse text-white"></i>
                             </span>
                             <div class="timeline-content pt-1">
-                                <h6 class="text-dark text-sm font-weight-bold mb-0">Consulta Externa</h6>
+                                <h6 class="text-dark text-sm font-weight-bold mb-0">Evaluación Física Ginecológica</h6>
+                                <p class="text-secondary text-xs mt-1 mb-0">{{ $medicalConsultation->consultation_date->format('d/m/Y H:i') }}</p>
                                 <p class="text-sm text-dark mt-3 mb-2">
-                                    <strong>Examen Físico:</strong> {{ $medicalConsultation->consultation_physical_exam ?? '-' }}<br>
-                                    <strong>Plan de Tratamiento:</strong> {{ $medicalConsultation->consultation_treatment_plan ?? '-' }}
+                                    <strong>Examen Físico:</strong> {{ $medicalConsultation->consultation_physical_exam }}
                                 </p>
                             </div>
                         </div>
-                            @endif
-                        @else
-                            {{-- Consulta de Enfermería --}}
-                            @if($medicalConsultation->nursing_note)
-                            <div class="timeline-block mb-3">
-                                <span class="timeline-step bg-success p-3">
-                                    <i class="bi bi-hospital text-white"></i>
-                                </span>
-                                <div class="timeline-content pt-1">
-                                    <h6 class="text-dark text-sm font-weight-bold mb-0">Evaluación de Enfermería</h6>
+                        @endif
+                        
+                        {{-- Evaluación de Enfermería --}}
+                        @if($medicalConsultation->nursing_note)
+                        <div class="timeline-block mb-3">
+                            <span class="timeline-step bg-primary p-3">
+                                <i class="bi bi-hospital text-white"></i>
+                            </span>
+                            <div class="timeline-content pt-1">
+                                <h6 class="text-dark text-sm font-weight-bold mb-0">Evaluación de Enfermería</h6>
+                                @php
+                                    $nursingData = json_decode($medicalConsultation->nursing_note, true);
+                                @endphp
+                                @if($nursingData && is_array($nursingData))
+                                    <p class="text-sm text-dark mt-3 mb-2">
+                                        @if(isset($nursingData['signos_vitales']) && is_array($nursingData['signos_vitales']))
+                                            <strong>Signos Vitales:</strong>
+                                            @php
+                                                $vitalSigns = [];
+                                                if(isset($nursingData['signos_vitales']['presion_arterial'])) $vitalSigns[] = 'PA: ' . $nursingData['signos_vitales']['presion_arterial'];
+                                                if(isset($nursingData['signos_vitales']['frecuencia_cardiaca'])) $vitalSigns[] = 'FC: ' . $nursingData['signos_vitales']['frecuencia_cardiaca'];
+                                                if(isset($nursingData['signos_vitales']['temperatura'])) $vitalSigns[] = 'Temp: ' . $nursingData['signos_vitales']['temperatura'] . '°C';
+                                                if(isset($nursingData['signos_vitales']['frecuencia_respiratoria'])) $vitalSigns[] = 'FR: ' . $nursingData['signos_vitales']['frecuencia_respiratoria'];
+                                                if(isset($nursingData['signos_vitales']['peso'])) $vitalSigns[] = 'Peso: ' . $nursingData['signos_vitales']['peso'] . 'kg';
+                                                if(isset($nursingData['signos_vitales']['talla'])) $vitalSigns[] = 'Talla: ' . $nursingData['signos_vitales']['talla'] . 'cm';
+                                                if(isset($nursingData['signos_vitales']['saturacion_o2'])) $vitalSigns[] = 'SatO2: ' . $nursingData['signos_vitales']['saturacion_o2'] . '%';
+                                                if(isset($nursingData['signos_vitales']['glicemia'])) $vitalSigns[] = 'Glicemia: ' . $nursingData['signos_vitales']['glicemia'] . 'mg/dl';
+                                            @endphp
+                                            {{ implode(', ', $vitalSigns) }}<br>
+                                        @endif
+                                        
+                                        @if(isset($nursingData['acompanante']) && is_array($nursingData['acompanante']))
+                                            <strong>Acompañante:</strong> 
+                                            @if(isset($nursingData['acompanante']['nombre']))
+                                                {{ $nursingData['acompanante']['nombre'] }}
+                                                @if(isset($nursingData['acompanante']['telefono']))
+                                                    ({{ $nursingData['acompanante']['telefono'] }})
+                                                @endif
+                                                @if(isset($nursingData['acompanante']['email']))
+                                                    - {{ $nursingData['acompanante']['email'] }}
+                                                @endif
+                                                @if(isset($nursingData['acompanante']['dpi']))
+                                                    - DPI: {{ $nursingData['acompanante']['dpi'] }}
+                                                @endif
+                                                @if(isset($nursingData['acompanante']['direccion']))
+                                                    - {{ $nursingData['acompanante']['direccion'] }}
+                                                @endif
+                                            @endif<br>
+                                        @endif
+                                        
+                                        @if(isset($nursingData['nursing_note']))
+                                            <strong>Notas de Enfermería:</strong> {{ $nursingData['nursing_note'] }}<br>
+                                        @endif
+                                        
+                                        @if(isset($nursingData['notas_adicionales']))
+                                            <strong>Notas Adicionales:</strong> {{ $nursingData['notas_adicionales'] }}<br>
+                                        @endif
+                                        
+                                        @if(isset($nursingData['fecha_registro']) || isset($nursingData['registrado_por']))
+                                            <strong>Registrado:</strong> 
+                                            @if(isset($nursingData['fecha_registro']))
+                                                {{ $nursingData['fecha_registro'] }}
+                                            @endif
+                                            @if(isset($nursingData['registrado_por']))
+                                                por {{ $nursingData['registrado_por'] }}
+                                            @endif
+                                        @endif
+                                    </p>
+                                @else
                                     <p class="text-sm text-dark mt-3 mb-2">
                                         <strong>Notas de Enfermería:</strong> {{ $medicalConsultation->nursing_note }}
                                     </p>
-                                </div>
+                                @endif
                             </div>
-                            @endif
+                        </div>
                         @endif
                         <div class="timeline-block mb-3">
                             <span class="timeline-step bg-dark p-3">
@@ -328,26 +373,13 @@
                                         -
                                     @endif
                                     <br>
-                                    <strong>Referencia/Contrarreferencia:</strong> {{ $medicalConsultation->reference_contrareference ?? '-' }}
-                                </p>
-                            </div>
-                        </div>
-                        <div class="timeline-block mb-3">
-                            <span class="timeline-step bg-info p-3">
-                                <i class="bi bi-file-medical text-white"></i>
-                            </span>
-                            <div class="timeline-content pt-1">
-                                <h6 class="text-dark text-sm font-weight-bold mb-0">Notas de Enfermería y Admisión</h6>
-                                <p class="text-sm text-dark mt-3 mb-2">
-                                    <strong>Nota de Enfermería:</strong> {{ $medicalConsultation->nursing_note ?? '-' }}<br>
-                                    <strong>Nota de Admisión:</strong> {{ $medicalConsultation->admission_note ?? '-' }}
                                 </p>
                             </div>
                         </div>
                         <div class="timeline-block">
                             <span class="timeline-step 
                                 @if($medicalConsultation->final_status === 'egresado') bg-success
-                                @elseif($medicalConsultation->final_status === 'hospitalizado') bg-info
+                                @elseif($medicalConsultation->final_status === 'hospitalizado') bg-brand-header
                                 @elseif($medicalConsultation->final_status === 'referido') bg-warning
                                 @elseif($medicalConsultation->final_status === 'fallecido') bg-dark
                                 @else bg-primary
