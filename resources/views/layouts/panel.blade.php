@@ -23,6 +23,7 @@
     <link href="{{ asset('css/checkbox-fixes.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/useroptions-fixes.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/style_card.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/notifications.css') }}" rel="stylesheet" />
 </head>
 
 <body class="g-sidenav-show  bg-gray-100">
@@ -104,7 +105,6 @@
     <script src="{{ asset('js/menu-manager.js') }}"></script>
     <script src="{{ asset('js/global-search.js') }}"></script>
     <script src="{{ asset('js/common-filters.js') }}"></script>
-    <script src="{{ asset('js/appointment-form.js') }}"></script>
     <script src="{{ asset('js/mobile-sidenav.js') }}"></script>
     <script src="{{ asset('js/responsive-datatables.js') }}"></script>
     <script src="{{ asset('js/datatables-init.js') }}"></script>
@@ -113,6 +113,8 @@
     <script src="{{ asset('js/multi-select-init.js') }}"></script>
     <script src="{{ asset('js/material-dashboard.min.js?v=3.1.0') }}"></script>
     <script src="{{ asset('js/toast-notifications.js') }}"></script>
+    <script src="{{ asset('js/delete-confirmation.js') }}"></script>
+    <script src="{{ asset('js/table-scroll.js') }}"></script>
 
     @stack('scripts')
 

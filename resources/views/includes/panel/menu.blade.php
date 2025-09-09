@@ -103,7 +103,7 @@
     <!-- MANTENIMIENTO - Aparece si tiene acceso base O algún submódulo -->
     @if(auth()->check() && (auth()->user()->isAdmin() || Gate::any([
         'mantenimiento.acceso', 
-        'especialidades.ver', 'doctores.ver', 'tipos_horario.ver',
+        'especialidades.ver', 'doctores.ver', 'tipos_horario.ver', 'doctores.sustituciones.ver', 'dias_festivos.ver',
         'sexos.ver', 'estados_civiles.ver', 'comunidades_linguisticas.ver', 'etnias.ver', 'discapacidades.ver', 'alergias.ver', 'tipos_control.ver', 'relaciones_acompanantes.ver', 'metodos_anticonceptivos.ver', 'estados_paciente.ver',
         'pruebas_laboratorio.ver', 'examenes.ver', 'medicamentos.ver',
         'paises.ver', 'departamentos.ver', 'municipios.ver'
@@ -117,7 +117,7 @@
         <div class="collapse" id="menuMantenimiento">
             <ul class="nav mobile-submenu">
                 <!-- Gestión Médica Submenu -->
-                @if(auth()->user()->isAdmin() || Gate::any(['especialidades.ver', 'doctores.ver', 'tipos_horario.ver']))
+                @if(auth()->user()->isAdmin() || Gate::any(['especialidades.ver', 'doctores.ver', 'tipos_horario.ver', 'doctores.sustituciones.ver', 'dias_festivos.ver']))
                 <li class="nav-item">
                     <a class="nav-link text-dark mobile-submenu-item" data-bs-toggle="collapse" href="#menuGestionMedica" role="button"
                         aria-expanded="false" aria-controls="menuGestionMedica">
@@ -147,6 +147,22 @@
                                 <a class="nav-link text-dark mobile-submenu-item" href="{{ route('schedule-types.index') }}">
                                     <i class="bi bi-clock opacity-5 me-2"></i>
                                     <span class="sidenav-normal">Tipos de Horario</span>
+                                </a>
+                            </li>
+                            @endif
+                            @if(auth()->user()->isAdmin() || Gate::check('doctores.sustituciones.ver'))
+                            <li class="nav-item">
+                                <a class="nav-link text-dark mobile-submenu-item" href="{{ route('doctor-substitutions.index') }}">
+                                    <i class="bi bi-arrow-repeat opacity-5 me-2"></i>
+                                    <span class="sidenav-normal">Sustituciones</span>
+                                </a>
+                            </li>
+                            @endif
+                            @if(auth()->user()->isAdmin() || Gate::check('dias_festivos.ver'))
+                            <li class="nav-item">
+                                <a class="nav-link text-dark mobile-submenu-item" href="{{ route('holidays.index') }}">
+                                    <i class="bi bi-calendar-event opacity-5 me-2"></i>
+                                    <span class="sidenav-normal">Días Festivos</span>
                                 </a>
                             </li>
                             @endif
@@ -250,6 +266,7 @@
                 </li>
                 @endif
 
+
                 <!-- Estudios y Medicamentos Submenu -->
                 @if(auth()->user()->isAdmin() || Gate::any(['pruebas_laboratorio.ver', 'examenes.ver', 'medicamentos.ver']))
                 <li class="nav-item">
@@ -332,43 +349,13 @@
     </li>
     @endif
 
-    <!-- Archivo Clínico -->
-    @if(auth()->check() && (auth()->user()->isAdmin() || Gate::any(['archivo_clinico.acceso', 'archivo_clinico.expedientes_recientes', 'archivo_clinico.expedientes_archivados'])))
-    <li class="nav-item">
-        <a data-bs-toggle="collapse" href="#menuArchivo" class="nav-link text-dark mobile-menu-item"
-            aria-controls="menuArchivo" role="button" aria-expanded="false">
-            <i class="bi bi-archive opacity-5"></i>
-            <span class="nav-link-text ms-1 ps-1">Archivo Clínico</span>
-        </a>
-        <div class="collapse" id="menuArchivo">
-            <ul class="nav mobile-submenu">
-                @if(auth()->user()->isAdmin() || Gate::check('archivo_clinico.expedientes_recientes'))
-                <li class="nav-item">
-                    <a class="nav-link text-dark mobile-submenu-item" href="{{ route('clinical-file.index') }}">
-                        <i class="bi bi-file-medical opacity-5 me-2"></i>
-                        <span class="sidenav-normal">Expedientes Recientes</span>
-                    </a>
-                </li>
-                @endif
-                @if(auth()->user()->isAdmin() || Gate::check('archivo_clinico.expedientes_archivados'))
-                <li class="nav-item">
-                    <a class="nav-link text-dark mobile-submenu-item" href="{{ route('clinical-file.archived') }}">
-                        <i class="bi bi-archive-fill opacity-5 me-2"></i>
-                        <span class="sidenav-normal">Expedientes Archivados</span>
-                    </a>
-                </li>
-                @endif
-            </ul>
-        </div>
-    </li>
-    @endif
 
     <!-- Administración del Sistema -->
     @if(auth()->check() && (auth()->user()->isAdmin() || Gate::any(['administracion.acceso', 'usuarios.ver', 'roles.ver', 'import.acceso'])))
     <li class="nav-item">
         <a data-bs-toggle="collapse" href="#menuAdministracion" class="nav-link text-dark mobile-menu-item"
             aria-controls="menuAdministracion" role="button" aria-expanded="false">
-            <i class="bi bi-gear opacity-5"></i>
+            <i class="bi bi-shield-check opacity-5"></i>
             <span class="nav-link-text ms-1 ps-1">Administración</span>
         </a>
         <div class="collapse" id="menuAdministracion">
