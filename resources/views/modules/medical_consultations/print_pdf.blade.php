@@ -638,23 +638,15 @@
             @endif
         </div>
     </div>
-            <!-- Notas de Enfermería y Admisión -->
+            <!-- Notas de Enfermería -->
     <div class="section">
-        <div class="section-title">Notas de Enfermería y Admisión</div>
+        <div class="section-title">Notas de Enfermería</div>
                 <div class="info-grid">
                     @if($medicalConsultation->nursing_note)
                     <div class="info-row">
                         <div class="info-label">Nota de Enfermería:</div>
                         <div class="info-value">
                             <div class="text-content">{{ $medicalConsultation->nursing_note }}</div>
-                        </div>
-                    </div>
-                    @endif
-                    @if($medicalConsultation->admission_note)
-                    <div class="info-row">
-                        <div class="info-label">Nota de Admisión:</div>
-                        <div class="info-value">
-                            <div class="text-content">{{ $medicalConsultation->admission_note }}</div>
                         </div>
                     </div>
                     @endif

@@ -87,7 +87,7 @@
                             </div>
                         </div>
                         <div class="col-4 text-end">
-                            <div class="icon icon-shape bg-info shadow text-center border-radius-md">
+                            <div class="icon icon-shape bg-brand-header shadow text-center border-radius-md">
                                 <i class="bi bi-graph-up text-lg text-white"></i>
                             </div>
                         </div>
@@ -101,7 +101,7 @@
     <div class="row">
         <div class="col-12">
             <div class="card mb-4">
-                <div class="card-header pb-0 bg-info">
+                <div class="card-header pb-0 bg-brand-header">
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <h6 class="text-white mb-0">Expedientes Clínicos</h6>
@@ -214,7 +214,7 @@
                                 <input type="date" name="birth_date" class="form-control form-control-lg border border-info" value="{{ request('birth_date') }}">
                             </div>
                             <div class="col-md-4 d-flex align-items-end gap-2">
-                                <button type="submit" class="btn bg-gradient-info text-white btn-lg">
+                                <button type="submit" class="btn bg-brand-header text-white btn-lg">
                                     <i class="fas fa-filter me-2"></i>Filtrar
                                 </button>
                                 @php
@@ -247,7 +247,7 @@
                                 <tr class="{{ $record->record_type == 'temporary' ? 'table-warning' : '' }}">
                                     <td>
                                         <div class="d-flex px-3 py-2">
-                                            <div class="avatar avatar-sm me-3 bg-info rounded-circle">
+                                            <div class="avatar avatar-sm me-3 bg-brand-header rounded-circle">
                                                 <span class="text-white font-weight-bold">{{ substr($record->first_name, 0, 1) }}</span>
                                             </div>
                                             <div class="d-flex flex-column justify-content-center">
@@ -315,7 +315,7 @@
                                             <a href="{{ route('clinical-records.show', $record) }}" class="btn btn-primary rounded-pill px-3 py-2 me-2">
                                                 <i class="fas fa-eye me-1"></i>Ver
                                             </a>
-                                            <a href="{{ route('clinical-records.edit', $record) }}" class="btn btn-info rounded-pill px-3 py-2 me-2">
+                                            <a href="{{ route('clinical-records.edit', $record) }}" class="btn bg-brand-header rounded-pill px-3 py-2 me-2">
                                                 <i class="fas fa-edit me-1"></i>Editar
                                             </a>
                                             

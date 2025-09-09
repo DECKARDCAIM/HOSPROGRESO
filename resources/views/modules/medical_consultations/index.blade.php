@@ -8,7 +8,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="card mb-4">
-                    <div class="card-header pb-0 bg-info">
+                    <div class="card-header pb-0 bg-brand-header">
                         <div class="row align-items-center">
                             <div class="col-md-8">
                                 <h6 class="text-white mb-0">Historias Clínicas en Proceso</h6>
@@ -69,12 +69,14 @@
                                                     $badgeClass = match($status) {
                                                         'abierta' => 'bg-primary',
                                                         'en_proceso' => 'bg-warning',
+                                                        'pendiente_evaluacion_medica' => 'bg-info',
                                                         'finalizada' => 'bg-success',
                                                         'cancelada' => 'bg-dark',
                                                         default => 'bg-light text-dark',
                                                     };
                                                     $statusText = match($status) {
                                                         'en_proceso' => 'En proceso',
+                                                        'pendiente_evaluacion_medica' => 'Pendiente evaluación médica',
                                                         default => ucfirst($consultation->status ?? '-')
                                                     };
                                                 @endphp
@@ -82,17 +84,18 @@
                                             </td>
                                             <td class="align-middle text-center">
                                                 @if($consultation->status === 'abierta')
-                                                    <a href="{{ route('medical-consultations.process', $consultation) }}" class="btn btn-sm btn-info" title="Iniciar Proceso">
+                                                    <a href="{{ route('medical-consultations.process', $consultation) }}" class="btn btn-sm bg-brand-header" title="Iniciar Proceso">
                                                         <i class="fas fa-play me-1"></i> Iniciar Proceso
                                                     </a>
                                                 @elseif($consultation->status === 'en_proceso')
-                                                    <a href="{{ route('medical-consultations.process', $consultation) }}" class="btn btn-sm btn-info" title="Continuar Proceso">
+                                                    <a href="{{ route('medical-consultations.process', $consultation) }}" class="btn btn-sm bg-brand-header" title="Continuar Proceso">
                                                         <i class="fas fa-forward me-1"></i> Continuar Proceso
                                                     </a>
+                                                @elseif($consultation->status === 'pendiente_evaluacion_medica')
+                                                    <a href="{{ route('medical-consultations.process', $consultation) }}" class="btn btn-sm bg-info text-white" title="Evaluar Consulta de Enfermería">
+                                                        <i class="fas fa-user-md me-1"></i> Evaluar Consulta
+                                                    </a>
                                                 @endif
-                                                <a href="{{ route('medical-consultations.show', $consultation) }}" class="btn btn-sm btn-secondary ms-1" title="Ver Detalles">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
                                             </td>
                                         </tr>
                                     @empty
