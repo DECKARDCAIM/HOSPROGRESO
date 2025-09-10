@@ -18,7 +18,7 @@ return new class extends Migration
             $table->date('start_date');
             $table->date('end_date');
             $table->enum('reason', ['vacaciones', 'licencia_medica', 'despido', 'otro']);
-            $table->enum('status', ['activa', 'completada', 'cancelada'])->default('activa');
+            $table->enum('status', ['programada', 'activa', 'completada', 'cancelada'])->default('programada');
             $table->text('notes')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();

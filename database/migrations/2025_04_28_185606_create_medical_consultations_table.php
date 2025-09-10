@@ -17,23 +17,19 @@ return new class extends Migration
             $table->text('consultation_reason');
             $table->text('medical_diagnosis')->nullable();
             $table->text('nursing_note')->nullable();
-            $table->text('admission_note')->nullable();
             $table->text('prescribed_medications')->nullable();
             $table->text('reference_contrareference')->nullable();
             $table->string('status')->default('abierta');
             $table->enum('attention_type', ['emergencia', 'consulta_externa'])->default('consulta_externa');
-            $table->text('emergency_vital_signs')->nullable();
             $table->text('emergency_trauma_assessment')->nullable();
-            $table->text('emergency_treatment_plan')->nullable();
             $table->text('consultation_physical_exam')->nullable();
-            $table->text('consultation_treatment_plan')->nullable();
             $table->enum('final_status', ['egresado', 'hospitalizado', 'referido', 'fallecido'])->nullable();
             
             // Campos específicos para SIGSA 3H
             $table->foreignId('control_type_id')->nullable()->constrained('control_types')->comment('Tipo de control médico');
+            $table->foreignId('patient_status_id')->nullable()->constrained('patient_statuses');
             $table->boolean('has_igss')->default(false)->comment('¿Tiene derecho IGSS?');
             $table->boolean('is_new_patient')->default(false)->comment('¿Paciente nuevo?');
-            $table->string('diagnosis_cie10_code')->nullable()->comment('Código CIE-10 del diagnóstico');
             $table->text('prescribed_treatment')->nullable()->comment('Tratamiento y medicamentos formulados');
             $table->boolean('was_referred')->default(false)->comment('¿Fue referido?');
             $table->boolean('comes_counter_referred')->default(false)->comment('¿Viene contra referido?');
@@ -46,19 +42,19 @@ return new class extends Migration
             
             // Campos de Acompañante (Adultos)
             $table->string('companion_name', 100)->nullable();
-            $table->string('companion_phone', 20)->nullable();
+            $table->string('companion_phone', 8)->nullable();
             $table->string('companion_email', 100)->nullable();
-            $table->string('companion_dpi', 20)->nullable();
-            $table->string('companion_relationship', 50)->nullable();
+            $table->string('companion_dpi', 13)->nullable();
+            $table->foreignId('companion_relationship_id')->nullable()->constrained('companion_relationships');
             
             // Campos de Tutor/Padre/Madre (Pediatría)
             $table->string('guardian_name', 100)->nullable();
-            $table->string('guardian_phone', 20)->nullable();
+            $table->string('guardian_phone', 8)->nullable();
             $table->string('guardian_email', 100)->nullable();
-            $table->string('guardian_dpi', 20)->nullable();
-            $table->string('guardian_relationship', 50)->nullable();
+            $table->string('guardian_dpi', 13)->nullable();
+            $table->foreignId('guardian_relationship_id')->nullable()->constrained('companion_relationships');
             $table->string('guardian_address', 200)->nullable();
-            $table->string('emergency_contact', 20)->nullable();
+            $table->string('emergency_contact', 8)->nullable();
             
             // Campos Gineco-Obstétricos
             $table->boolean('is_pregnant')->nullable();
@@ -68,7 +64,7 @@ return new class extends Migration
             $table->integer('births_count')->nullable();
             $table->integer('abortions_count')->nullable();
             $table->integer('cesareans_count')->nullable();
-            $table->string('contraceptive_method', 50)->nullable();
+            $table->foreignId('contraceptive_method_id')->nullable()->constrained('contraceptive_methods');
             $table->text('gynecological_history')->nullable();
             
             // Campos Pediátricos
@@ -87,11 +83,18 @@ return new class extends Migration
             $table->datetime('death_date')->nullable();
             $table->string('death_cause', 200)->nullable();
             
+            // Campos de sustitución de doctores
+            $table->foreignId('substitution_id')->nullable()->constrained('doctor_substitutions')->onDelete('set null');
+            $table->boolean('is_substituted')->default(false);
+            $table->timestamp('substituted_at')->nullable();
+            $table->timestamp('returned_to_original_at')->nullable();
+            
             $table->timestamps();
             
             $table->index(['control_type_id', 'consultation_date']);
             $table->index(['has_igss', 'consultation_date']);
             $table->index(['is_new_patient', 'consultation_date']);
+            $table->index(['substitution_id', 'is_substituted']);
         });
     }
 
