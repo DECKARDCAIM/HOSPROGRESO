@@ -18,22 +18,15 @@ return new class extends Migration
             $table->string('second_lastname')->nullable();
             $table->string('married_lastname')->nullable();
             $table->string('cui', 13)->nullable();
-            $table->string('sex')->nullable(); // Guardamos como string por ahora
             $table->unsignedBigInteger('sex_id')->nullable();
-            $table->string('civil_status')->nullable(); // Guardamos como string por ahora
             $table->unsignedBigInteger('civil_status_id')->nullable();
-            $table->string('linguistic_community')->nullable(); // Guardamos como string por ahora
             $table->unsignedBigInteger('linguistic_community_id')->nullable();
-            $table->string('ethnicity')->nullable(); // Guardamos como string por ahora
             $table->unsignedBigInteger('ethnicity_id')->nullable();
             $table->date('birth_date')->nullable();
             $table->string('education')->nullable();
             $table->string('occupation')->nullable();
-            $table->string('country')->nullable(); // Guardamos como string por ahora
             $table->unsignedBigInteger('country_id')->nullable();
-            $table->string('department')->nullable(); // Guardamos como string por ahora
             $table->unsignedBigInteger('department_id')->nullable();
-            $table->string('municipality')->nullable(); // Guardamos como string por ahora
             $table->unsignedBigInteger('municipality_id')->nullable();
             $table->text('specific_residence')->nullable();
             $table->boolean('is_processed')->default(false); // Para saber si ya fue procesado

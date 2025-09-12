@@ -97,25 +97,6 @@
                                         </small>
                                     </div>
                                 </div>
-                                
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" 
-                                                   type="checkbox" 
-                                                   id="is_active" 
-                                                   name="is_active" 
-                                                   value="1" 
-                                                   {{ old('is_active', true) ? 'checked' : '' }}>
-                                            <label class="form-check-label" for="is_active">
-                                                <i class="bi bi-check-circle me-1"></i>Activo
-                                            </label>
-                                        </div>
-                                        <small class="form-text text-muted">
-                                            Si está marcado, este día festivo será considerado al agendar citas
-                                        </small>
-                                    </div>
-                                </div>
                             </div>
 
                             <!-- Información adicional -->

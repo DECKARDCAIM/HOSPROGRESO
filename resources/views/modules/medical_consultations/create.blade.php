@@ -376,31 +376,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById(modalId);
         modal.style.display = 'flex';
         modal.classList.add('show');
-        
-        // Aplicar animación
-        setTimeout(() => {
-            const content = modal.querySelector('.search-modal-content');
-            if (content) {
-                content.style.transform = 'scale(1) translateY(0)';
-                content.style.opacity = '1';
-            }
-        }, 10);
     }
     
     // Función para ocultar modal personalizado
     function hideModal(modalId) {
         const modal = document.getElementById(modalId);
-        const content = modal.querySelector('.search-modal-content');
-        
-        if (content) {
-            content.style.transform = 'scale(0.9) translateY(-20px)';
-            content.style.opacity = '0';
-        }
-        
-        setTimeout(() => {
-            modal.style.display = 'none';
-            modal.classList.remove('show');
-        }, 300);
+        modal.style.display = 'none';
+        modal.classList.remove('show');
     }
 
     // Detección automática de rol

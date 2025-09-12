@@ -99,14 +99,12 @@
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    transition: all 0.3s ease !important;
     position: relative !important;
     z-index: 1 !important;
 }
 
 .btn-mini-professional:hover {
     background: rgba(255, 255, 255, 0.25) !important;
-    transform: scale(1.1) !important;
     color: white !important;
 }
 
@@ -136,7 +134,6 @@
 .dropdown-item:not(.notification-preview-item) {
     border-radius: 8px !important;
     padding: 12px 16px !important;
-    transition: all 0.3s ease !important;
     display: flex !important;
     align-items: center !important;
     margin: 2px 0 !important;
@@ -145,11 +142,9 @@
 .dropdown-item:not(.notification-preview-item):hover {
     background: var(--primary-blue-light) !important;
     color: var(--primary-blue) !important;
-    transform: translateX(4px) !important;
 }
 
 .dropdown-item:not(.notification-preview-item) i {
-    transition: all 0.3s ease !important;
     margin-right: 8px !important;
 }
 
@@ -168,7 +163,6 @@
 
 /* Efectos hover para items principales del menú */
 .navbar-nav .nav-item > .nav-link {
-    transition: all 0.3s ease !important;
     border-radius: 8px !important;
     margin: 2px 8px !important;
     padding: 12px 16px !important;
@@ -178,7 +172,6 @@
 .navbar-nav .nav-item > .nav-link:hover {
     background: linear-gradient(135deg, var(--primary-blue-light) 0%, rgba(25, 118, 210, 0.1) 100%) !important;
     color: var(--primary-blue) !important;
-    transform: translateX(4px) !important;
     box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15) !important;
 }
 
@@ -188,12 +181,10 @@
 }
 
 .navbar-nav .nav-item > .nav-link i {
-    transition: all 0.3s ease !important;
 }
 
 /* Efectos hover para submenús */
 .navbar-nav .nav .nav-item .nav-link {
-    transition: all 0.3s ease !important;
     border-radius: 6px !important;
     margin: 1px 8px !important;
     padding: 8px 12px !important;
@@ -204,7 +195,6 @@
     background: rgba(25, 118, 210, 0.08) !important;
     border-left-color: var(--primary-blue) !important;
     color: var(--primary-blue) !important;
-    transform: translateX(3px) !important;
 }
 
 .navbar-nav .nav .nav-item .nav-link:hover i {
@@ -220,7 +210,6 @@
 .navbar-nav .nav .nav .nav-item .nav-link:hover {
     background: rgba(25, 118, 210, 0.05) !important;
     border-left-color: var(--secondary-blue) !important;
-    transform: translateX(2px) !important;
 }
 
 /* Efecto para menús expandidos */
@@ -247,14 +236,12 @@
     position: absolute !important;
     right: 16px !important;
     top: 50% !important;
-    transform: translateY(-50%) !important;
     font-size: 0.7rem !important;
     transition: transform 0.3s ease !important;
     opacity: 0.6 !important;
 }
 
 .navbar-nav .nav-item > .nav-link[data-bs-toggle="collapse"][aria-expanded="true"]::after {
-    transform: translateY(-50%) rotate(180deg) !important;
     color: white !important;
     opacity: 1 !important;
 }
@@ -270,14 +257,12 @@
     position: absolute !important;
     right: 12px !important;
     top: 50% !important;
-    transform: translateY(-50%) !important;
     font-size: 0.6rem !important;
     transition: transform 0.3s ease !important;
     opacity: 0.5 !important;
 }
 
 .navbar-nav .nav .nav-item .nav-link[data-bs-toggle="collapse"][aria-expanded="true"]::after {
-    transform: translateY(-50%) rotate(90deg) !important;
     opacity: 0.8 !important;
 }
 
@@ -315,7 +300,6 @@
     position: absolute !important;
     right: 8px !important;
     top: 50% !important;
-    transform: translateY(-50%) !important;
     color: var(--primary-blue) !important;
     font-size: 1.2rem !important;
     font-weight: bold !important;
@@ -325,7 +309,6 @@
 .active-menu-item i {
     color: var(--primary-blue) !important;
     font-weight: 600 !important;
-    transform: scale(1.1) !important;
 }
 
 .active-menu-item .sidenav-normal {
@@ -347,7 +330,6 @@
 
 /* Efecto hover menos intenso para elementos activos */
 .active-menu-item:hover {
-    transform: translateX(2px) !important;
     background: linear-gradient(135deg, rgba(25, 118, 210, 0.2) 0%, rgba(25, 118, 210, 0.15) 100%) !important;
 }
 
@@ -357,7 +339,6 @@
     position: absolute !important;
     left: 8px !important;
     top: 50% !important;
-    transform: translateY(-50%) !important;
     color: var(--primary-blue) !important;
     opacity: 0.4 !important;
     font-size: 0.8rem !important;

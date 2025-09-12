@@ -213,11 +213,7 @@ class HomeController extends Controller
                                                  ->whereMonth('consultation_date', now()->month)
                                                  ->whereYear('consultation_date', now()->year)
                                                  ->count(),
-            'pacientes_nuevos_mes' => MedicalConsultation::where('attention_type', 'consulta_externa')
-                                                        ->where('is_new_patient', true)
-                                                        ->whereMonth('consultation_date', now()->month)
-                                                        ->whereYear('consultation_date', now()->year)
-                                                        ->count(),
+            'pacientes_nuevos_mes' => 0,
             'citas_mes' => Appointment::whereMonth('appointment_date', now()->month)
                                     ->whereYear('appointment_date', now()->year)
                                     ->count()
@@ -435,14 +431,6 @@ class HomeController extends Controller
             ->orderBy('total', 'desc')
             ->get();
 
-        // Consultas por tipo de control
-        $tiposControl = MedicalConsultation::join('control_types', 'medical_consultations.control_type_id', '=', 'control_types.id')
-            ->whereMonth('consultation_date', now()->month)
-            ->whereYear('consultation_date', now()->year)
-            ->select('control_types.name', DB::raw('count(*) as total'))
-            ->groupBy('control_types.id', 'control_types.name')
-            ->orderBy('total', 'desc')
-            ->get();
 
         return [
             'role' => 'Estadística',

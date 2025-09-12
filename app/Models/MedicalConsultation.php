@@ -17,45 +17,21 @@ class MedicalConsultation extends Model
         'consultation_reason',
         'medical_diagnosis',
         'nursing_note',
-        'prescribed_medications',
-        'reference_contrareference',
         'status',
         'patient_status_id',
         'attention_type',
-        'emergency_vital_signs',
-        'emergency_trauma_assessment',
-        'emergency_treatment_plan',
-        'consultation_physical_exam',
-        'consultation_treatment_plan',
+        'physical_exam',
         'final_status',
-        'additional_notes',
-        // Campos SIGSA 3H
-        'control_type_id',
-        'has_igss',
-        'is_new_patient',
-        'diagnosis_cie10_code',
         'prescribed_treatment',
-        'was_referred',
-        'comes_counter_referred',
-        'comes_referred',
-        'was_counter_referred',
-        'reference_destination',
-        'reference_reason',
         'gestation_weeks',
         'sigsa_observations',
-        // Campos de Acompañante/Tutor
+        // Campos de Acompañante
         'companion_name',
         'companion_phone',
         'companion_email',
         'companion_dpi',
         'companion_relationship_id',
-        'guardian_name',
-        'guardian_phone',
-        'guardian_email',
-        'guardian_dpi',
-        'guardian_relationship_id',
-        'guardian_address',
-        'emergency_contact',
+        'companion_address',
         // Campos Gineco-Obstétricos
         'is_pregnant',
         'last_menstrual_period',
@@ -77,9 +53,6 @@ class MedicalConsultation extends Model
         'pediatric_history',
         'parent_instructions',
         // Campos de Estados Finales
-        'hospital_service',
-        'death_date',
-        'death_cause',
         'substitution_id',
         'is_substituted',
         'substituted_at',
@@ -88,15 +61,8 @@ class MedicalConsultation extends Model
 
     protected $casts = [
         'consultation_date' => 'datetime',
-        'has_igss' => 'boolean',
-        'is_new_patient' => 'boolean',
-        'was_referred' => 'boolean',
-        'comes_counter_referred' => 'boolean',
-        'comes_referred' => 'boolean',
-        'was_counter_referred' => 'boolean',
         // Campos de fechas
         'last_menstrual_period' => 'date',
-        'death_date' => 'datetime',
         // Campos booleanos
         'is_pregnant' => 'boolean',
         // Campos numéricos
@@ -151,10 +117,6 @@ class MedicalConsultation extends Model
         return $this->belongsTo(DoctorSubstitution::class);
     }
 
-    public function controlType()
-    {
-        return $this->belongsTo(ControlType::class);
-    }
 
     public function companionRelationship()
     {
@@ -221,10 +183,6 @@ class MedicalConsultation extends Model
 
     // Relaciones con catálogos
 
-    public function guardianRelationship()
-    {
-        return $this->belongsTo(CompanionRelationship::class, 'guardian_relationship_id');
-    }
 
     public function contraceptiveMethod()
     {

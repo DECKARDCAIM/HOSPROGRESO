@@ -30,9 +30,8 @@
     border-radius: 20px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     overflow: hidden;
-    transform: scale(0.9) translateY(-20px);
-    opacity: 0;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: scale(1) translateY(0);
+    opacity: 1;
 }
 
 .search-modal.show .search-modal-content {
@@ -88,7 +87,6 @@
     font-weight: 500;
     position: relative;
     z-index: 1;
-    transition: all 0.3s ease;
 }
 
 #globalSearchInput::placeholder {
@@ -112,14 +110,12 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.3s ease;
     position: relative;
     z-index: 1;
 }
 
 .search-close:hover {
     background: rgba(255, 255, 255, 0.25);
-    transform: scale(1.1);
 }
 
 .search-close i {
@@ -162,7 +158,6 @@
     color: #344767;
     font-weight: 500;
     margin-bottom: 8px;
-    transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
 }
@@ -176,19 +171,16 @@
     width: 4px;
     background: #1976d2;
     transform: scaleY(0);
-    transition: transform 0.3s ease;
 }
 
 .suggestion-item:hover {
     background: linear-gradient(135deg, rgba(25, 118, 210, 0.15) 0%, rgba(25, 118, 210, 0.1) 100%);
     border-color: #e3f2fd;
     color: #1976d2;
-    transform: translateX(5px);
     box-shadow: 0 5px 15px rgba(25, 118, 210, 0.2);
 }
 
 .suggestion-item:hover::before {
-    transform: scaleY(1);
 }
 
 .suggestion-item i {
@@ -202,11 +194,9 @@
     color: white;
     font-size: 16px;
     flex-shrink: 0;
-    transition: all 0.3s ease;
 }
 
 .suggestion-item:hover i {
-    transform: scale(1.1);
     box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
 }
 
@@ -254,7 +244,6 @@
 
 .search-key-indicator.show {
     display: flex;
-    animation: slideInRight 0.3s ease;
 }
 
 @keyframes slideInRight {
@@ -309,12 +298,10 @@
 /* Icono de búsqueda clickeable */
 .search-icon {
     cursor: pointer;
-    transition: all 0.3s ease;
 }
 
 .search-icon:hover {
     background: rgba(255, 255, 255, 0.25);
-    transform: scale(1.1);
 }
 
 /* Responsive */

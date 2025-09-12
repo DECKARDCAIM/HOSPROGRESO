@@ -10,7 +10,6 @@ use App\Http\Controllers\CivilStatusController;
 use App\Http\Controllers\ClinicalRecordController;
 use App\Http\Controllers\CompanionRelationshipController;
 use App\Http\Controllers\ContraceptiveMethodController;
-use App\Http\Controllers\ControlTypeController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DisabilityController;
@@ -257,28 +256,6 @@ Route::middleware('auth')->group(function () {
         ->name('doctor-substitutions.get-available-doctors')
         ->middleware('permission:doctores.sustituciones.ver');
     
-    // Tipos de control - Rutas individuales con permisos específicos
-    Route::get('control-types', [ControlTypeController::class, 'index'])
-        ->name('control-types.index')
-        ->middleware('permission:tipos_control.ver');
-    Route::get('control-types/create', [ControlTypeController::class, 'create'])
-        ->name('control-types.create')
-        ->middleware('permission:tipos_control.crear');
-    Route::post('control-types', [ControlTypeController::class, 'store'])
-        ->name('control-types.store')
-        ->middleware('permission:tipos_control.crear');
-    Route::get('control-types/{controlType}', [ControlTypeController::class, 'show'])
-        ->name('control-types.show')
-        ->middleware('permission:tipos_control.ver');
-    Route::get('control-types/{controlType}/edit', [ControlTypeController::class, 'edit'])
-        ->name('control-types.edit')
-        ->middleware('permission:tipos_control.editar');
-    Route::put('control-types/{controlType}', [ControlTypeController::class, 'update'])
-        ->name('control-types.update')
-        ->middleware('permission:tipos_control.editar');
-    Route::delete('control-types/{controlType}', [ControlTypeController::class, 'destroy'])
-        ->name('control-types.destroy')
-        ->middleware('permission:tipos_control.eliminar');
     
     // Sexos - Rutas individuales con permisos específicos
     Route::get('sexes', [SexController::class, 'index'])
@@ -892,7 +869,6 @@ Route::middleware('auth')->group(function () {
     Route::post('schedule-types/{id}/reactivate', [ScheduleTypeController::class, 'reactivate'])
         ->name('schedule-types.reactivate')
         ->middleware('permission:tipos_horario.reactivar');
-    Route::post('control-types/{id}/reactivate', [ControlTypeController::class, 'reactivate'])->name('control-types.reactivate');
     Route::post('sexes/{id}/reactivate', [SexController::class, 'reactivate'])->name('sexes.reactivate');
     Route::post('civil-statuses/{id}/reactivate', [CivilStatusController::class, 'reactivate'])->name('civil-statuses.reactivate');
     Route::post('linguistic-communities/{id}/reactivate', [LinguisticCommunityController::class, 'reactivate'])->name('linguistic-communities.reactivate');

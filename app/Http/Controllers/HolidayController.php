@@ -75,7 +75,6 @@ class HolidayController extends Controller
             'date' => 'required|date',
             'description' => 'nullable|string|max:1000',
             'is_recurring' => 'boolean',
-            'is_active' => 'boolean',
         ];
         $messages = [
             'name.required' => 'El nombre del día festivo es obligatorio.',
@@ -90,7 +89,7 @@ class HolidayController extends Controller
         $holiday->date = $request->input('date');
         $holiday->description = $request->input('description');
         $holiday->is_recurring = $request->boolean('is_recurring');
-        $holiday->is_active = $request->boolean('is_active', true);
+        $holiday->is_active = true; // Siempre activo por defecto
         $holiday->created_by = Auth::id();
         $holiday->save();
 
@@ -125,7 +124,6 @@ class HolidayController extends Controller
             'date' => 'required|date',
             'description' => 'nullable|string|max:1000',
             'is_recurring' => 'boolean',
-            'is_active' => 'boolean',
         ];
         $messages = [
             'name.required' => 'El nombre del día festivo es obligatorio.',
@@ -139,7 +137,7 @@ class HolidayController extends Controller
         $holiday->date = $request->input('date');
         $holiday->description = $request->input('description');
         $holiday->is_recurring = $request->boolean('is_recurring');
-        $holiday->is_active = $request->boolean('is_active');
+        // is_active se maneja desde el index con eliminación lógica
         $holiday->save();
 
         Cache::tags(['holidays'])->flush();

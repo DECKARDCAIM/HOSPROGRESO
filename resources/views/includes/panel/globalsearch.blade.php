@@ -152,13 +152,6 @@
                         <span>Alergias</span>
                     </a>
                     @endif
-                    @if(auth()->user()->isAdmin() || Gate::check('tipos_control.ver'))
-                    <a href="{{ route('control-types.index') }}" class="suggestion-item"
-                        data-search="tipos control sigsa clasificacion">
-                        <i class="bi bi-list-check"></i>
-                        <span>Tipos de Control</span>
-                    </a>
-                    @endif
                     @if(auth()->user()->isAdmin() || Gate::check('estados_paciente.ver'))
                     <a href="{{ route('patient-statuses.index') }}" class="suggestion-item"
                         data-search="estado paciente gestion status">

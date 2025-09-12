@@ -56,55 +56,33 @@
                             </div>
                         </div>
                         
-                        <!-- Información del Acompañante/Tutor -->
-                        @if($medicalConsultation->companion_name || $medicalConsultation->guardian_name)
+                        <!-- Información del Acompañante -->
+                        @if($medicalConsultation->companion_name)
                         <div class="timeline-block mb-3">
                             <span class="timeline-step bg-warning p-3">
                                 <i class="bi bi-people-fill text-white"></i>
                             </span>
                             <div class="timeline-content pt-1">
                                 <h6 class="text-dark text-sm font-weight-bold mb-0">
-                                    @if($medicalConsultation->guardian_name)
-                                        Información del Tutor/Padre/Madre
-                                    @else
-                                        Información del Acompañante
-                                    @endif
+                                    Información del Acompañante
                                 </h6>
                                 <p class="text-secondary text-xs mt-1 mb-0">
-                                    @if($medicalConsultation->guardian_name)
-                                        {{ $medicalConsultation->consultation_date->format('d/m/Y H:i') }}
-                                    @else
-                                        {{ $medicalConsultation->consultation_date->format('d/m/Y H:i') }}
-                                    @endif
+                                    {{ $medicalConsultation->consultation_date->format('d/m/Y H:i') }}
                                 </p>
                                 <p class="text-sm text-dark mt-3 mb-2">
-                                    @if($medicalConsultation->guardian_name)
-                                        <strong>Nombre:</strong> {{ $medicalConsultation->guardian_name }}<br>
-                                        @if($medicalConsultation->guardianRelationship)
-                                            <strong>Relación:</strong> {{ $medicalConsultation->guardianRelationship->name }}<br>
-                                        @endif
-                                        <strong>Teléfono:</strong> {{ $medicalConsultation->guardian_phone ?? '-' }}<br>
-                                        @if($medicalConsultation->guardian_email)
-                                            <strong>Email:</strong> {{ $medicalConsultation->guardian_email }}<br>
-                                        @endif
-                                        @if($medicalConsultation->guardian_dpi)
-                                            <strong>DPI/CUI:</strong> {{ $medicalConsultation->guardian_dpi }}<br>
-                                        @endif
-                                        @if($medicalConsultation->emergency_contact)
-                                            <strong>Contacto de Emergencia:</strong> {{ $medicalConsultation->emergency_contact }}
-                                        @endif
-                                    @else
-                                        <strong>Nombre:</strong> {{ $medicalConsultation->companion_name }}<br>
-                                        @if($medicalConsultation->companionRelationship)
-                                            <strong>Relación:</strong> {{ $medicalConsultation->companionRelationship->name }}<br>
-                                        @endif
-                                        <strong>Teléfono:</strong> {{ $medicalConsultation->companion_phone ?? '-' }}<br>
-                                        @if($medicalConsultation->companion_email)
-                                            <strong>Email:</strong> {{ $medicalConsultation->companion_email }}<br>
-                                        @endif
-                                        @if($medicalConsultation->companion_dpi)
-                                            <strong>DPI/CUI:</strong> {{ $medicalConsultation->companion_dpi }}
-                                        @endif
+                                    <strong>Nombre:</strong> {{ $medicalConsultation->companion_name }}<br>
+                                    @if($medicalConsultation->companionRelationship)
+                                        <strong>Relación:</strong> {{ $medicalConsultation->companionRelationship->name }}<br>
+                                    @endif
+                                    <strong>Teléfono:</strong> {{ $medicalConsultation->companion_phone ?? '-' }}<br>
+                                    @if($medicalConsultation->companion_email)
+                                        <strong>Email:</strong> {{ $medicalConsultation->companion_email }}<br>
+                                    @endif
+                                    @if($medicalConsultation->companion_dpi)
+                                        <strong>DPI/CUI:</strong> {{ $medicalConsultation->companion_dpi }}<br>
+                                    @endif
+                                    @if($medicalConsultation->companion_address)
+                                        <strong>Dirección:</strong> {{ $medicalConsultation->companion_address }}
                                     @endif
                                 </p>
                             </div>
@@ -246,17 +224,17 @@
                         </div>
                         @endif
                         
-                        <!-- Evaluación Física Ginecológica -->
-                        @if($medicalConsultation->consultation_physical_exam)
+                        <!-- Evaluación Física -->
+                        @if($medicalConsultation->physical_exam)
                         <div class="timeline-block mb-3">
                             <span class="timeline-step bg-warning p-3">
                                 <i class="bi bi-heart-pulse text-white"></i>
                             </span>
                             <div class="timeline-content pt-1">
-                                <h6 class="text-dark text-sm font-weight-bold mb-0">Evaluación Física Ginecológica</h6>
+                                <h6 class="text-dark text-sm font-weight-bold mb-0">Evaluación Física</h6>
                                 <p class="text-secondary text-xs mt-1 mb-0">{{ $medicalConsultation->consultation_date->format('d/m/Y H:i') }}</p>
                                 <p class="text-sm text-dark mt-3 mb-2">
-                                    <strong>Examen Físico:</strong> {{ $medicalConsultation->consultation_physical_exam }}
+                                    <strong>Examen Físico:</strong> {{ $medicalConsultation->physical_exam }}
                                 </p>
                             </div>
                         </div>
@@ -366,13 +344,20 @@
                             <div class="timeline-content pt-1">
                                 <h6 class="text-dark text-sm font-weight-bold mb-0">Tratamiento y Medicamentos</h6>
                                 <p class="text-sm text-dark mt-3 mb-2">
-                                    <strong>Medicamentos:</strong> 
                                     @if($medicalConsultation->medications->count())
-                                        {{ $medicalConsultation->medications->pluck('name')->join(', ') }}
+                                        @foreach($medicalConsultation->medications as $medication)
+                                            <strong>Medicamentos:</strong> {{ $medication->name }}
+                                            @if($medication->pivot->dosage)
+                                                <br><strong>Dosificación:</strong> {{ $medication->pivot->dosage }}
+                                            @endif
+                                            @if($medication->pivot->instructions)
+                                                <br><strong>Instrucciones:</strong> {{ $medication->pivot->instructions }}
+                                            @endif
+                                            <br>
+                                        @endforeach
                                     @else
-                                        -
+                                        <strong>Medicamentos:</strong> -
                                     @endif
-                                    <br>
                                 </p>
                             </div>
                         </div>
@@ -414,30 +399,7 @@
                                 <p class="text-sm text-dark mt-3 mb-2">
                                     <strong>Estado Final:</strong> {{ $medicalConsultation->getFinalStatusLabel() ?? '-' }}<br>
                                     
-                                    @if($medicalConsultation->final_status === 'hospitalizado' && $medicalConsultation->hospital_service)
-                                        <strong>Servicio de Hospitalización:</strong> {{ $medicalConsultation->hospital_service }}<br>
-                                    @endif
                                     
-                                    @if($medicalConsultation->final_status === 'referido')
-                                        @if($medicalConsultation->reference_destination)
-                                            <strong>Hospital de Destino:</strong> {{ $medicalConsultation->reference_destination }}<br>
-                                        @endif
-                                        @if($medicalConsultation->reference_reason)
-                                            <strong>Motivo de Referencia:</strong> {{ $medicalConsultation->reference_reason }}<br>
-                                        @endif
-                                        @if($medicalConsultation->reference_contrareference)
-                                            <strong>Detalles de Referencia:</strong> {{ $medicalConsultation->reference_contrareference }}<br>
-                                        @endif
-                                    @endif
-                                    
-                                    @if($medicalConsultation->final_status === 'fallecido')
-                                        @if($medicalConsultation->death_date)
-                                            <strong>Fecha y Hora de Fallecimiento:</strong> {{ $medicalConsultation->death_date->format('d/m/Y H:i') }}<br>
-                                        @endif
-                                        @if($medicalConsultation->death_cause)
-                                            <strong>Causa de Muerte:</strong> {{ $medicalConsultation->death_cause }}<br>
-                                        @endif
-                                    @endif
                                     
                                     @if($medicalConsultation->final_status === 'egresado')
                                         <strong>Paciente egresado exitosamente.</strong> El paciente fue dado de alta y puede continuar su recuperación en casa.

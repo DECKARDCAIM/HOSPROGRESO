@@ -331,11 +331,11 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="consultation_physical_exam" class="form-control-label">Examen Físico Ginecológico</label>
-                                            <textarea class="form-control @error('consultation_physical_exam') is-invalid @enderror" 
-                                                      id="consultation_physical_exam" name="consultation_physical_exam" rows="6" 
-                                                      placeholder="Examen pélvico, mamas, abdomen, signos vitales, etc.">{{ old('consultation_physical_exam', $medicalConsultation->consultation_physical_exam) }}</textarea>
-                                            @error('consultation_physical_exam')
+                                            <label for="physical_exam" class="form-control-label">Examen Físico Ginecológico</label>
+                                            <textarea class="form-control @error('physical_exam') is-invalid @enderror" 
+                                                      id="physical_exam" name="physical_exam" rows="6" 
+                                                      placeholder="Examen pélvico, mamas, abdomen, signos vitales, etc.">{{ old('physical_exam', $medicalConsultation->physical_exam) }}</textarea>
+                                            @error('physical_exam')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
@@ -410,18 +410,43 @@
                                             @enderror
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-12">
                                         <div class="form-group">
-                                            <label for="medication_ids" class="form-control-label">Medicamentos</label>
-                                            <select class="form-control @error('medication_ids') is-invalid @enderror" 
-                                                    id="medication_ids" name="medication_ids[]" multiple>
-                                                @foreach($medications as $medication)
-                                                    <option value="{{ $medication->id }}" {{ (collect(old('medication_ids', $medicalConsultation->medications->pluck('id')->toArray()))->contains($medication->id)) ? 'selected' : '' }}>{{ $medication->name }}</option>
+                                            <label class="form-control-label">Medicamentos</label>
+                                            <div id="medications-container">
+                                                @if($medicalConsultation->medications->count() > 0)
+                                                    @foreach($medicalConsultation->medications as $index => $medication)
+                                                        <div class="medication-item row mb-3" data-index="{{ $index }}">
+                                                            <div class="col-md-4">
+                                                                <select class="form-control medication-select" name="medication_ids[]" required>
+                                                                    <option value="">Seleccionar medicamento</option>
+                                                                    @foreach($medications as $med)
+                                                                        <option value="{{ $med->id }}" {{ $medication->id == $med->id ? 'selected' : '' }}>{{ $med->name }}</option>
                                                 @endforeach
                                             </select>
-                                            @error('medication_ids')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <input type="text" class="form-control" name="medication_dosages[]" 
+                                                                       placeholder="Dosificación (ej: 500mg cada 8h)" 
+                                                                       value="{{ $medication->pivot->dosage ?? '' }}">
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <input type="text" class="form-control" name="medication_instructions[]" 
+                                                                       placeholder="Instrucciones (ej: Tomar con alimentos)" 
+                                                                       value="{{ $medication->pivot->instructions ?? '' }}">
+                                                            </div>
+                                                            <div class="col-md-1">
+                                                                <button type="button" class="btn btn-sm btn-outline-secondary remove-medication">
+                                                                    <i class="bi bi-trash" style="color: #6c757d !important; font-size: 14px;"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                @endif
+                                            </div>
+                                            <button type="button" class="btn btn-sm bg-brand-header text-white" id="add-medication">
+                                                <i class="fas fa-plus"></i> Agregar Medicamento
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -460,13 +485,6 @@
                                             @enderror
                                         </div>
                                     </div>
-                                    <div class="col-md-6" id="hospital_service_container" style="display: none;">
-                                        <div class="form-group">
-                                            <label for="hospital_service" class="form-control-label">Servicio de Hospitalización</label>
-                                            <input type="text" class="form-control" id="hospital_service" name="hospital_service" 
-                                                   value="{{ old('hospital_service') }}" readonly>
-                                        </div>
-                                    </div>
                                 </div>
 
                                 <!-- Campos para Fallecido -->
@@ -474,26 +492,6 @@
                                     <hr>
                                     <h6 class="text-danger"><i class="fas fa-cross me-2"></i>Información de Fallecimiento</h6>
                                     <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label for="death_date" class="form-control-label">Fecha y Hora de Fallecimiento *</label>
-                                                <input type="datetime-local" class="form-control @error('death_date') is-invalid @enderror" 
-                                                       id="death_date" name="death_date" value="{{ old('death_date') }}">
-                                                @error('death_date')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label for="death_cause" class="form-control-label">Causa de Muerte *</label>
-                                                <input type="text" class="form-control @error('death_cause') is-invalid @enderror" 
-                                                       id="death_cause" name="death_cause" value="{{ old('death_cause') }}">
-                                                @error('death_cause')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
 
@@ -502,38 +500,8 @@
                                     <hr>
                                     <h6 class="text-info"><i class="fas fa-paper-plane me-2"></i>Información de Referencia</h6>
                                     <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label for="reference_destination" class="form-control-label">Hospital de Destino *</label>
-                                                <input type="text" class="form-control @error('reference_destination') is-invalid @enderror" 
-                                                       id="reference_destination" name="reference_destination" value="{{ old('reference_destination', $medicalConsultation->reference_destination) }}">
-                                                @error('reference_destination')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label for="reference_reason" class="form-control-label">Motivo de Referencia *</label>
-                                                <input type="text" class="form-control @error('reference_reason') is-invalid @enderror" 
-                                                       id="reference_reason" name="reference_reason" value="{{ old('reference_reason', $medicalConsultation->reference_reason) }}">
-                                                @error('reference_reason')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                        </div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-12">
-                                            <div class="form-group">
-                                                <label for="reference_contrareference" class="form-control-label">Detalles de Referencia/Contrarreferencia</label>
-                                                <textarea class="form-control @error('reference_contrareference') is-invalid @enderror" 
-                                                          id="reference_contrareference" name="reference_contrareference" rows="3">{{ old('reference_contrareference', $medicalConsultation->reference_contrareference) }}</textarea>
-                                                @error('reference_contrareference')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -650,3 +618,52 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endpush
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let medicationIndex = {{ $medicalConsultation->medications->count() }};
+    const medications = @json($medications);
+    
+    // Agregar medicamento
+    document.getElementById('add-medication').addEventListener('click', function() {
+        const container = document.getElementById('medications-container');
+        const medicationItem = document.createElement('div');
+        medicationItem.className = 'medication-item row mb-3';
+        medicationItem.setAttribute('data-index', medicationIndex);
+        
+        medicationItem.innerHTML = `
+            <div class="col-md-4">
+                <select class="form-control medication-select" name="medication_ids[]" required>
+                    <option value="">Seleccionar medicamento</option>
+                    ${medications.map(med => `<option value="${med.id}">${med.name}</option>`).join('')}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" name="medication_dosages[]" 
+                       placeholder="Dosificación (ej: 500mg cada 8h)">
+            </div>
+            <div class="col-md-4">
+                <input type="text" class="form-control" name="medication_instructions[]" 
+                       placeholder="Instrucciones (ej: Tomar con alimentos)">
+            </div>
+            <div class="col-md-1">
+                <button type="button" class="btn btn-sm btn-outline-secondary remove-medication">
+                    <i class="bi bi-trash" style="color: #6c757d !important; font-size: 14px;"></i>
+                </button>
+            </div>
+        `;
+        
+        container.appendChild(medicationItem);
+        medicationIndex++;
+    });
+    
+    // Eliminar medicamento
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-medication')) {
+            e.target.closest('.medication-item').remove();
+        }
+    });
+});
+</script>
+@endpush

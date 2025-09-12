@@ -161,12 +161,6 @@ class PermissionSeeder extends Seeder
                 ['name' => 'Eliminar alergias', 'slug' => 'alergias.eliminar'],
             ],
 
-            'Tipos de Control' => [
-                ['name' => 'Ver tipos de control', 'slug' => 'tipos_control.ver'],
-                ['name' => 'Crear tipos de control', 'slug' => 'tipos_control.crear'],
-                ['name' => 'Editar tipos de control', 'slug' => 'tipos_control.editar'],
-                ['name' => 'Eliminar tipos de control', 'slug' => 'tipos_control.eliminar'],
-            ],
 
             'Relaciones de Acompañantes' => [
                 ['name' => 'Ver relaciones de acompañantes', 'slug' => 'relaciones_acompanantes.ver'],

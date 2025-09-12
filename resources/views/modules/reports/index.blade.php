@@ -14,8 +14,8 @@
 @section('content')
 <div class="container-fluid py-4">
     <!-- Estadísticas rápidas arriba -->
-    <div class="row mb-4 stats-section">
-        <div class="col-xl-3 col-md-6 col-6">
+    <div class="row mb-4 stats-section justify-content-center">
+        <div class="col-xl-4 col-md-4 col-12">
             <div class="card">
                 <div class="card-body p-3">
                     <div class="row">
@@ -34,7 +34,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6 col-6">
+        <div class="col-xl-4 col-md-4 col-12">
             <div class="card">
                 <div class="card-body p-3">
                     <div class="row">
@@ -53,7 +53,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6 col-6">
+        <div class="col-xl-4 col-md-4 col-12">
             <div class="card">
                 <div class="card-body p-3">
                     <div class="row">
@@ -66,25 +66,6 @@
                         <div class="col-4 text-end">
                             <div class="icon icon-shape bg-gradient-success shadow text-center border-radius-md">
                                 <i class="bi bi-heart-pulse text-lg opacity-10"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 col-6">
-            <div class="card">
-                <div class="card-body p-3">
-                    <div class="row">
-                        <div class="col-8">
-                            <div class="numbers">
-                                <p class="text-xs mb-0 text-capitalize font-weight-bold">Pacientes Nuevos</p>
-                                <h5 class="font-weight-bolder mb-0 text-info" id="new-patients">...</h5>
-                            </div>
-                        </div>
-                        <div class="col-4 text-end">
-                            <div class="icon icon-shape bg-brand-header shadow text-center border-radius-md">
-                                <i class="bi bi-person-plus text-lg opacity-10"></i>
                             </div>
                         </div>
                     </div>
@@ -175,17 +156,6 @@
                                         <!-- Tipo de Control -->
                                         <div class="col-md-6">
                                             <div class="form-group mb-3">
-                                                <label class="form-control-label mb-2">
-                                                    <i class="fas fa-list-check text-info me-2"></i>Tipo de Control
-                                                </label>
-                                                <select name="control_type_id" class="form-control border border-info">
-                                                    <option value="">Todos los tipos de control</option>
-                                                    @foreach($controlTypes as $controlType)
-                                                        <option value="{{ $controlType->id }}" {{ old('control_type_id') == $controlType->id ? 'selected' : '' }}>
-                                                            {{ $controlType->name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
                                             </div>
                                         </div>
 
@@ -291,7 +261,6 @@ function loadStatistics() {
             document.getElementById('total-consultations').textContent = data.total_consultations;
             document.getElementById('emergency-consultations').textContent = data.emergency_consultations;
             document.getElementById('external-consultations').textContent = data.external_consultations;
-            document.getElementById('new-patients').textContent = data.new_patients;
         })
         .catch(error => {
             console.error('Error loading statistics:', error);

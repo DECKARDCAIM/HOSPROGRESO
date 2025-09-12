@@ -10,7 +10,6 @@ use App\Observers\CatalogObserver;
 use App\Models\Specialty;
 use App\Models\Doctor;
 use App\Models\ScheduleType;
-use App\Models\ControlType;
 use App\Models\Sex;
 use App\Models\CivilStatus;
 use App\Models\LinguisticCommunity;
@@ -60,7 +59,6 @@ class AppServiceProvider extends ServiceProvider
             Specialty::observe(CatalogObserver::class);
             Doctor::observe(CatalogObserver::class);
             ScheduleType::observe(CatalogObserver::class);
-            ControlType::observe(CatalogObserver::class);
             Sex::observe(CatalogObserver::class);
             CivilStatus::observe(CatalogObserver::class);
             LinguisticCommunity::observe(CatalogObserver::class);

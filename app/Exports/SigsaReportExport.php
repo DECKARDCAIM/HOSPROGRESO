@@ -32,7 +32,6 @@ class SigsaReportExport implements
      * - end_date   (Carbon)
      * - attention_type|null
      * - specialty_id|null
-     * - control_type_id|null
      * - user (Auth user)
      */
     protected array $filters;
@@ -71,7 +70,6 @@ class SigsaReportExport implements
                 'clinicalRecord.disabilities',
                 'doctor',
                 'specialty',
-                'controlType',
                 'medications',
                 'laboratoryTests',
                 'exams',
@@ -84,9 +82,6 @@ class SigsaReportExport implements
         }
         if (!empty($this->filters['specialty_id'])) {
             $q->where('specialty_id', $this->filters['specialty_id']);
-        }
-        if (!empty($this->filters['control_type_id'])) {
-            $q->where('control_type_id', $this->filters['control_type_id']);
         }
 
         if ($user->isEmergency()) {
@@ -138,6 +133,10 @@ class SigsaReportExport implements
         if ($dpi && is_numeric($dpi)) {
             $dpi = str_pad($dpi, 13, '0', STR_PAD_LEFT);
         }
+        // Forzar formato de texto agregando apóstrofe para evitar notación científica
+        if ($dpi) {
+            $dpi = "'" . $dpi;
+        }
 
         return [
             // A-D: fecha completa/día/mes/año (devolvemos Carbon para formatear por columna)
@@ -174,27 +173,22 @@ class SigsaReportExport implements
             $cr->specific_residence ?? '',        // Y
             $cr->phone ?? '',                     // Z - Teléfono
 
-            // Clínica (removidos: control type, CIE-10, destino ref, motivo ref, observaciones)
+            // Clínica (removidos: control type, CIE-10, destino ref, motivo ref, observaciones, paciente nuevo)
             ucfirst($c->attention_type ?? ''),    // AA
-            $c->is_new_patient ? 'Sí' : 'No',     // AB
-            $c->specialty->name ?? '',            // AC
-            $c->doctor->full_name ?? '',          // AD
-            $c->medical_diagnosis ?? '',          // AE - Diagnóstico (movido)
-            $c->prescribed_treatment ?? '',       // AF - Tratamiento (movido)
-            $c->medications?->pluck('name')->join(', ') ?: '',     // AG - Medicamentos (movido)
-            $c->laboratoryTests?->pluck('name')->join(', ') ?: '',  // AH - Laboratorio (movido)
-            $c->exams?->pluck('name')->join(', ') ?: '',            // AI - Exámenes (movido)
+            $c->specialty->name ?? '',            // AB (antes AC)
+            $c->doctor->full_name ?? '',          // AC (antes AD)
+            $c->medical_diagnosis ?? '',          // AD (antes AE) - Diagnóstico
+            $c->prescribed_treatment ?? '',       // AE (antes AF) - Tratamiento
+            $c->medications?->pluck('name')->join(', ') ?: '',     // AF (antes AG) - Medicamentos
+            $c->laboratoryTests?->pluck('name')->join(', ') ?: '',  // AG (antes AH) - Laboratorio
+            $c->exams?->pluck('name')->join(', ') ?: '',            // AH (antes AI) - Exámenes
 
-            // Referencia/seguimiento (removidos: destino ref, motivo ref)
-            $c->was_referred ? 'Sí' : 'No',       // AJ
-            $c->comes_referred ? 'Sí' : 'No',     // AK
-            $c->comes_counter_referred ? 'Sí' : 'No', // AL
-            $c->has_igss ? 'Sí' : 'No',           // AM
-            $c->gestation_weeks ?? '',            // AN
+            // Referencia/seguimiento (removidos: destino ref, motivo ref, fue referido, viene ref, contra ref, derecho IGSS)
+            $c->gestation_weeks ?? '',            // AI (antes AM)
 
             // Adicional (incluye alergias del expediente clínico)
-            $cr->allergies?->pluck('name')->join(', ') ?: '', // AO - Alergias
-            $c->created_at,                         // AP - Fecha Registro (movido)
+            $cr->allergies?->pluck('name')->join(', ') ?: '', // AJ (antes AN) - Alergias
+            $c->created_at,                         // AK (antes AO) - Fecha Registro
         ];
     }
 
@@ -284,7 +278,6 @@ class SigsaReportExport implements
                 $parts = [];
                 if (!empty($this->filters['attention_type'])) $parts[] = 'Atención: ' . ucfirst($this->filters['attention_type']);
                 if (!empty($this->filters['specialty_id']))  $parts[] = 'Especialidad ID: ' . $this->filters['specialty_id'];
-                if (!empty($this->filters['control_type_id'])) $parts[] = 'Tipo Control ID: ' . $this->filters['control_type_id'];
                 $sheet->setCellValue('A7', 'Filtros: ' . (count($parts) ? implode(' | ', $parts) : 'Ninguno'));
                 $sheet->mergeCells('A7:AP7');
                 $sheet->getStyle('A7:AP7')->applyFromArray([
@@ -318,12 +311,11 @@ class SigsaReportExport implements
                     'S10' => 'Etnia/Pueblo', 'T10' => 'Com. Lingüística', 'U10' => 'Discapacidades',
                     'V10' => 'País', 'W10' => 'Departamento', 'X10' => 'Municipio',
                     'Y10' => 'Dirección', 'Z10' => 'Teléfono',
-                    'AA10' => 'Tipo Consulta', 'AB10' => 'Paciente Nuevo', 'AC10' => 'Especialidad',
-                    'AD10' => 'Doctor', 'AE10' => 'Diagnóstico', 'AF10' => 'Tratamiento',
-                    'AG10' => 'Medicamentos', 'AH10' => 'Lab. Laboratorio', 'AI10' => 'Exámenes',
-                    'AJ10' => 'Fue Referido', 'AK10' => 'Viene Ref.', 'AL10' => 'Contra Ref.',
-                    'AM10' => 'Derecho IGSS', 'AN10' => 'Sem. Gestación',
-                    'AO10' => 'Alergias', 'AP10' => 'Fecha Registro',
+                    'AA10' => 'Tipo Consulta', 'AB10' => 'Especialidad',
+                    'AC10' => 'Doctor', 'AD10' => 'Diagnóstico', 'AE10' => 'Tratamiento',
+                    'AF10' => 'Medicamentos', 'AG10' => 'Lab. Laboratorio', 'AH10' => 'Exámenes',
+                    'AI10' => 'Sem. Gestación',
+                    'AJ10' => 'Alergias', 'AK10' => 'Fecha Registro',
                 ];
                 foreach ($headers as $cell => $text) {
                     $sheet->setCellValue($cell, $text);

@@ -262,22 +262,15 @@ class ImportController extends Controller
             'second_lastname' => trim($row[4] ?? '') ?: null,
             'married_lastname' => null,
             'cui' => null,
-            'sex' => trim($row[6] ?? '') ?: null,
             'sex_id' => $sexId,
-            'civil_status' => null,
             'civil_status_id' => null,
-            'linguistic_community' => null,
             'linguistic_community_id' => null,
-            'ethnicity' => null,
             'ethnicity_id' => null,
             'birth_date' => $this->parseDate($row[7] ?? null),
             'education' => null,
             'occupation' => null,
-            'country' => null,
             'country_id' => null,
-            'department' => null,
             'department_id' => null,
-            'municipality' => null,
             'municipality_id' => null,
             'specific_residence' => trim($row[5] ?? '') ?: null,
             'is_processed' => false,
@@ -686,7 +679,7 @@ class ImportController extends Controller
         $logEntry .= "  Segundo Nombre: " . ($data['second_name'] ?? 'VACÍO') . "\n";
         $logEntry .= "  Segundo Apellido: " . ($data['second_lastname'] ?? 'VACÍO') . "\n";
         $logEntry .= "  Residencia: " . ($data['specific_residence'] ?? 'VACÍO') . "\n";
-        $logEntry .= "  Sexo: " . ($data['sex'] ?? 'VACÍO') . "\n";
+        $logEntry .= "  Sexo ID: " . ($data['sex_id'] ?? 'VACÍO') . "\n";
         $logEntry .= "  Fecha de Nacimiento: " . ($data['birth_date'] ?? 'VACÍO') . "\n";
         
         // Calcular edad si es posible
@@ -740,7 +733,7 @@ class ImportController extends Controller
         $logEntry .= "  Segundo Nombre: " . ($data['second_name'] ?? 'VACÍO') . "\n";
         $logEntry .= "  Segundo Apellido: " . ($data['second_lastname'] ?? 'VACÍO') . "\n";
         $logEntry .= "  Residencia: " . ($data['specific_residence'] ?? 'VACÍO') . "\n";
-        $logEntry .= "  Sexo: " . ($data['sex'] ?? 'VACÍO') . "\n";
+        $logEntry .= "  Sexo ID: " . ($data['sex_id'] ?? 'VACÍO') . "\n";
         $logEntry .= "  Fecha de Nacimiento: " . ($data['birth_date'] ?? 'VACÍO') . "\n";
         $logEntry .= "  Motivo: Este número de registro ya existe en la base de datos o en el archivo\n";
         $logEntry .= "\n" . str_repeat("-", 80) . "\n\n";

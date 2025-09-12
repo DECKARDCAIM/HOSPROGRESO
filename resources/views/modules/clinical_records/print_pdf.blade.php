@@ -401,11 +401,11 @@
                                 </div>
                             </div>
                             @endif
-                            @if($history->emergency_trauma_assessment)
+                            @if($history->physical_exam)
                             <div class="info-row">
-                                <div class="info-label">Evaluación de Trauma:</div>
+                                <div class="info-label">Examen Físico:</div>
                                 <div class="info-value">
-                                    <div class="text-content">{{ $history->emergency_trauma_assessment }}</div>
+                                    <div class="text-content">{{ $history->physical_exam }}</div>
                                 </div>
                             </div>
                             @endif
@@ -420,14 +420,6 @@
                         </div>
                 @else
                         <div class="info-grid" style="margin-top: 12px;">
-                            @if($history->consultation_physical_exam)
-                            <div class="info-row">
-                                <div class="info-label">Examen Físico:</div>
-                                <div class="info-value">
-                                    <div class="text-content">{{ $history->consultation_physical_exam }}</div>
-                                </div>
-                            </div>
-                            @endif
                             @if($history->consultation_treatment_plan)
                             <div class="info-row">
                                 <div class="info-label">Plan de Tratamiento:</div>
@@ -472,16 +464,8 @@
                             </div>
                         </div>
 
-                        @if($history->reference_contrareference || $history->nursing_note)
+                        @if($history->nursing_note)
                         <div class="info-grid" style="margin-top: 12px;">
-                            @if($history->reference_contrareference)
-                            <div class="info-row">
-                                <div class="info-label">Referencia/Contrarreferencia:</div>
-                                <div class="info-value">
-                                    <div class="text-content">{{ $history->reference_contrareference }}</div>
-                                </div>
-                            </div>
-                            @endif
                             @if($history->nursing_note)
                             <div class="info-row">
                                 <div class="info-label">Nota de Enfermería:</div>

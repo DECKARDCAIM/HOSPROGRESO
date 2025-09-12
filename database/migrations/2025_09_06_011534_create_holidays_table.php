@@ -17,7 +17,7 @@ return new class extends Migration
             $table->date('date'); // Fecha del día festivo
             $table->text('description')->nullable(); // Descripción opcional
             $table->boolean('is_recurring')->default(false); // Si se repite cada año
-            $table->boolean('is_active')->default(true); // Si está activo
+            $table->boolean('is_active')->default(true); // Si está activo (por defecto: true)
             $table->unsignedBigInteger('created_by'); // Usuario que lo creó
             $table->timestamps();
             

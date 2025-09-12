@@ -27,8 +27,6 @@ class ClinicalRecord extends Model
         'linguistic_community_id',
         'ethnicity_id',
         'birth_date',
-        'disability_id',
-        'allergy_id',
         'education',
         'occupation',
         'country_id',

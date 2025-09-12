@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\MedicalConsultation;
 use App\Models\Specialty;
-use App\Models\ControlType;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\SigsaReportExport;
@@ -24,11 +23,7 @@ class ReportController extends Controller
         $specialties = Cache::tags(['especialidades','catalogos'])->remember('especialidades:select:v2', now()->addHours(12), function () {
             return Specialty::where('is_active', true)->orderBy('name')->get(['id','name']);
         });
-        $controlTypes = Cache::tags(['tipos_control','catalogos'])->remember('control-types:select:v1', now()->addHours(12), function () {
-            return ControlType::where('is_active', true)->orderBy('name')->get(['id','name']);
-        });
-        
-        return view('modules.reports.index', compact('specialties', 'controlTypes'));
+        return view('modules.reports.index', compact('specialties'));
     }
 
     public function queueSigsa(Request $request)
@@ -38,11 +33,10 @@ class ReportController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
             'attention_type' => 'nullable|in:emergencia,consulta_externa',
             'specialty_id' => 'nullable|exists:specialties,id',
-            'control_type_id' => 'nullable|exists:control_types,id'
         ];
         $this->validate($request, $rules);
 
-        GenerateSigsaReportJob::dispatch($request->only(['start_date','end_date','attention_type','specialty_id','control_type_id']), auth()->id());
+        GenerateSigsaReportJob::dispatch($request->only(['start_date','end_date','attention_type','specialty_id']), auth()->id());
 
         return back()->with('toast', [
             'type' => 'success',
@@ -58,7 +52,6 @@ class ReportController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
             'attention_type' => 'nullable|in:emergencia,consulta_externa',
             'specialty_id' => 'nullable|exists:specialties,id',
-            'control_type_id' => 'nullable|exists:control_types,id'
         ];
 
         $messages = [
@@ -69,7 +62,6 @@ class ReportController extends Controller
             'end_date.after_or_equal' => 'La fecha de fin debe ser igual o posterior a la fecha de inicio.',
             'attention_type.in' => 'El tipo de atención seleccionado no es válido.',
             'specialty_id.exists' => 'La especialidad seleccionada no existe.',
-            'control_type_id.exists' => 'El tipo de control seleccionado no existe.'
         ];
 
         try {
@@ -103,8 +95,7 @@ class ReportController extends Controller
             'clinicalRecord.department',
             'clinicalRecord.municipality',
             'doctor',
-            'specialty',
-            'controlType'
+            'specialty'
         ])
         ->whereBetween('consultation_date', [$startDate->startOfDay(), $endDate->endOfDay()])
         ->where('status', 'finalizada');
@@ -117,9 +108,6 @@ class ReportController extends Controller
             $query->where('specialty_id', $request->specialty_id);
         }
 
-        if ($request->control_type_id) {
-            $query->where('control_type_id', $request->control_type_id);
-        }
 
         $user = auth()->user();
         if ($user->isEmergency()) {
@@ -171,7 +159,6 @@ class ReportController extends Controller
                 'filters' => [
                     'attention_type' => $request->attention_type,
                     'specialty' => $request->specialty_id ? Specialty::find($request->specialty_id) : null,
-                    'control_type' => $request->control_type_id ? ControlType::find($request->control_type_id) : null
                 ],
                 'user' => $user,
                 'generated_at' => now()
@@ -209,7 +196,6 @@ class ReportController extends Controller
                 'end_date' => 'required|date|after_or_equal:start_date',
                 'attention_type' => 'nullable|in:emergencia,consulta_externa',
                 'specialty_id' => 'nullable|exists:specialties,id',
-                'control_type_id' => 'nullable|exists:control_types,id'
             ]);
 
             $startDate = Carbon::parse($request->start_date);
@@ -238,9 +224,6 @@ class ReportController extends Controller
                 $query->where('specialty_id', $request->specialty_id);
             }
 
-            if ($request->control_type_id) {
-                $query->where('control_type_id', $request->control_type_id);
-            }
 
             $user = auth()->user();
             if ($user->isEmergency()) {
@@ -305,10 +288,7 @@ class ReportController extends Controller
             $stats = [
                 'total_consultations' => $baseQuery->count(),
                 'emergency_consultations' => (clone $baseQuery)->where('attention_type', 'emergencia')->count(),
-                'external_consultations' => (clone $baseQuery)->where('attention_type', 'consulta_externa')->count(),
-                'new_patients' => (clone $baseQuery)->where('is_new_patient', true)->count(),
-                'igss_patients' => (clone $baseQuery)->where('has_igss', true)->count(),
-                'referrals' => (clone $baseQuery)->where('was_referred', true)->count()
+                'external_consultations' => (clone $baseQuery)->where('attention_type', 'consulta_externa')->count()
             ];
 
             return response()->json($stats);
@@ -317,10 +297,7 @@ class ReportController extends Controller
             return response()->json([
                 'total_consultations' => 0,
                 'emergency_consultations' => 0,
-                'external_consultations' => 0,
-                'new_patients' => 0,
-                'igss_patients' => 0,
-                'referrals' => 0
+                'external_consultations' => 0
             ]);
         }
     }

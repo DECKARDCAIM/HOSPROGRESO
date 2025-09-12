@@ -37,7 +37,6 @@ class CatalogObserver
             'App\\Models\\Specialty'          => [['especialidades', 'catalogos', 'listados', 'especialidades'], 'especialidades', 'v2'],
             'App\\Models\\Doctor'             => [['doctores', 'catalogos', 'listados', 'doctores'], 'doctores', 'v1'],
             'App\\Models\\ScheduleType'       => [['tipos_horario', 'catalogos', 'listados', 'schedule-types'], 'schedule-types', 'v1'],
-            'App\\Models\\ControlType'        => [['tipos_control', 'catalogos', 'listados', 'control-types'], 'control-types', 'v1'],
             'App\\Models\\Sex'                => [['sexos', 'catalogos', 'listados', 'sexes'], 'sexes', 'v1'],
             'App\\Models\\CivilStatus'        => [['estados_civiles', 'catalogos', 'listados', 'civil-statuses'], 'civil-statuses', 'v1'],
             'App\\Models\\LinguisticCommunity'=> [['comunidades_linguisticas', 'catalogos', 'listados', 'linguistic-communities'], 'linguistic-communities', 'v1'],

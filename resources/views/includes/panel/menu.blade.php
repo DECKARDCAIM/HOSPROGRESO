@@ -229,14 +229,6 @@
                                 </a>
                             </li>
                             @endif
-                            @if(auth()->user()->isAdmin() || Gate::check('tipos_control.ver'))
-                            <li class="nav-item">
-                                <a class="nav-link text-dark mobile-submenu-item" href="{{ route('control-types.index') }}">
-                                    <i class="bi bi-journal-text opacity-5 me-2"></i>
-                                    <span class="sidenav-normal">Tipos de Control</span>
-                                </a>
-                            </li>
-                            @endif
                             @if(auth()->user()->isAdmin() || Gate::check('relaciones_acompanantes.ver'))
                             <li class="nav-item">
                                 <a class="nav-link text-dark mobile-submenu-item" href="{{ route('companion-relationships.index') }}">
