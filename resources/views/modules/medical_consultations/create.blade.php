@@ -18,7 +18,7 @@
                         </div>
                         <div class="col-md-4 text-end">
                             <a href="{{ route('clinical-records.show', $clinicalRecord->id) }}" class="btn btn-sm btn-white">
-                                <i class="fas fa-arrow-left me-2"></i>Volver al Expediente
+                                <i class="bi bi-arrow-left me-2"></i>Volver al Expediente
                             </a>
                         </div>
                     </div>
@@ -49,7 +49,7 @@
                     <button type="button" class="btn btn-outline-primary btn-lg w-100 h-100 professional-type-btn" 
                             data-type="doctor" style="min-height: 100px;">
                         <div class="d-flex flex-column align-items-center">
-                            <i class="fas fa-user-md fa-2x mb-2"></i>
+                            <i class="bi bi-person-md fa-2x mb-2"></i>
                             <span>DOCTOR</span>
                         </div>
                     </button>
@@ -78,7 +78,7 @@
                     <!-- Datos de Enfermería -->
                     <div class="row mb-3">
                         <div class="col-12">
-                            <h6 class="bg-brand-header text-white px-3 py-2 rounded mb-3"><i class="fas fa-user-nurse me-2"></i>Datos de Enfermería</h6>
+                            <h6 class="bg-brand-header text-white px-3 py-2 rounded mb-3"><i class="bi bi-person-nurse me-2"></i>Datos de Enfermería</h6>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
@@ -107,7 +107,7 @@
                     <!-- Signos Vitales -->
                     <div class="row mb-3">
                         <div class="col-12">
-                            <h6 class="bg-brand-header text-white px-3 py-2 rounded mb-3"><i class="fas fa-heartbeat me-2"></i>Signos Vitales</h6>
+                            <h6 class="bg-brand-header text-white px-3 py-2 rounded mb-3"><i class="bi bi-heartbeat me-2"></i>Signos Vitales</h6>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
@@ -210,7 +210,7 @@
                     <!-- Datos del Acompañante -->
                     <div class="row mb-3">
                         <div class="col-12">
-                            <h6 class="bg-brand-header text-white px-3 py-2 rounded mb-3"><i class="fas fa-user-friends me-2"></i>Datos del Acompañante (Opcional)</h6>
+                            <h6 class="bg-brand-header text-white px-3 py-2 rounded mb-3"><i class="bi bi-person-friends me-2"></i>Datos del Acompañante (Opcional)</h6>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
@@ -313,7 +313,7 @@
                     <!-- Selección de Especialidad y Doctor -->
                     <div class="row">
                         <div class="col-12">
-                            <h6 class="bg-brand-header text-white px-3 py-2 rounded mb-3"><i class="fas fa-user-md me-2"></i>Selección de Especialidad y Doctor</h6>
+                            <h6 class="bg-brand-header text-white px-3 py-2 rounded mb-3"><i class="bi bi-person-md me-2"></i>Selección de Especialidad y Doctor</h6>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
@@ -346,11 +346,11 @@
 
                     <div class="d-flex justify-content-end mt-4">
                         <button type="button" class="btn btn-secondary me-2" id="cancelDoctorModal">
-                            <i class="fas fa-times me-2"></i>Cancelar
+                            <i class="bi bi-x me-2"></i>Cancelar
                         </button>
                         @canany(['emergencia.consultas.crear', 'consulta_externa.consultas.crear'])
                             <button type="submit" class="btn bg-brand-header text-white">
-                                <i class="fas fa-plus me-2"></i>Crear Consulta
+                                <i class="bi bi-plus me-2"></i>Crear Consulta
                             </button>
                         @endcanany
                     </div>

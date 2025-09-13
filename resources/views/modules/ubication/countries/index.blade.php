@@ -29,8 +29,7 @@
                         <form action="{{ url('/paises') }}" method="GET" class="mb-0">
                             <div class="row align-items-center">
                                 <div class="col-md-4 col-lg-3 mb-2 mb-md-0">
-                                    <select name="status" class="form-select form-select-lg border border-info"
-                                        onchange="this.form.submit()">
+                                    <select name="status" class="form-select form-select-lg border border-info auto-submit">
                                         <option value="active" {{ $status === 'active' ? 'selected' : '' }}>Activos</option>
                                         <option value="inactive" {{ $status === 'inactive' ? 'selected' : '' }}>Inactivos
                                         </option>
@@ -48,10 +47,13 @@
                                         </button>
                                     </div>
                                 </div>
-                                @if ($search)
+                                @php
+                                    $hasFilters = !empty(request('search')) || (request('status') && request('status') !== 'active');
+                                @endphp
+                                @if($hasFilters)
                                     <div class="col-auto ms-2">
-                                        <a href="{{ url('/paises?status=' . $status) }}" class="btn btn-outline-secondary">
-                                            <i class="bi bi-x me-2"></i>Limpiar búsqueda
+                                        <a href="{{ url('/paises') }}" class="btn btn-outline-secondary">
+                                            <i class="bi bi-x me-2"></i>Limpiar filtros
                                         </a>
                                     </div>
                                 @endif
@@ -155,4 +157,27 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Filtros dinámicos para elementos auto-submit
+            const autoSubmitElements = document.querySelectorAll('.auto-submit');
+            autoSubmitElements.forEach(element => {
+                element.addEventListener('change', function() {
+                    this.form.submit();
+                });
+            });
+
+            // Permitir buscar con Enter en el campo de búsqueda de texto
+            const searchInput = document.querySelector('input[name="search"]');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.form.submit();
+                    }
+                });
+            }
+        });
+    </script>
 @endsection

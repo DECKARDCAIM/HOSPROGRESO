@@ -100,7 +100,7 @@
             </div>
             <div class="col-lg-4 col-md-6 my-sm-auto ms-sm-auto me-sm-0 mt-3 text-end">
                 <a class="btn btn-sm bg-brand-header me-1" href="{{ route('profile.index') }}">
-                    <i class="fas fa-arrow-left me-2"></i>Regresar
+                    <i class="bi bi-arrow-left me-2"></i>Regresar
                 </a>
             </div>
         </div>
@@ -128,25 +128,25 @@
                 <ul class="nav flex-column bg-white border-radius-lg p-3">
                     <li class="nav-item">
                         <a class="nav-link text-dark d-flex" data-scroll href="#basic-info">
-                            <i class="fas fa-user text-lg me-2"></i>
+                            <i class="bi bi-person text-lg me-2"></i>
                             <span class="text-sm">Información Básica</span>
                         </a>
                     </li>
                     <li class="nav-item pt-2">
                         <a class="nav-link text-dark d-flex" data-scroll href="#password">
-                            <i class="fas fa-lock text-lg me-2"></i>
+                            <i class="bi bi-lock text-lg me-2"></i>
                             <span class="text-sm">Cambiar Contraseña</span>
                         </a>
                     </li>
                     <li class="nav-item pt-2">
                         <a class="nav-link text-dark d-flex" data-scroll href="#profile-photo">
-                            <i class="fas fa-camera text-lg me-2"></i>
+                            <i class="bi bi-camera text-lg me-2"></i>
                             <span class="text-sm">Foto de Perfil</span>
                         </a>
                     </li>
                     <li class="nav-item pt-2">
                         <a class="nav-link text-dark d-flex" data-scroll href="#banner-photo">
-                            <i class="fas fa-image text-lg me-2"></i>
+                            <i class="bi bi-image text-lg me-2"></i>
                             <span class="text-sm">Banner</span>
                         </a>
                     </li>
@@ -161,44 +161,44 @@
                 <div class="card" id="basic-info">
                     <div class="card-header bg-brand-header">
                         <h6 class="text-white mb-0">
-                            <i class="fas fa-user me-2"></i>Información Básica
+                            <i class="bi bi-person me-2"></i>Información Básica
                         </h6>
                     </div>
                     <div class="card-body pt-0">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="name" class="form-label">Nombre Completo</label>
+                                <label for="name" class="form-label fw-bold text-dark"><i class="bi bi-person me-2"></i>Nombre Completo</label>
                                 <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $user->name) }}" required>
                                 @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="email" class="form-label">Correo Electrónico</label>
+                                <label for="email" class="form-label fw-bold text-dark"><i class="bi bi-envelope me-2"></i>Correo Electrónico</label>
                                 <input type="email" name="email" id="email" class="form-control" value="{{ $user->email }}" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
-                                <small class="text-muted">El correo electrónico no se puede modificar</small>
+                                <small class="text-muted"><i class="bi bi-info-circle me-1"></i>El correo electrónico no se puede modificar</small>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="cui" class="form-label">CUI</label>
+                                <label for="cui" class="form-label fw-bold text-dark"><i class="bi bi-card-text me-2"></i>CUI</label>
                                 <input type="text" name="cui" id="cui" class="form-control @error('cui') is-invalid @enderror" value="{{ old('cui', $user->cui) }}" maxlength="13" placeholder="Ej: 1234567890123">
                                 @error('cui') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="phone" class="form-label">Teléfono</label>
+                                <label for="phone" class="form-label fw-bold text-dark"><i class="bi bi-telephone me-2"></i>Teléfono</label>
                                 <input type="text" name="phone" id="phone" class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone', $user->phone) }}">
                                 @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-12 mb-3">
-                                 <label for="address" class="form-label">Dirección</label>
+                                 <label for="address" class="form-label fw-bold text-dark"><i class="bi bi-geo-alt me-2"></i>Dirección</label>
                                 <input type="text" name="address" id="address" class="form-control @error('address') is-invalid @enderror" value="{{ old('address', $user->address) }}">
                                 @error('address') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>
                          <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="gender" class="form-label">Género</label>
+                                <label for="gender" class="form-label fw-bold text-dark"><i class="bi bi-gender-ambiguous me-2"></i>Género</label>
                                 <select name="gender" id="gender" class="form-select @error('gender') is-invalid @enderror">
                                     <option value="">No especificar</option>
                                     <option value="Masculino" {{ old('gender', $user->gender) == 'Masculino' ? 'selected' : '' }}>Masculino</option>
@@ -207,14 +207,14 @@
                                 @error('gender') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                              <div class="col-md-6 mb-3">
-                                <label for="birth_date" class="form-label">Fecha de Nacimiento</label>
+                                <label for="birth_date" class="form-label fw-bold text-dark"><i class="bi bi-calendar-event me-2"></i>Fecha de Nacimiento</label>
                                 <input type="date" name="birth_date" id="birth_date" class="form-control @error('birth_date') is-invalid @enderror" value="{{ old('birth_date', $user->birth_date ? $user->birth_date->format('Y-m-d') : '') }}">
                                 @error('birth_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>
                     </div>
                     <div class="card-footer text-end">
-                        <button type="submit" class="btn bg-brand-header">Guardar Cambios</button>
+                        <button type="submit" class="btn bg-brand-header"><i class="bi bi-check-circle me-2"></i>Guardar Cambios</button>
                     </div>
                 </div>
             </form>
@@ -226,27 +226,27 @@
                 <div class="card mt-4" id="password">
                     <div class="card-header bg-brand-header">
                         <h6 class="text-white mb-0">
-                            <i class="fas fa-lock me-2"></i>Cambiar Contraseña
+                            <i class="bi bi-lock me-2"></i>Cambiar Contraseña
                         </h6>
                     </div>
                     <div class="card-body pt-0">
                         <div class="mb-3">
-                             <label for="current_password" class="form-label">Contraseña Actual</label>
+                             <label for="current_password" class="form-label fw-bold text-dark"><i class="bi bi-key me-2"></i>Contraseña Actual</label>
                             <input type="password" name="current_password" id="current_password" class="form-control @error('current_password', 'updatePassword') is-invalid @enderror" required>
                              @error('current_password', 'updatePassword') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="mb-3">
-                             <label for="password" class="form-label">Nueva Contraseña</label>
+                             <label for="password" class="form-label fw-bold text-dark"><i class="bi bi-lock me-2"></i>Nueva Contraseña</label>
                             <input type="password" name="password" id="password" class="form-control @error('password', 'updatePassword') is-invalid @enderror" required>
                              @error('password', 'updatePassword') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="mb-3">
-                            <label for="password_confirmation" class="form-label">Confirmar Nueva Contraseña</label>
+                            <label for="password_confirmation" class="form-label fw-bold text-dark"><i class="bi bi-shield-check me-2"></i>Confirmar Nueva Contraseña</label>
                             <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" required>
                         </div>
                     </div>
                      <div class="card-footer text-end">
-                        <button type="submit" class="btn bg-brand-header">Actualizar Contraseña</button>
+                        <button type="submit" class="btn bg-brand-header"><i class="bi bi-arrow-repeat me-2"></i>Actualizar Contraseña</button>
                     </div>
                 </div>
             </form>
@@ -257,7 +257,7 @@
                     <div class="row align-items-center">
                         <div class="col">
                             <h6 class="text-white mb-0">
-                                <i class="fas fa-camera me-2"></i>Nueva foto de perfil
+                                <i class="bi bi-camera me-2"></i>Nueva foto de perfil
                             </h6>
                         </div>
                     </div>
@@ -266,7 +266,7 @@
                     <!-- Foto actual -->
                     @if($user->profile_photo_path)
                     <div class="mb-3" id="current-profile-photo">
-                        <label class="form-label">Foto actual:</label>
+                            <label class="form-label fw-bold text-dark">Foto actual:</label>
                         <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
                             <div class="d-flex align-items-center">
                                 <img src="{{ $user->profile_photo_url }}" alt="Foto actual" class="me-3" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
@@ -276,7 +276,7 @@
                                 </div>
                             </div>
                             <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteCurrentProfilePhoto()">
-                                <i class="fas fa-trash me-1"></i>Eliminar
+                                <i class="bi bi-trash me-1"></i>Eliminar
                             </button>
                         </div>
                     </div>
@@ -286,7 +286,7 @@
                         @csrf
                         @method('PUT')
                         <div class="mb-3">
-                            <label class="form-label">{{ $user->profile_photo_path ? 'Cambiar foto:' : 'Nueva foto:' }}</label>
+                            <label class="form-label fw-bold text-dark">{{ $user->profile_photo_path ? 'Cambiar foto:' : 'Nueva foto:' }}</label>
                             <input type="file" 
                                    name="profile_photo" 
                                    id="profile-photo-input" 
@@ -308,13 +308,13 @@
                                     </div>
                                 </div>
                                 <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearProfilePhoto()">
-                                    <i class="fas fa-times"></i>
+                                    <i class="bi bi-x"></i>
                                 </button>
                             </div>
                         </div>
                         <div class="text-end">
                             <button type="submit" class="btn bg-brand-header" id="upload-profile-photo-btn" disabled>
-                                <i class="fas fa-upload me-2"></i>Subir Foto de Perfil
+                                <i class="bi bi-cloud-upload me-2"></i>Subir Foto de Perfil
                             </button>
                         </div>
                     </form>
@@ -327,7 +327,7 @@
                     <div class="row align-items-center">
                         <div class="col">
                             <h6 class="text-white mb-0">
-                                <i class="fas fa-image me-2"></i>Nuevo banner de perfil
+                                <i class="bi bi-image me-2"></i>Nuevo banner de perfil
                             </h6>
                         </div>
                     </div>
@@ -336,7 +336,7 @@
                     <!-- Banner actual -->
                     @if($user->banner_photo_path)
                     <div class="mb-3" id="current-banner-photo">
-                        <label class="form-label">Banner actual:</label>
+                        <label class="form-label fw-bold text-dark">Banner actual:</label>
                         <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
                             <div class="d-flex align-items-center">
                                 <img src="{{ $user->banner_photo_url }}" alt="Banner actual" class="me-3" style="width: 80px; height: 45px; object-fit: cover; border-radius: 8px;">
@@ -346,7 +346,7 @@
                                 </div>
                             </div>
                             <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteCurrentBanner()">
-                                <i class="fas fa-trash me-1"></i>Eliminar
+                                <i class="bi bi-trash me-1"></i>Eliminar
                             </button>
                         </div>
                     </div>
@@ -356,7 +356,7 @@
                         @csrf
                         @method('PUT')
                         <div class="mb-3">
-                            <label class="form-label">{{ $user->banner_photo_path ? 'Cambiar banner:' : 'Nuevo banner:' }}</label>
+                            <label class="form-label fw-bold text-dark">{{ $user->banner_photo_path ? 'Cambiar banner:' : 'Nuevo banner:' }}</label>
                             <input type="file" 
                                    name="banner_photo" 
                                    id="banner-photo-input" 
@@ -378,13 +378,13 @@
                                     </div>
                                 </div>
                                 <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearBannerPhoto()">
-                                    <i class="fas fa-times"></i>
+                                    <i class="bi bi-x"></i>
                                 </button>
                             </div>
                         </div>
                         <div class="text-end">
                             <button type="submit" class="btn bg-brand-header" id="upload-banner-photo-btn" disabled>
-                                <i class="fas fa-upload me-2"></i>Subir Banner
+                                <i class="bi bi-cloud-upload me-2"></i>Subir Banner
                             </button>
                         </div>
                     </form>

@@ -146,7 +146,7 @@ class DepartmentController extends Controller
         return redirect()->route('departamentos.index')->with('toast', [
             'type' => 'warning',
             'title' => 'Eliminación Éxitosa',
-            'message' => 'El departamento ' . $departmentName . ' se ha eliminado correctamente.'
+            'message' => 'El departamento ' . $departmentName . ' con sus municipios se ha eliminado correctamente.'
         ]);
     }
 

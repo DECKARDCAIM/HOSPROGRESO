@@ -43,6 +43,9 @@ class MunicipalityController extends Controller
         $cacheKey = "municipios:index:{$version}:status={$status}:country=" . ($countryId ?: 'null')
             . ':dept=' . ($departmentId ?: 'null') . ':q=' . urlencode((string) $search) . ":p={$page}";
 
+        // Limpiar cache para forzar actualización
+        Cache::tags(['municipios'])->flush();
+        
         $municipalities = Cache::tags(['municipios'])->remember($cacheKey, $ttl, function () use ($status, $search, $countryId, $departmentId, $departments) {
             $q = Municipality::select('id', 'name', 'description', 'department_id', 'is_active')
                 ->where('is_active', $status === 'active' ? 1 : 0);
@@ -55,10 +58,8 @@ class MunicipalityController extends Controller
                     if ($deptIds->isNotEmpty()) {
                         $q->whereIn('department_id', $deptIds);
                     } else {
-                        $deptIds = Department::where('country_id', $countryId)->pluck('id');
-                        if ($deptIds->isNotEmpty()) {
-                            $q->whereIn('department_id', $deptIds);
-                        }
+                        // Si no hay departamentos para el país seleccionado, no mostrar municipios
+                        $q->whereRaw('1 = 0'); // Esto hace que la consulta no devuelva resultados
                     }
                 }
             }

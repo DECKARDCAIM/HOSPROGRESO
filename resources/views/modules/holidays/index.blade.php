@@ -117,10 +117,6 @@
                                                 <span class="badge bg-light text-dark">
                                                     {{ \Carbon\Carbon::parse($holiday->date)->format('d/m/Y') }}
                                                 </span>
-                                                <br>
-                                                <small class="text-muted">
-                                                    {{ \Carbon\Carbon::parse($holiday->date)->locale('es')->dayName }}
-                                                </small>
                                             </td>
                                             <td class="px-3 py-2">
                                                 @if($holiday->is_recurring)

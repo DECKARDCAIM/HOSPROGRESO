@@ -55,6 +55,14 @@ Route::get('/', function () {
 // Rutas de autenticación de Laravel (registro y reset de contraseña deshabilitados)
 Auth::routes(['register' => false, 'reset' => false, 'verify' => false]);
 
+// Ruta GET para logout que haga logout real y redirija al login (manejo de error Method Not Allowed)
+Route::get('/logout', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect()->route('login');
+})->name('logout.get');
+
 // Panel principal
 Route::get('/panel', [HomeController::class, 'index'])
     ->name('panel')

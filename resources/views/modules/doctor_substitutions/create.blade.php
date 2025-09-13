@@ -15,7 +15,7 @@
                         </div>
                         <div class="col-md-4 text-end">
                             <a href="{{ route('doctor-substitutions.index') }}" class="btn btn-sm btn-white">
-                                <i class="fas fa-chevron-left me-2"></i>Regresar
+                                <i class="bi bi-arrow-left me-2"></i>Regresar
                             </a>
                         </div>
                     </div>
@@ -37,7 +37,7 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-4">
                                     <label for="original_doctor_id" class="form-control-label mb-2">
-                                        <i class="fas fa-user-md text-info me-2"></i>Doctor Original
+                                        <i class="bi bi-person-md text-info me-2"></i>Doctor Original
                                     </label>
                                     <select class="form-control form-control-lg border border-2 border-info shadow-sm"
                                             id="original_doctor_id" name="original_doctor_id" required>
@@ -54,7 +54,7 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-4">
                                     <label for="substitute_doctor_id" class="form-control-label mb-2">
-                                        <i class="fas fa-user-plus text-success me-2"></i>Doctor Suplente
+                                        <i class="bi bi-person-plus text-success me-2"></i>Doctor Suplente
                                     </label>
                                     <select class="form-control form-control-lg border border-2 border-info shadow-sm"
                                             id="substitute_doctor_id" name="substitute_doctor_id" required disabled>
@@ -69,7 +69,7 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-4">
                                     <label for="start_date" class="form-control-label mb-2">
-                                        <i class="fas fa-calendar-alt text-info me-2"></i>Fecha de Inicio
+                                        <i class="bi bi-calendar-alt text-info me-2"></i>Fecha de Inicio
                                     </label>
                                     <input type="date" name="start_date" id="start_date"
                                            class="form-control form-control-lg border border-2 border-info shadow-sm"
@@ -80,7 +80,7 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-4">
                                     <label for="end_date" class="form-control-label mb-2">
-                                        <i class="fas fa-calendar-alt text-info me-2"></i>Fecha de Fin
+                                        <i class="bi bi-calendar-alt text-info me-2"></i>Fecha de Fin
                                     </label>
                                     <input type="date" name="end_date" id="end_date"
                                            class="form-control form-control-lg border border-2 border-info shadow-sm"
@@ -94,22 +94,22 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-4">
                                     <label for="reason" class="form-control-label mb-2">
-                                        <i class="fas fa-exclamation-circle text-warning me-2"></i>Razón de la Sustitución
+                                        <i class="bi bi-exclamation-triangle-circle text-warning me-2"></i>Razón de la Sustitución
                                     </label>
                                     <select class="form-control form-control-lg border border-2 border-info shadow-sm"
                                             id="reason" name="reason" required>
                                         <option value="">Seleccione una razón</option>
                                         <option value="vacaciones" {{ old('reason') == 'vacaciones' ? 'selected' : '' }}>
-                                            <i class="fas fa-plane me-2"></i>Vacaciones
+                                            <i class="bi bi-airplane me-2"></i>Vacaciones
                                         </option>
                                         <option value="licencia_medica" {{ old('reason') == 'licencia_medica' ? 'selected' : '' }}>
-                                            <i class="fas fa-heartbeat me-2"></i>Licencia Médica
+                                            <i class="bi bi-heartbeat me-2"></i>Licencia Médica
                                         </option>
                                         <option value="despido" {{ old('reason') == 'despido' ? 'selected' : '' }}>
-                                            <i class="fas fa-user-times me-2"></i>Despido
+                                            <i class="bi bi-person-times me-2"></i>Despido
                                         </option>
                                         <option value="otro" {{ old('reason') == 'otro' ? 'selected' : '' }}>
-                                            <i class="fas fa-question me-2"></i>Otro
+                                            <i class="bi bi-question-circle me-2"></i>Otro
                                         </option>
                                     </select>
                                     <div class="form-text text-muted">Motivo por el cual se requiere la sustitución</div>
@@ -135,7 +135,7 @@
                         <div class="row" id="appointments-info" style="display: none;">
                             <div class="col-md-12">
                                 <div class="alert bg-brand-header text-white">
-                                    <h6 class="text-white"><i class="fas fa-info-circle me-2"></i>Información de Reasignación</h6>
+                                    <h6 class="text-white"><i class="bi bi-info-circle me-2"></i>Información de Reasignación</h6>
                                     <p class="mb-0" id="appointments-count">Se cargarán las citas que serán reasignadas...</p>
                                 </div>
                             </div>
@@ -144,10 +144,10 @@
                         <div class="d-flex justify-content-end mt-4">
                             <button type="button" class="btn btn-secondary btn-lg me-2"
                                     onclick="window.location.href='{{ route('doctor-substitutions.index') }}'">
-                                <i class="fas fa-times me-2"></i>Cancelar
+                                <i class="bi bi-x me-2"></i>Cancelar
                             </button>
                             <button type="submit" class="btn bg-brand-header btn-lg text-white">
-                                <i class="fas fa-save me-2"></i>Crear Sustitución
+                                <i class="bi bi-check-circle me-2"></i>Crear Sustitución
                             </button>
                         </div>
                     </form>

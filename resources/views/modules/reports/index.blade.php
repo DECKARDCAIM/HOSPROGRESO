@@ -21,7 +21,7 @@
                     <div class="row">
                         <div class="col-8">
                             <div class="numbers">
-                                <p class="text-xs mb-0 text-capitalize font-weight-bold">Total Consultas</p>
+                                <p class="text-xs mb-0 text-capitalize font-weight-bold"><i class="bi bi-people me-1"></i>Total Consultas</p>
                                 <h5 class="font-weight-bolder mb-0" id="total-consultations">...</h5>
                             </div>
                         </div>
@@ -40,7 +40,7 @@
                     <div class="row">
                         <div class="col-8">
                             <div class="numbers">
-                                <p class="text-xs mb-0 text-capitalize font-weight-bold">Emergencias</p>
+                                <p class="text-xs mb-0 text-capitalize font-weight-bold"><i class="bi bi-heart-pulse me-1"></i>Emergencias</p>
                                 <h5 class="font-weight-bolder mb-0 text-danger" id="emergency-consultations">...</h5>
                             </div>
                         </div>
@@ -59,13 +59,13 @@
                     <div class="row">
                         <div class="col-8">
                             <div class="numbers">
-                                <p class="text-xs mb-0 text-capitalize font-weight-bold">Consulta Externa</p>
+                                <p class="text-xs mb-0 text-capitalize font-weight-bold"><i class="bi bi-hospital me-1"></i>Consulta Externa</p>
                                 <h5 class="font-weight-bolder mb-0 text-success" id="external-consultations">...</h5>
                             </div>
                         </div>
                         <div class="col-4 text-end">
                             <div class="icon icon-shape bg-gradient-success shadow text-center border-radius-md">
-                                <i class="bi bi-heart-pulse text-lg opacity-10"></i>
+                                <i class="bi bi-hospital text-lg opacity-10"></i>
                             </div>
                         </div>
                     </div>
@@ -122,7 +122,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group mb-3">
                                                 <label class="form-control-label mb-2">
-                                                    <i class="fas fa-stethoscope text-info me-2"></i>Tipo de Atención
+                                                    <i class="bi bi-clipboard-pulse text-info me-2"></i>Tipo de Atención
                                                 </label>
                                                 <select name="attention_type" class="form-control border border-info">
                                                     <option value="">Todos los tipos de atención</option>
@@ -140,7 +140,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group mb-3">
                                                 <label class="form-control-label mb-2">
-                                                    <i class="fas fa-user-md text-info me-2"></i>Especialidad
+                                                    <i class="bi bi-person-badge text-info me-2"></i>Especialidad
                                                 </label>
                                                 <select name="specialty_id" class="form-control border border-info">
                                                     <option value="">Todas las especialidades</option>
@@ -163,10 +163,10 @@
                                         <div class="col-md-6 d-flex align-items-end">
                                             <div class="btn-group w-100" role="group">
                                                 <button type="button" class="btn btn-outline-info" onclick="previewData()">
-                                                    <i class="fas fa-eye me-1"></i> Vista Previa
+                                                    <i class="bi bi-eye me-1"></i> Vista Previa
                                                 </button>
                                                 <button type="submit" class="btn bg-brand-header text-white" id="generateBtn">
-                                                    <i class="fas fa-file-excel me-1"></i> Generar Excel
+                                                    <i class="bi bi-file-earmark-excel me-1"></i> Generar Excel
                                                 </button>
                                             </div>
                                         </div>
@@ -192,7 +192,7 @@
 
                     <!-- Información adicional -->
                     <div class="px-3 mt-4">
-                        <div class="alert alert-info border border-info">
+                        <div class="alert alert-info border bg-brand-header text-white">
                             <div class="row">
                                 <div class="col-md-8 text-white">
                                     <h6 class="alert-heading">Información del Reporte SIGSA 3H</h6>
@@ -320,7 +320,7 @@ function previewData() {
             <div class="spinner-border text-info" role="status">
                 <span class="visually-hidden">Cargando...</span>
             </div>
-            <p class="mt-2 text-info">Generando vista previa...</p>
+            <p class="mt-2 text-info"><i class="bi bi-hourglass-split me-1"></i>Generando vista previa...</p>
         </div>
     `;
     previewSection.style.display = 'block';
@@ -336,9 +336,9 @@ function previewData() {
     .then(data => {
         if (data.success) {
             let html = `
-                <div class="alert alert-success border border-success mb-3">
-                    <strong>📊 Total de registros encontrados: ${data.total_records}</strong>
-                    <br>Mostrando los primeros ${data.preview_records} registros
+                <div class="alert alert-success border bg-brand-header text-white mb-3">
+                    <strong><i class="bi bi-graph-up me-1"></i>Total de registros encontrados: ${data.total_records}</strong>
+                    <br><i class="bi bi-eye me-1"></i>Mostrando los primeros ${data.preview_records} registros
                 </div>
                 <div class="table-responsive">
                     <table class="table table-sm border">
@@ -378,8 +378,8 @@ function previewData() {
         } else {
             previewContent.innerHTML = `
                 <div class="alert alert-white border border-white">
-                    <strong>Sin datos</strong><br>
-                    No se encontraron registros para el período y filtros seleccionados.
+                    <strong><i class="bi bi-exclamation-triangle me-1"></i>Sin datos</strong><br>
+                    <i class="bi bi-search me-1"></i>No se encontraron registros para el período y filtros seleccionados.
                 </div>
             `;
         }
@@ -388,8 +388,8 @@ function previewData() {
         console.error('Error:', error);
         previewContent.innerHTML = `
             <div class="alert alert-danger border border-danger">
-                <strong>❌ Error</strong><br>
-                Ocurrió un error al generar la vista previa.
+                <strong><i class="bi bi-x-circle me-1"></i>Error</strong><br>
+                <i class="bi bi-exclamation-octagon me-1"></i>Ocurrió un error al generar la vista previa.
             </div>
         `;
     });
@@ -409,7 +409,7 @@ document.getElementById('reportForm').addEventListener('submit', function(e) {
     // Mostrar mensaje de generación
     const submitBtn = document.getElementById('generateBtn');
     const originalContent = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Generando...';
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Generando...';
     submitBtn.disabled = true;
     
     // Restaurar botón después de 3 segundos

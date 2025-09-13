@@ -86,11 +86,13 @@
                                         </button>
                                     </div>
                                 </div>
-                                @if ($search)
+                                @php
+                                    $hasFilters = !empty(request('search')) || !empty(request('country_id'));
+                                @endphp
+                                @if($hasFilters)
                                     <div class="col-auto ms-2">
-                                        <a href="{{ url('/departamentos?status=' . $status . ($country_id ? '&country_id=' . $country_id : '')) }}"
-                                            class="btn btn-outline-secondary">
-                                            <i class="bi bi-x me-2"></i>Limpiar búsqueda
+                                        <a href="{{ url('/departamentos') }}" class="btn btn-outline-secondary">
+                                            <i class="bi bi-x me-2"></i>Limpiar filtros
                                         </a>
                                     </div>
                                 @endif

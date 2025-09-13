@@ -15,7 +15,7 @@
                             </div>
                             <div class="col-md-4 text-end">
                                 <a href="{{ route('doctors.index') }}" class="btn btn-sm btn-white">
-                                    <i class="fas fa-chevron-left me-2"></i>Regresar
+                                    <i class="bi bi-arrow-left me-2"></i>Regresar
                                 </a>
                             </div>
                         </div>
@@ -24,7 +24,7 @@
                     <div class="card-body">
                         @if ($errors->any())
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <span class="alert-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                                <span class="alert-icon"><i class="bi bi-exclamation-triangle"></i></span>
                                 <span class="alert-text">
                                     <strong>¡Por favor!</strong> Revisa los siguientes errores:
                                     <ul class="mb-0">
@@ -115,7 +115,7 @@
 
                                 <div class="col-md-12 mb-4">
                                     <label for="schedule_type_id" class="form-label mb-2">
-                                        <i class="fas fa-calendar-alt text-info me-2"></i>Tipo de Horario
+                                        <i class="bi bi-calendar-alt text-info me-2"></i>Tipo de Horario
                                     </label>
                                     <select name="schedule_type_id" id="schedule_type_id"
                                         class="form-select form-select-lg border border-2 border-info shadow-sm" required
@@ -131,11 +131,11 @@
                             <div class="d-flex justify-content-end mt-4">
                                 <button type="button" class="btn btn-secondary btn-lg me-2"
                                     onclick="window.location.href='{{ route('doctors.index') }}'">
-                                    <i class="fas fa-times me-2"></i>Cancelar
+                                    <i class="bi bi-x me-2"></i>Cancelar
                                 </button>
 
                                 <button type="submit" class="btn bg-brand-header btn-lg text-white">
-                                    <i class="fas fa-save me-2"></i>Guardar Doctor
+                                    <i class="bi bi-check-circle me-2"></i>Guardar Doctor
                                 </button>
                             </div>
                         </form>

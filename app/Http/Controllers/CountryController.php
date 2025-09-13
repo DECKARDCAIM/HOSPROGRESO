@@ -140,7 +140,7 @@ class CountryController extends Controller
         return redirect()->route('paises.index')->with('toast', [
             'type' => 'warning',
             'title' => 'Eliminación Éxitosa',
-            'message' => 'El país ' . $countryName . ' se ha eliminado correctamente.'
+            'message' => 'El país ' . $countryName . ' con sus departamentos y municipios se ha eliminado correctamente.'
         ]);
     }
 
@@ -168,7 +168,7 @@ class CountryController extends Controller
             ->with('toast', [
                 'type' => 'success',
                 'title' => 'Reactivación Éxitosa',
-                'message' => 'El país ' . $country->name . ' y sus dependientes han sido reactivados correctamente.'
+                'message' => 'El país ' . $country->name . ' y sus departamentos y municipios han sido reactivados correctamente.'
             ]);
     }
 }

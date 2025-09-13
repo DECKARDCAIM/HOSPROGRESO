@@ -16,7 +16,7 @@
                             </div>
                             <div class="col-md-4 text-end">
                                 <a href="{{ route('schedule-types.index') }}" class="btn btn-sm btn-white">
-                                    <i class="fas fa-chevron-left me-2"></i>Regresar
+                                    <i class="bi bi-arrow-left me-2"></i>Regresar
                                 </a>
                             </div>
                         </div>
@@ -24,7 +24,7 @@
                     <div class="card-body">
                         @if ($errors->any())
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <span class="alert-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                                <span class="alert-icon"><i class="bi bi-exclamation-triangle"></i></span>
                                 <span class="alert-text">
                                     <strong>Por favor!</strong> Revisa los siguientes errores:
                                     <ul class="mb-0">
@@ -43,7 +43,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group mb-4">
                                         <label for="name" class="form-control-label mb-2">
-                                            <i class="fas fa-tag text-info me-2"></i>Nombre del horario
+                                            <i class="bi bi-tag text-info me-2"></i>Nombre del horario
                                         </label>
                                         <input type="text" name="name" id="name"
                                             class="form-control form-control-lg border border-2 border-info shadow-sm"
@@ -55,7 +55,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group mb-4">
                                         <label for="specialty_id" class="form-control-label mb-2">
-                                            <i class="fas fa-stethoscope text-info me-2"></i>Especialidad
+                                            <i class="bi bi-clipboard-pulse text-info me-2"></i>Especialidad
                                         </label>
                                         <select class="form-control form-control-lg border border-2 border-info shadow-sm"
                                             id="specialty_id" name="specialty_id" required>
@@ -70,7 +70,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-12 mb-4">
-                                    <label class="form-label mb-2"><i class="fas fa-calendar-alt text-info me-2"></i>Días de
+                                    <label class="form-label mb-2"><i class="bi bi-calendar-alt text-info me-2"></i>Días de
                                         la semana</label><br>
                                     @foreach ([1 => 'Lunes', 2 => 'Martes', 3 => 'Miércoles', 4 => 'Jueves', 5 => 'Viernes', 6 => 'Sábado', 7 => 'Domingo'] as $num => $day)
                                         <div class="form-check form-check-inline">
@@ -87,7 +87,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group mb-4">
                                         <label for="start_time" class="form-control-label mb-2">
-                                            <i class="fas fa-clock text-info me-2"></i>Hora Inicio
+                                            <i class="bi bi-clock text-info me-2"></i>Hora Inicio
                                         </label>
                                         <input type="time" name="start_time" id="start_time"
                                             class="form-control form-control-lg border border-2 border-info shadow-sm"
@@ -97,7 +97,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group mb-4">
                                         <label for="end_time" class="form-control-label mb-2">
-                                            <i class="fas fa-clock text-info me-2"></i>Hora Fin
+                                            <i class="bi bi-clock text-info me-2"></i>Hora Fin
                                         </label>
                                         <input type="time" name="end_time" id="end_time"
                                             class="form-control form-control-lg border border-2 border-info shadow-sm"
@@ -109,7 +109,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group mb-4">
                                         <label for="max_patients" class="form-control-label mb-2">
-                                            <i class="fas fa-users text-info me-2"></i>Cupo máximo por día
+                                            <i class="bi bi-persons text-info me-2"></i>Cupo máximo por día
                                         </label>
                                         <input type="number" name="max_patients" id="max_patients"
                                             class="form-control form-control-lg border border-2 border-info shadow-sm"
@@ -121,10 +121,10 @@
                             <div class="d-flex justify-content-end mt-4">
                                 <button type="button" class="btn btn-secondary btn-lg me-2"
                                     onclick="window.location.href='{{ route('schedule-types.index') }}'">
-                                    <i class="fas fa-times me-2"></i>Cancelar
+                                    <i class="bi bi-x me-2"></i>Cancelar
                                 </button>
                                 <button type="submit" class="btn bg-brand-header btn-lg text-white">
-                                    <i class="fas fa-save me-2"></i>Crear horario
+                                    <i class="bi bi-check-circle me-2"></i>Crear horario
                                 </button>
                             </div>
                         </form>

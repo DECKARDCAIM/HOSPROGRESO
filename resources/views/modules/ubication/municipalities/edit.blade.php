@@ -14,8 +14,8 @@
                                 <h6 class="text-white mb-0">Editar Municipio</h6>
                             </div>
                             <div class="col-md-4 text-end">
-                                <a href="{{ url('/departamentos') }}" class="btn btn-sm btn-white">
-                                    <i class="fas fa-chevron-left me-2"></i>Regresar
+                                <a href="{{ url('/municipios') }}" class="btn btn-sm btn-white">
+                                    <i class="bi bi-arrow-left me-2"></i>Regresar
                                 </a>
                             </div>
                         </div>
@@ -41,7 +41,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group mb-4">
                                         <label for="name" class="form-control-label mb-2">
-                                            <i class="fas fa-tag text-info me-2"></i>Nombre del municipio
+                                            <i class="bi bi-tag text-info me-2"></i>Nombre del municipio
                                         </label>
                                         <input type="text" name="name" id="name"
                                             class="form-control form-control-lg border border-2 border-info shadow-sm"
@@ -52,7 +52,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group mb-4">
                                         <label for="country_id" class="form-control-label mb-2">
-                                            <i class="fas fa-globe-americas text-info me-2"></i>Departamento
+                                            <i class="bi bi-geo-alt text-info me-2"></i>Departamento
                                         </label>
                                         <select name="department_id" id="department_id"
                                             class="form-select form-select-lg border border-2 border-info shadow-sm"
@@ -75,7 +75,7 @@
                                 <div class="col-12">
                                     <div class="form-group mb-4">
                                         <label for="description" class="form-control-label mb-2">
-                                            <i class="fas fa-align-left text-info me-2"></i>Descripción
+                                            <i class="bi bi-text-paragraph text-info me-2"></i>Descripción
                                         </label>
                                         <textarea name="description" id="description" class="form-control form-control-lg border border-2 border-info shadow-sm"
                                             rows="3" required>{{ old('description', $municipality->description) }}</textarea>
@@ -87,10 +87,10 @@
                             <div class="d-flex justify-content-end mt-4">
                                 <button type="button" class="btn btn-secondary btn-lg me-2 text-white"
                                     onclick="window.location.href='{{ url('/municipios') }}'">
-                                    <i class="fas fa-times me-2"></i>Cancelar
+                                    <i class="bi bi-x me-2"></i>Cancelar
                                 </button>
                                 <button type="submit" class="btn bg-brand-header btn-lg text-white">
-                                    <i class="fas fa-save me-2"></i>Guardar cambios
+                                    <i class="bi bi-check-circle me-2"></i>Guardar cambios
                                 </button>
                             </div>
                         </form>

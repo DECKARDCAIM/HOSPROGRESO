@@ -24,7 +24,7 @@
                         </div>
                         <div class="col-md-4 text-end">
                             <a href="{{ route('clinical-records.index') }}" class="btn btn-sm btn-white">
-                                <i class="fas fa-chevron-left me-2"></i>Regresar
+                                <i class="bi bi-arrow-left me-2"></i>Regresar
                             </a>
                         </div>
                     </div>
@@ -32,7 +32,7 @@
                 <div class="card-body">
                     @if ($errors->any())
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <span class="alert-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                        <span class="alert-icon"><i class="bi bi-exclamation-triangle"></i></span>
                         <span class="alert-text">
                             <strong>Por favor!</strong> Revisa los siguientes errores:
                             <ul class="mb-0">
@@ -49,11 +49,11 @@
                     @if(isset($temporaryPatient) && $temporaryPatient)
                         <div class="alert alert-warning border-warning" role="alert">
                             <div class="alert-icon">
-                                <i class="fas fa-exclamation-triangle fa-2x"></i>
+                                <i class="bi bi-exclamation-triangle fa-2x"></i>
                             </div>
                             <div class="alert-text">
                                 <h5 class="alert-heading text-warning">
-                                    <i class="fas fa-user-clock me-2"></i>
+                                    <i class="bi bi-person-clock me-2"></i>
                                     Paciente Temporal Encontrado
                                 </h5>
                                 <p class="mb-2">
@@ -355,10 +355,10 @@
 
                         <div class="d-flex justify-content-end mt-4">
                             <button type="button" class="btn btn-secondary btn-lg me-2" onclick="window.location.href='{{ route('clinical-records.index') }}'">
-                                <i class="fas fa-times me-2"></i>Cancelar
+                                <i class="bi bi-x me-2"></i>Cancelar
                             </button>
                             <button type="submit" class="btn bg-brand-header btn-lg text-white">
-                                <i class="fas fa-save me-2"></i>Crear expediente
+                                <i class="bi bi-check-circle me-2"></i>Crear expediente
                             </button>
                         </div>
                     </form>

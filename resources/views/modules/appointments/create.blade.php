@@ -134,7 +134,7 @@
                       @endphp
                       @if($hasFilters)
                         <a href="{{ route('appointments.create') }}" class="btn btn-outline-secondary">
-                          <i class="fas fa-times me-2"></i>Limpiar búsqueda
+                          <i class="bi bi-x me-2"></i>Limpiar búsqueda
                         </a>
                       @endif
                     </div>
@@ -185,7 +185,7 @@
                                                           <td class="align-middle"><span class="badge bg-brand-header">{{ $record->age }} años</span></td>
                           <td class="align-middle">
                             <span class="text-muted">
-                              <i class="fas fa-map-marker-alt text-info me-1"></i>
+                              <i class="bi bi-geo-alt text-info me-1"></i>
                               {{ $record->municipality->name ?? '-' }}, {{ $record->department->name ?? '-' }}
                             </span>
                           </td>
@@ -213,7 +213,7 @@
                 <div class="alert alert-info">
                   <div class="row align-items-center">
                     <div class="col-md-8">
-                      <h6 class="text-white"><i class="fas fa-user me-2 text-white"></i>Paciente Seleccionado</h6>
+                      <h6 class="text-white"><i class="bi bi-person me-2 text-white"></i>Paciente Seleccionado</h6>
                       <div class="text-white" id="patientDetails">
                         @if($selectedClinicalRecord)
                           <div class="row">
@@ -245,7 +245,7 @@
                     </div>
                     <div class="col-md-4 text-end">
                       <button type="button" class="btn btn-sm btn-white" onclick="proceedToStep2()">
-                        <i class="fas fa-arrow-right me-2"></i>Continuar con la Cita
+                        <i class="bi bi-arrow-right me-2"></i>Continuar con la Cita
                       </button>
                     </div>
                   </div>
@@ -255,7 +255,7 @@
 
           <!-- Paso 2 -->
           <div class="step-section" id="step2" style="display:none;">
-            <h5 class="text-info mb-3"><i class="fas fa-calendar-medical me-2"></i>Paso 2: Configurar Cita Médica</h5>
+            <h5 class="text-info mb-3"><i class="bi bi-calendar-medical me-2"></i>Paso 2: Configurar Cita Médica</h5>
 
             <!-- Campo oculto que se envía -->
             <input type="hidden" name="clinical_record_id" id="selectedPatientId" required>
@@ -308,16 +308,16 @@
 
             <!-- Próximo cupo -->
             <div id="nextSlotInfo" class="alert alert-info text-white" style="display:none;">
-              <h6 class="text-white"><i class="fas fa-calendar-check me-2 text-white"></i>Próximo Cupo Disponible</h6>
+              <h6 class="text-white"><i class="bi bi-calendar-check me-2 text-white"></i>Próximo Cupo Disponible</h6>
               <div id="slotDetails" class="text-white"></div>
             </div>
 
             <div class="d-flex justify-content-between">
               <button type="button" class="btn btn-secondary" onclick="backToStep1()">
-                <i class="fas fa-arrow-left me-2"></i>Seleccionar otro Paciente
+                <i class="bi bi-arrow-left me-2"></i>Seleccionar otro Paciente
               </button>
               <button type="button" class="btn bg-brand-header" disabled id="submitBtn" onclick="submitForm()">
-                <i class="fas fa-calendar-plus me-2"></i>Agendar Cita
+                <i class="bi bi-calendar-plus me-2"></i>Agendar Cita
               </button>
             </div>
           </div>
@@ -554,7 +554,7 @@ function loadNextAvailableSlot(doctorId) {
   if (!doctorId) { hideNextSlotInfo(); updateSubmitButtonState(); return; }
 
   showNextSlotInfo();
-  document.getElementById('slotDetails').innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Cargando próximo cupo...';
+  document.getElementById('slotDetails').innerHTML = '<i class="bi bi-hourglass-split fa-spin me-2"></i>Cargando próximo cupo...';
 
   fetch(`{{ route('appointments.get-next-slot') }}`, {
     method: 'POST',
@@ -564,7 +564,7 @@ function loadNextAvailableSlot(doctorId) {
   .then(r => r.json())
   .then(data => {
     if (data.error) {
-      document.getElementById('slotDetails').innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${data.error}`;
+      document.getElementById('slotDetails').innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i>${data.error}`;
     } else {
       document.getElementById('slotDetails').innerHTML = `
         <div class="row">
@@ -581,7 +581,7 @@ function loadNextAvailableSlot(doctorId) {
     updateSubmitButtonState();
   })
   .catch(() => {
-    document.getElementById('slotDetails').innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Error cargando cupo disponible';
+    document.getElementById('slotDetails').innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>Error cargando cupo disponible';
     updateSubmitButtonState();
   });
 }
@@ -697,7 +697,7 @@ function submitForm() {
   const submitBtn = document.getElementById('submitBtn');
   const originalText = submitBtn.innerHTML;
   submitBtn.disabled = true;
-  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creando...';
+  submitBtn.innerHTML = '<i class="bi bi-hourglass-split fa-spin me-2"></i>Creando...';
 
   // Enviar formulario con AJAX
   const formData = new FormData(form);
