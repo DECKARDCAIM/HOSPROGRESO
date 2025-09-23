@@ -47,22 +47,22 @@
 
                     <!-- Alerta de Paciente Temporal Encontrado -->
                     @if(isset($temporaryPatient) && $temporaryPatient)
-                        <div class="alert alert-warning border-warning" role="alert">
+                        <div class="alert bg-brand-header border-brand-header" role="alert">
                             <div class="alert-icon">
-                                <i class="bi bi-exclamation-triangle fa-2x"></i>
+                                <i class="bi bi-exclamation-triangle fa-2x text-white"></i>
                             </div>
                             <div class="alert-text">
-                                <h5 class="alert-heading text-warning">
+                                <h5 class="alert-heading text-white">
                                     <i class="bi bi-person-clock me-2"></i>
                                     Paciente Temporal Encontrado
                                 </h5>
-                                <p class="mb-2">
+                                <p class="mb-2 text-white">
                                     Se encontró un registro temporal con número: <strong>{{ $temporaryPatient->registration_number }}</strong>
                                 </p>
-                                <p class="mb-2">
+                                <p class="mb-2 text-white">
                                     <strong>Nombre:</strong> {{ $temporaryPatient->full_name }}
                                 </p>
-                                <p class="mb-0">
+                                <p class="mb-0 text-white">
                                     Los datos han sido prellenados automáticamente. Al guardar el expediente, los datos temporales serán migrados.
                                 </p>
                             </div>

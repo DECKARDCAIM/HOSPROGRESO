@@ -120,7 +120,20 @@ class ScheduleTypeController extends Controller
         $data = $request->only(['name', 'specialty_id', 'start_time', 'end_time', 'max_patients']);
         $data['days_of_week'] = json_encode($request->input('days_of_week'));
 
+        // Verificar si se está reduciendo la capacidad
+        $oldCapacity = $scheduleType->max_patients;
+        $newCapacity = $data['max_patients'];
+
         $scheduleType->update($data);
+
+        // Manejar reducción de capacidad si aplica
+        if ($newCapacity < $oldCapacity) {
+            $cancelledCount = $scheduleType->handleCapacityReduction($newCapacity);
+            
+            if ($cancelledCount > 0) {
+                session()->flash('warning', "Se cancelaron {$cancelledCount} citas debido a la reducción de capacidad de {$oldCapacity} a {$newCapacity} pacientes.");
+            }
+        }
 
         Cache::tags(['tipos_horario'])->flush();
 

@@ -229,7 +229,7 @@
             <!-- Header -->
             <div class="header">
                 <div class="logo">HOSPITAL NACIONAL DE PROGRESO</div>
-                <div class="subtitle">Sistema de Gestión de Citas Médicas - Unidad 234</div>
+                <div class="subtitle">Sistema de Registro de Pacientes - HOSPROGRESO</div>
                 <div class="appointment-number">CITA N° {{ $appointment->appointment_number }}</div>
             </div>
 
@@ -238,16 +238,16 @@
         <div class="section-title">Información de la Cita</div>
         <div class="info-grid">
             <div class="info-row">
-                <div class="info-label">Número de Cita:</div>
-                <div class="info-value">{{ $appointment->appointment_number }}</div>
+                <div class="info-label">Fecha:</div>
+                <div class="info-value">{{ $appointment->appointment_date->translatedFormat('l, d \d\e F \d\e Y') }}</div>
             </div>
             <div class="info-row">
-                <div class="info-label">Fecha y Hora:</div>
-                <div class="info-value">{{ $appointment->appointment_date->translatedFormat('l, d \d\e F \d\e Y \a \l\a\s H:i') }}</div>
+                <div class="info-label">Especialidad:</div>
+                <div class="info-value">{{ $appointment->specialty->name }}</div>
             </div>
             <div class="info-row">
-                <div class="info-label">Turno:</div>
-                <div class="info-value">Turno {{ $appointment->slot_number ?? '1' }}</div>
+                <div class="info-label">Doctor:</div>
+                <div class="info-value">{{ $appointment->doctor->full_name }}</div>
             </div>
             <div class="info-row">
                 <div class="info-label">Tipo de Atención:</div>
@@ -270,114 +270,14 @@
         </div>
     </div>
 
-    <!-- Información del Paciente -->
-    <div class="section">
-        <div class="section-title">Información del Paciente</div>
-        <div class="info-grid">
-            <div class="info-row">
-                <div class="info-label">Nombre Completo:</div>
-                <div class="info-value">{{ $appointment->clinicalRecord->full_name }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">CUI:</div>
-                <div class="info-value">{{ $appointment->clinicalRecord->cui }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">N° Expediente:</div>
-                <div class="info-value">{{ $appointment->clinicalRecord->record_number }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Edad:</div>
-                <div class="info-value">{{ $appointment->clinicalRecord->age }} años</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Sexo:</div>
-                <div class="info-value">{{ $appointment->clinicalRecord->sex->name ?? '-' }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Fecha de Nacimiento:</div>
-                <div class="info-value">{{ $appointment->clinicalRecord->birth_date ? $appointment->clinicalRecord->birth_date->format('d/m/Y') : '-' }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Ubicación:</div>
-                <div class="info-value">
-                    {{ $appointment->clinicalRecord->municipality->name ?? '-' }}, 
-                    {{ $appointment->clinicalRecord->department->name ?? '-' }}, 
-                    {{ $appointment->clinicalRecord->country->name ?? '-' }}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Información Médica -->
-    <div class="section">
-        <div class="section-title">Información Médica</div>
-        <div class="info-grid">
-            <div class="info-row">
-                <div class="info-label">Especialidad:</div>
-                <div class="info-value">{{ $appointment->specialty->name }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Doctor:</div>
-                <div class="info-value">{{ $appointment->doctor->full_name }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Tipo de Horario:</div>
-                <div class="info-value">{{ $appointment->scheduleType->name ?? '-' }}</div>
-            </div>
-            @if($appointment->scheduleType)
-            <div class="info-row">
-                <div class="info-label">Horario de Atención:</div>
-                <div class="info-value">{{ $appointment->scheduleType->start_time }} - {{ $appointment->scheduleType->end_time }}</div>
-            </div>
-            @endif
-        </div>
-    </div>
-
-    <!-- Información Administrativa -->
-    <div class="section">
-        <div class="section-title">Información Administrativa</div>
-        <div class="info-grid">
-            <div class="info-row">
-                <div class="info-label">Cita Creada por:</div>
-                <div class="info-value">{{ $appointment->createdBy->name ?? '-' }}</div>
-            </div>
-            <div class="info-row">
-                <div class="info-label">Fecha de Registro:</div>
-                <div class="info-value">{{ $appointment->created_at->format('d/m/Y H:i') }}</div>
-            </div>
-            @if($appointment->confirmed_at)
-            <div class="info-row">
-                <div class="info-label">Fecha de Confirmación:</div>
-                <div class="info-value">{{ $appointment->confirmed_at->format('d/m/Y H:i') }}</div>
-            </div>
-            @endif
-            @if($appointment->attended_at)
-            <div class="info-row">
-                <div class="info-label">Fecha de Atención:</div>
-                <div class="info-value">{{ $appointment->attended_at->format('d/m/Y H:i') }}</div>
-            </div>
-            @endif
-            @if($appointment->cancelled_at)
-            <div class="info-row">
-                <div class="info-label">Fecha de Cancelación:</div>
-                <div class="info-value">{{ $appointment->cancelled_at->format('d/m/Y H:i') }}</div>
-            </div>
-            @endif
-            @if($appointment->cancelled_reason)
-            <div class="info-row">
-                <div class="info-label">Razón de Cancelación:</div>
-                <div class="info-value">{{ $appointment->cancelled_reason }}</div>
-            </div>
-            @endif
-        </div>
-    </div>
-
     <!-- Notas Importantes -->
     <div class="important-note">
         <strong>Instrucciones Importantes:</strong><br>
-        • Presentarse 15 minutos antes de la hora de la cita<br>
+        • Presentarse el día de la cita<br>
         • Traer documento de identidad (CUI o DPI)<br>
+        @if($appointment->clinicalRecord->age < 18)
+        • En caso de ser menor de edad, traer certificado de nacimiento<br>
+        @endif
         • Traer este comprobante de cita<br>
         • En caso de no poder asistir, comunicarse con anticipación para reagendar<br>
         • Si no se presenta a la cita, esta será marcada como "perdida"
@@ -385,32 +285,20 @@
 
             <!-- Información de Generación del PDF -->
             <div class="generated-info">
-                <strong>PDF generado el:</strong> {{ now()->format('d/m/Y \a \l\a\s H:i') }}<br>
+                <strong>PDF generado el:</strong> {{ now()->format('d/m/Y') }}<br>
                 <strong>Usuario:</strong> {{ Auth::user()->name ?? 'Sistema' }}
             </div>
         </div>
     </div>
 
-    <!-- Footer con numeración de páginas -->
+    <!-- Footer -->
     <div class="footer">
         <div class="footer-content">
-            <div>Hospital Nacional de Progreso - Sistema de Gestión de Citas Médicas</div>
-            <div>Teléfono: (502) 0000-0000 | Email: citas@hospitalprogreso.gt</div>
+            <div>Hospital Nacional de Progreso - Sistema de Registro de Pacientes</div>
+            <div>Teléfono: (502) 7867-0350</div>
             <div style="margin-top: 3px; font-size: 9px;">
                 Este documento es un comprobante oficial de su cita médica. Conserve este documento para sus registros.
             </div>
-        </div>
-        <div class="page-number">
-            <script type="text/php">
-                if (isset($pdf)) {
-                    $pdf->page_script('
-                        $font = $fontMetrics->get_font("DejaVu Sans", "normal");
-                        $size = 9;
-                        $pageText = "Página " . $PAGE_NUM . " de " . $PAGE_COUNT;
-                        $pdf->text(500, 820, $pageText, $font, $size, array(1,1,1));
-                    ');
-                }
-            </script>
         </div>
     </div>
 </body>

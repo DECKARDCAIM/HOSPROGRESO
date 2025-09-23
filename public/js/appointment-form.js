@@ -122,8 +122,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         nextSlotInfo.className = 'alert alert-success';
                         slotDetails.innerHTML = `
                             <p class="mb-1"><strong>Fecha:</strong> ${data.day_name}, ${data.formatted_date}</p>
-                            <p class="mb-1"><strong>Hora:</strong> ${data.formatted_time}</p>
-                            <p class="mb-1"><strong>Turno:</strong> ${data.slot_number}</p>
                             <p class="mb-0"><strong>Cupos disponibles:</strong> ${data.available_slots}</p>
                         `;
                         submitBtn.disabled = false;

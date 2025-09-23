@@ -570,11 +570,11 @@ function loadNextAvailableSlot(doctorId) {
         <div class="row">
           <div class="col-md-6">
             <p class="mb-1"><strong>Fecha:</strong> ${data.formatted_date}</p>
-            <p class="mb-1"><strong>Hora:</strong> ${data.formatted_time}</p>
+            <p class="mb-1"><strong>Día:</strong> ${data.day_name}</p>
           </div>
           <div class="col-md-6">
-            <p class="mb-1"><strong>Día:</strong> ${data.day_name}</p>
-            <p class="mb-1"><strong>Turno:</strong> ${data.slot_number}</p>
+            <p class="mb-1"><strong>Cupos Disponibles:</strong> ${data.available_slots}</p>
+            <p class="mb-1"><strong>Capacidad Total:</strong> ${data.total_capacity}</p>
           </div>
         </div>`;
     }

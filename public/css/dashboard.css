@@ -1,0 +1,195 @@
+/* Dashboard Styles */
+.metric-card {
+  height: 100%;
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.metric-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.1);
+}
+
+.metric-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0;
+  color: #6c757d !important;
+}
+
+.metric-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+.metric-description {
+  font-size: 0.75rem;
+  color: #495057;
+  margin: 0;
+}
+
+/* Estilos mejorados para la sección de filtros */
+.card {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.form-label {
+  font-size: 0.8rem;
+  letter-spacing: 0.025em;
+  transition: color 0.3s ease;
+}
+
+.form-label:hover {
+  color: #374151 !important;
+}
+
+.form-select {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+}
+
+.form-select:focus {
+  box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.15);
+  border-color: #93c5fd;
+  transform: translateY(-1px);
+}
+
+.form-select:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Estilos para el botón de refresh */
+#refresh-metrics {
+  border-radius: 0 8px 8px 0;
+  min-width: 45px;
+  transition: all 0.3s ease;
+}
+
+#refresh-metrics:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#refresh-metrics:disabled {
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+/* Ajustar el select para que se vea bien con el botón */
+#dashboard-selector {
+  border-radius: 8px 0 0 8px;
+}
+
+/* Animación de rotación para el ícono de refresh */
+.refresh-spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  border: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+}
+
+.btn-outline-secondary {
+  border-color: #d1d5db;
+  color: #6b7280;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+/* Estilos para el select de dashboard */
+#dashboard-selector {
+  transition: all 0.3s ease;
+}
+
+#dashboard-selector:focus {
+  box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.15);
+  border-color: #93c5fd;
+}
+
+#dashboard-selector option {
+  padding: 8px 12px;
+}
+
+/* Iconos en labels */
+.form-label i {
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.form-label:hover i {
+  opacity: 1;
+}
+
+/* Transición suave para cambios de contenido */
+.metric-card {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* Estilos para toast notifications */
+.toast-container {
+  z-index: 9999;
+}
+
+.toast {
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}

@@ -17,7 +17,6 @@ class Appointment extends Model
         'specialty_id',
         'schedule_type_id',
         'appointment_date',
-        'slot_number',
         'attention_type',
         'status',
         'notes',
@@ -34,7 +33,7 @@ class Appointment extends Model
     ];
 
     protected $casts = [
-        'appointment_date' => 'datetime',
+        'appointment_date' => 'date',
         'confirmed_at' => 'datetime',
         'attended_at' => 'datetime',
         'cancelled_at' => 'datetime',
@@ -199,11 +198,21 @@ class Appointment extends Model
         return $bookedSlots < $scheduleType->max_patients;
     }
 
-    public static function getNextFixedSlotNumber($doctorId, $appointmentDate, $scheduleTypeId)
+    public static function isDateAvailable($doctorId, $appointmentDate, $scheduleTypeId)
     {
         $scheduleType = ScheduleType::find($scheduleTypeId);
         if (!$scheduleType)
-            return null;
+            return false;
+
+        // Verificar si el día de la cita está en el horario del doctor
+        $appointmentDay = Carbon::parse($appointmentDate)->dayOfWeekIso;
+        $scheduleDays = is_string($scheduleType->days_of_week) 
+            ? json_decode($scheduleType->days_of_week, true) 
+            : $scheduleType->days_of_week;
+            
+        if (!in_array($appointmentDay, $scheduleDays)) {
+            return false; // El doctor no trabaja ese día
+        }
 
         // Obtener el doctor para verificar si tiene sustituciones activas
         $doctor = Doctor::find($doctorId);
@@ -220,39 +229,22 @@ class Appointment extends Model
             $originalDoctorId = $activeSubstitution->original_doctor_id;
         }
 
-        // Buscar citas del doctor original (incluyendo las que están siendo atendidas por el suplente)
-        if ($activeSubstitution) {
-            // Si hay sustitución activa, considerar citas del doctor original y suplente
-            $occupiedSlots = self::where(function($query) use ($originalDoctorId, $doctorId) {
-                    $query->where('doctor_id', $originalDoctorId)
-                          ->orWhere(function($subQuery) use ($originalDoctorId, $doctorId) {
-                              $subQuery->where('doctor_id', $doctorId)
-                                       ->where('is_substituted', true)
-                                       ->whereHas('substitution', function($subSubQuery) use ($originalDoctorId) {
-                                           $subSubQuery->where('original_doctor_id', $originalDoctorId);
-                                       });
-                          });
-                })
-                ->whereDate('appointment_date', Carbon::parse($appointmentDate)->toDateString())
-                ->whereIn('status', ['pendiente', 'confirmada', 'atendida'])
-                ->pluck('slot_number')
-                ->toArray();
-        } else {
-            // Si no hay sustitución activa, solo considerar citas del doctor actual
-            $occupiedSlots = self::where('doctor_id', $doctorId)
-                ->whereDate('appointment_date', Carbon::parse($appointmentDate)->toDateString())
-                ->whereIn('status', ['pendiente', 'confirmada', 'atendida'])
-                ->pluck('slot_number')
-                ->toArray();
-        }
+        // Contar citas del doctor para esa fecha
+        $bookedCount = self::where(function($query) use ($originalDoctorId, $doctorId) {
+                $query->where('doctor_id', $originalDoctorId)
+                      ->orWhere(function($subQuery) use ($originalDoctorId, $doctorId) {
+                          $subQuery->where('doctor_id', $doctorId)
+                                   ->where('is_substituted', true)
+                                   ->whereHas('substitution', function($subSubQuery) use ($originalDoctorId) {
+                                       $subSubQuery->where('original_doctor_id', $originalDoctorId);
+                                   });
+                      });
+            })
+            ->whereDate('appointment_date', Carbon::parse($appointmentDate)->toDateString())
+            ->whereIn('status', ['pendiente', 'confirmada', 'atendida'])
+            ->count();
 
-        for ($slotNumber = 1; $slotNumber <= $scheduleType->max_patients; $slotNumber++) {
-            if (!in_array($slotNumber, $occupiedSlots)) {
-                return $slotNumber;
-            }
-        }
-
-        return null;
+        return $bookedCount < $scheduleType->max_patients;
     }
 
     public static function getNextAvailableSlot($doctorId, $excludeId = null)
@@ -318,19 +310,16 @@ class Appointment extends Model
                     }
                 }
 
-                $nextSlotNumber = self::getNextFixedSlotNumber($doctorId, $checkDate, $schedule->id);
+                $isAvailable = self::isDateAvailable($doctorId, $checkDate, $schedule->id);
 
-                if ($nextSlotNumber) {
-                    $appointmentDateTime = $checkDate->setTimeFromTimeString($schedule->start_time);
-
+                if ($isAvailable) {
                     $bookedSlots = self::where('doctor_id', $doctorId)
                         ->whereDate('appointment_date', $checkDate->toDateString())
                         ->whereIn('status', ['pendiente', 'confirmada', 'atendida'])
                         ->count();
 
                     return [
-                        'date' => $appointmentDateTime,
-                        'slot_number' => $nextSlotNumber,
+                        'date' => $checkDate,
                         'schedule_type_id' => $schedule->id,
                         'available_slots' => $schedule->max_patients - $bookedSlots,
                         'day_name' => $checkDate->translatedFormat('l'),

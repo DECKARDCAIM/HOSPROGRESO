@@ -70,17 +70,17 @@
                         <table class="table align-items-center mb-0 dataTable-table" id="datatable-basic" data-datatable="true">
                                 <thead>
                                     <tr>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2 text-center">Usuario</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2 text-center">Email</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2 text-center">Estado</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2 text-center">Acciones</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2 text-start">Usuario</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2 text-start">Email</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2 text-start">Estado</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2 text-start">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                 @forelse($users as $user)
                                         <tr>
-                                            <td class="text-center">
-                                                <div class="d-flex justify-content-center px-2 py-2">
+                                            <td class="text-start">
+                                                <div class="d-flex justify-content-start px-2 py-2">
                                             <div class="avatar avatar-sm me-3 bg-brand-header rounded-circle flex-shrink-0">
                                                 <span class="text-white font-weight-bold">{{ substr($user->name, 0, 1) }}</span>
                                                     </div>
@@ -101,17 +101,17 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="px-2 py-2 text-center">
+                                            <td class="px-2 py-2 text-start">
                                         <span class="text-sm text-secondary">{{ $user->email }}</span>
                                     </td>
-                                            <td class="px-2 py-2 text-center">
+                                            <td class="px-2 py-2 text-start">
                                         @if($user->is_active)
                                             <span class="badge bg-success">Activo</span>
                                                 @else
                                             <span class="badge bg-secondary">Inactivo</span>
                                                 @endif
                                             </td>
-                                            <td class="align-middle text-center px-2">
+                                            <td class="align-middle text-start px-2">
                                                 @if ($status === 'active')
                                                     <a href="{{ route('usuarios.edit', $user) }}" class="btn bg-brand-header rounded-pill px-3 py-2 me-2 text-white">
                                                         <i class="bi bi-pencil me-1"></i>Editar
@@ -138,7 +138,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                    <td colspan="4" class="text-center py-4">
+                                    <td colspan="4" class="text-start py-4">
                                                 <span class="text-muted">No hay usuarios registrados.</span>
                                             </td>
                                         </tr>
@@ -146,7 +146,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="d-flex justify-content-center mt-4">
+                        <div class="d-flex justify-content-start mt-4">
                             {{ $users->links() }}
                         </div>
                     </div>

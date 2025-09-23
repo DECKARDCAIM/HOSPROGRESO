@@ -37,6 +37,48 @@ class Doctor extends Model
         return $this->belongsTo(ScheduleType::class);
     }
 
+    /**
+     * Cambiar el horario del doctor y actualizar citas futuras
+     */
+    public function changeScheduleType($newScheduleTypeId, $updateFutureAppointments = true)
+    {
+        $oldScheduleTypeId = $this->schedule_type_id;
+        
+        // Actualizar el horario del doctor
+        $this->update(['schedule_type_id' => $newScheduleTypeId]);
+        
+        if ($updateFutureAppointments && $oldScheduleTypeId) {
+            // Actualizar citas futuras pendientes y confirmadas
+            $futureAppointments = Appointment::where('doctor_id', $this->id)
+                ->where('schedule_type_id', $oldScheduleTypeId)
+                ->whereIn('status', ['pendiente', 'confirmada'])
+                ->where('appointment_date', '>=', now()->startOfDay())
+                ->get();
+                
+            foreach ($futureAppointments as $appointment) {
+                // Verificar si la fecha sigue siendo válida con el nuevo horario
+                $newScheduleType = ScheduleType::find($newScheduleTypeId);
+                $appointmentDay = $appointment->appointment_date->dayOfWeekIso;
+                $scheduleDays = is_string($newScheduleType->days_of_week) 
+                    ? json_decode($newScheduleType->days_of_week, true) 
+                    : $newScheduleType->days_of_week;
+                
+                if (in_array($appointmentDay, $scheduleDays)) {
+                    // El día sigue siendo válido, actualizar el horario
+                    $appointment->update(['schedule_type_id' => $newScheduleTypeId]);
+                } else {
+                    // El día ya no es válido, cancelar la cita
+                    $appointment->cancel(
+                        'Cita cancelada: El doctor cambió de horario y ya no trabaja este día',
+                        'Cancelación automática por cambio de horario del doctor'
+                    );
+                }
+            }
+        }
+        
+        return $this;
+    }
+
     public function medicalConsultations()
     {
         return $this->hasMany(MedicalConsultation::class);

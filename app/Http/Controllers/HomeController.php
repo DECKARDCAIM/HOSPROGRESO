@@ -37,13 +37,41 @@ class HomeController extends Controller
         $user = auth()->user();
         $userRole = $user->getRoleName();
         
-        // Generar estadísticas específicas por rol
-        $dashboardData = $this->getDashboardDataByRole($user, $userRole, $request);
-        
-        // Si es una petición AJAX, devolver JSON
+        // Si es una petición AJAX, determinar qué dashboard cargar
         if ($request->ajax() || $request->get('ajax')) {
+            $dashboardType = $request->get('dashboard');
+            
+            // Si se especifica un dashboard específico, usar ese rol
+            if ($dashboardType) {
+                switch ($dashboardType) {
+                    case 'admin':
+                        $dashboardData = $this->getAdminDashboard($request);
+                        break;
+                    case 'consultation':
+                        $dashboardData = $this->getConsultationDashboard($request);
+                        break;
+                    case 'emergency':
+                        $dashboardData = $this->getEmergencyDashboard($request);
+                        break;
+                    case 'statistics':
+                        $dashboardData = $this->getStatisticsDashboard($request);
+                        break;
+                    case 'basic':
+                        $dashboardData = $this->getBasicDashboard($user, $request);
+                        break;
+                    default:
+        $dashboardData = $this->getDashboardDataByRole($user, $userRole, $request);
+                }
+            } else {
+                // Si no se especifica, usar el rol del usuario
+                $dashboardData = $this->getDashboardDataByRole($user, $userRole, $request);
+            }
+        
             return response()->json($dashboardData);
         }
+        
+        // Generar estadísticas específicas por rol para la vista inicial
+        $dashboardData = $this->getDashboardDataByRole($user, $userRole, $request);
         
         return view('home', $dashboardData);
     }
@@ -53,7 +81,34 @@ class HomeController extends Controller
      */
     private function getDashboardDataByRole($user, $roleName, $request = null)
     {
-        // Sin cache para datos en tiempo real
+        // Generar clave de cache única basada en rol, filtros y usuario
+        $cacheKey = $this->generateCacheKey($user, $roleName, $request);
+        
+        // Verificar si se solicita refresh manual
+        $forceRefresh = $request ? $request->get('refresh', false) : false;
+        
+        // Si no es refresh forzado, intentar obtener de cache
+        if (!$forceRefresh) {
+            $cachedData = Cache::get($cacheKey);
+            if ($cachedData) {
+                return $cachedData;
+            }
+        }
+        
+        // Generar datos frescos
+        $dashboardData = $this->generateDashboardData($user, $roleName, $request);
+        
+        // Cachear por 1 hora (3600 segundos)
+        Cache::put($cacheKey, $dashboardData, 3600);
+        
+        return $dashboardData;
+    }
+    
+    /**
+     * Generar datos del dashboard sin cache
+     */
+    private function generateDashboardData($user, $roleName, $request = null)
+    {
         switch ($roleName) {
             case 'Administrador':
                 return $this->getAdminDashboard($request);
@@ -67,6 +122,19 @@ class HomeController extends Controller
                 return $this->getBasicDashboard($user, $request);
         }
     }
+    
+    /**
+     * Generar clave de cache única
+     */
+    private function generateCacheKey($user, $roleName, $request = null)
+    {
+        $year = $request ? $request->get('year', date('Y')) : date('Y');
+        $month = $request ? $request->get('month', '') : '';
+        $dateFrom = $request ? $request->get('date_from', '') : '';
+        $dateTo = $request ? $request->get('date_to', '') : '';
+        
+        return "dashboard_{$roleName}_{$user->id}_{$year}_{$month}_{$dateFrom}_{$dateTo}";
+    }
 
     /**
      * Dashboard para Administrador - Vista completa del sistema
@@ -76,6 +144,14 @@ class HomeController extends Controller
         // Obtener filtros de fecha
         $year = $request ? $request->get('year', date('Y')) : date('Y');
         $month = $request ? $request->get('month') : date('n'); // Usar mes actual por defecto
+        $dateFrom = $request ? $request->get('date_from') : null;
+        $dateTo = $request ? $request->get('date_to') : null;
+        
+        // Si month está vacío, significa "todos los meses" del año
+        $useMonthFilter = !empty($month);
+        
+        // Si hay filtros de rango de fechas, usar esos en lugar de mes/año
+        $useDateRangeFilter = !empty($dateFrom) && !empty($dateTo);
         
         // Obtener meses con datos reales para el año seleccionado
         $monthsWithData = $this->getMonthsWithData($year);
@@ -87,29 +163,68 @@ class HomeController extends Controller
         $stats = [
             'expedientes_activos' => ClinicalRecord::count(),
             'expedientes_temporales' => TemporaryPatient::count(),
-            'doctores_activos' => Doctor::where('is_active', true)->count(),
-            'especialidades_activas' => Specialty::where('is_active', true)->count(),
-            'usuarios_activos' => User::where('is_active', true)->count(),
         ];
         
         // KPIs que SÍ se filtran por fecha
-        $stats['citas_hoy'] = Appointment::whereDate('appointment_date', today())
-                                    ->whereIn('status', ['pendiente', 'confirmada'])
+        $stats['citas_hoy'] = Appointment::when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+            return $query->whereBetween('appointment_date', [$dateFrom, $dateTo]);
+        }, function($query) use ($useMonthFilter, $month, $year) {
+            if ($useMonthFilter) {
+                return $query->whereMonth('appointment_date', $month)->whereYear('appointment_date', $year);
+            } else {
+                return $query->whereYear('appointment_date', $year);
+            }
+        })
                                     ->count();
         
-        $stats['consultas_mes'] = MedicalConsultation::when($month, function($query) use ($month, $year) {
+        $stats['consultas_mes'] = MedicalConsultation::when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+            return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+        }, function($query) use ($useMonthFilter, $month, $year) {
+            if ($useMonthFilter) {
             return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
-        }, function($query) use ($year) {
+            } else {
             return $query->whereYear('consultation_date', $year);
+            }
         })->count();
         
-        // Pacientes por género - Verificar si hay consultas médicas en el mes actual
-        $hasConsultationsThisMonth = MedicalConsultation::whereMonth('consultation_date', $month)
-            ->whereYear('consultation_date', $year)
-            ->exists();
-            
-        if ($month && $hasConsultationsThisMonth) {
-            // Si hay filtro de mes Y hay consultas en ese mes, contar solo pacientes con consultas en ese mes
+        // USUARIOS ACTIVOS - Métrica mensual (usuarios que se registraron en el período)
+        $stats['usuarios_activos'] = User::when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+            return $query->whereBetween('created_at', [$dateFrom, $dateTo]);
+        }, function($query) use ($useMonthFilter, $month, $year) {
+            if ($useMonthFilter) {
+                return $query->whereMonth('created_at', $month)->whereYear('created_at', $year);
+            } else {
+                return $query->whereYear('created_at', $year);
+            }
+        })->count();
+        
+        // DOCTORES ACTIVOS - Contar solo doctores activos actualmente
+        $stats['doctores_activos'] = Doctor::where('is_active', true)->count();
+        
+        // Pacientes por género - Usar filtro de fecha apropiado
+        if ($useDateRangeFilter) {
+            // Si hay filtro de rango de fechas, contar solo pacientes con consultas en ese rango
+            $stats['pacientes_hombres'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                ->join('sexes', 'clinical_records.sex_id', '=', 'sexes.id')
+                ->where(function($query) {
+                    $query->where('sexes.name', 'LIKE', '%masculino%')
+                          ->orWhere('sexes.name', 'LIKE', '%hombre%');
+                })
+                ->whereBetween('medical_consultations.consultation_date', [$dateFrom, $dateTo])
+                ->distinct('clinical_records.id')
+                ->count('clinical_records.id');
+                
+            $stats['pacientes_mujeres'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                ->join('sexes', 'clinical_records.sex_id', '=', 'sexes.id')
+                ->where(function($query) {
+                    $query->where('sexes.name', 'LIKE', '%femenino%')
+                          ->orWhere('sexes.name', 'LIKE', '%mujer%');
+                })
+                ->whereBetween('medical_consultations.consultation_date', [$dateFrom, $dateTo])
+                ->distinct('clinical_records.id')
+                ->count('clinical_records.id');
+        } elseif ($useMonthFilter) {
+            // Si hay filtro de mes, contar solo pacientes con consultas en ese mes
             $stats['pacientes_hombres'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
                 ->join('sexes', 'clinical_records.sex_id', '=', 'sexes.id')
                 ->where(function($query) {
@@ -132,7 +247,7 @@ class HomeController extends Controller
                 ->distinct('clinical_records.id')
                 ->count('clinical_records.id');
         } else {
-            // Si no hay filtro de mes O no hay consultas en el mes actual, contar todos los expedientes del año
+            // Si no hay filtro de mes, contar todos los expedientes del año
             $stats['pacientes_hombres'] = ClinicalRecord::join('sexes', 'clinical_records.sex_id', '=', 'sexes.id')
                 ->where(function($query) {
                     $query->where('sexes.name', 'LIKE', '%masculino%')
@@ -150,18 +265,153 @@ class HomeController extends Controller
                 ->count();
         }
         
-        $stats['nuevos_expedientes_mes'] = ClinicalRecord::when($month, function($query) use ($month, $year) {
+        $stats['nuevos_expedientes_mes'] = ClinicalRecord::when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+            return $query->whereBetween('created_at', [$dateFrom, $dateTo]);
+        }, function($query) use ($useMonthFilter, $month, $year) {
+            if ($useMonthFilter) {
             return $query->whereMonth('created_at', $month)->whereYear('created_at', $year);
-        }, function($query) use ($year) {
+            } else {
             return $query->whereYear('created_at', $year);
+            }
         })->count();
+        
+        // Métricas adicionales para administrador
+        $stats['pacientes_estables'] = MedicalConsultation::join('patient_statuses', 'medical_consultations.patient_status_id', '=', 'patient_statuses.id')
+                                                         ->where('patient_statuses.name', 'Estable')
+                                                         ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                             return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                         }, function($query) use ($useMonthFilter, $month, $year) {
+                                                             if ($useMonthFilter) {
+                                                                 return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                             } else {
+                                                                 return $query->whereYear('consultation_date', $year);
+                                                             }
+                                                         })
+                                                         ->count();
+        
+        $stats['pacientes_delicados'] = MedicalConsultation::join('patient_statuses', 'medical_consultations.patient_status_id', '=', 'patient_statuses.id')
+                                                          ->where('patient_statuses.name', 'Delicado')
+                                                          ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                              return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                          }, function($query) use ($useMonthFilter, $month, $year) {
+                                                              if ($useMonthFilter) {
+                                                                  return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                              } else {
+                                                                  return $query->whereYear('consultation_date', $year);
+                                                              }
+                                                          })
+                                                          ->count();
+        
+        $stats['pacientes_fallecidos'] = MedicalConsultation::join('patient_statuses', 'medical_consultations.patient_status_id', '=', 'patient_statuses.id')
+                                                           ->where('patient_statuses.name', 'Fallecido')
+                                                           ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                               return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                           }, function($query) use ($useMonthFilter, $month, $year) {
+                                                               if ($useMonthFilter) {
+                                                                   return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                               } else {
+                                                                   return $query->whereYear('consultation_date', $year);
+                                                               }
+                                                           })
+                                                           ->count();
+        
+        $stats['pacientes_hospitalizados'] = MedicalConsultation::where('final_status', 'hospitalizado')
+                                                               ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                                   return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                               }, function($query) use ($useMonthFilter, $month, $year) {
+                                                                   if ($useMonthFilter) {
+                                                                       return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                                   } else {
+                                                                       return $query->whereYear('consultation_date', $year);
+                                                                   }
+                                                               })
+                                                               ->count();
+        
+        $stats['pacientes_referidos'] = MedicalConsultation::where('final_status', 'referido')
+                                                          ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                              return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                          }, function($query) use ($useMonthFilter, $month, $year) {
+                                                              if ($useMonthFilter) {
+                                                                  return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                              } else {
+                                                                  return $query->whereYear('consultation_date', $year);
+                                                              }
+                                                          })
+                                                          ->count();
+        
+        // Niños (0-13 años)
+        $stats['ninos'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                                            ->whereRaw('TIMESTAMPDIFF(YEAR, clinical_records.birth_date, CURDATE()) BETWEEN 0 AND 13')
+                                            ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                            }, function($query) use ($useMonthFilter, $month, $year) {
+                                                if ($useMonthFilter) {
+                                                    return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                } else {
+                                                    return $query->whereYear('consultation_date', $year);
+                                                }
+                                            })
+                                            ->distinct('clinical_records.id')
+                                            ->count('clinical_records.id');
+        
+        // Adolescentes (14-17 años)
+        $stats['adolescentes'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                                                  ->whereRaw('TIMESTAMPDIFF(YEAR, clinical_records.birth_date, CURDATE()) BETWEEN 14 AND 17')
+                                                  ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                      return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                  }, function($query) use ($useMonthFilter, $month, $year) {
+                                                      if ($useMonthFilter) {
+                                                          return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                      } else {
+                                                          return $query->whereYear('consultation_date', $year);
+                                                      }
+                                                  })
+                                                  ->distinct('clinical_records.id')
+                                                  ->count('clinical_records.id');
+        
+        // Adultos (18-59 años)
+        $stats['adultos'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                                             ->whereRaw('TIMESTAMPDIFF(YEAR, clinical_records.birth_date, CURDATE()) BETWEEN 18 AND 59')
+                                             ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                 return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                             }, function($query) use ($useMonthFilter, $month, $year) {
+                                                 if ($useMonthFilter) {
+                                                     return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                 } else {
+                                                     return $query->whereYear('consultation_date', $year);
+                                                 }
+                                             })
+                                             ->distinct('clinical_records.id')
+                                             ->count('clinical_records.id');
+        
+        // Tercera edad (60+ años)
+        $stats['tercera_edad'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                                                   ->whereRaw('TIMESTAMPDIFF(YEAR, clinical_records.birth_date, CURDATE()) >= 60')
+                                                   ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                       return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                   }, function($query) use ($useMonthFilter, $month, $year) {
+                                                       if ($useMonthFilter) {
+                                                           return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                       } else {
+                                                           return $query->whereYear('consultation_date', $year);
+                                                       }
+                                                   })
+                                                   ->distinct('clinical_records.id')
+                                                   ->count('clinical_records.id');
+        
+        // Cantidad de especialidades
+        $stats['cantidad_especialidades'] = Specialty::count();
 
         // Consultas por especialidad (con filtros)
         $consultasPorEspecialidad = MedicalConsultation::join('specialties', 'medical_consultations.specialty_id', '=', 'specialties.id')
-            ->when($month, function($query) use ($month, $year) {
+            ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+            }, function($query) use ($useMonthFilter, $month, $year) {
+                if ($useMonthFilter) {
                 return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
-            }, function($query) use ($year) {
+                } else {
                 return $query->whereYear('consultation_date', $year);
+                }
             })
             ->whereNotNull('medical_consultations.specialty_id')
             ->select('specialties.name', DB::raw('count(*) as total'))
@@ -203,20 +453,167 @@ class HomeController extends Controller
     /**
      * Dashboard para Consulta Externa
      */
-    private function getConsultationDashboard()
+    private function getConsultationDashboard($request = null)
     {
+        // Obtener filtros de fecha
+        $year = $request ? $request->get('year', date('Y')) : date('Y');
+        $month = $request ? $request->get('month') : date('n');
+        $dateFrom = $request ? $request->get('date_from') : null;
+        $dateTo = $request ? $request->get('date_to') : null;
+        
+        // Si month está vacío, significa "todos los meses" del año
+        $useMonthFilter = !empty($month);
+        
+        // Si hay filtros de rango de fechas, usar esos en lugar de mes/año
+        $useDateRangeFilter = !empty($dateFrom) && !empty($dateTo);
+        
         $stats = [
-            'citas_hoy' => Appointment::whereDate('appointment_date', today())
-                                    ->whereIn('status', ['pendiente', 'confirmada'])
+            'citas_hoy' => Appointment::when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                return $query->whereBetween('appointment_date', [$dateFrom, $dateTo]);
+            }, function($query) use ($useMonthFilter, $month, $year) {
+                if ($useMonthFilter) {
+                    return $query->whereMonth('appointment_date', $month)->whereYear('appointment_date', $year);
+                } else {
+                    return $query->whereYear('appointment_date', $year);
+                }
+            })
                                     ->count(),
             'consultas_mes' => MedicalConsultation::where('attention_type', 'consulta_externa')
-                                                 ->whereMonth('consultation_date', now()->month)
-                                                 ->whereYear('consultation_date', now()->year)
+                                                 ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                     return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                 }, function($query) use ($useMonthFilter, $month, $year) {
+                                                     if ($useMonthFilter) {
+                                                         return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                     } else {
+                                                         return $query->whereYear('consultation_date', $year);
+                                                     }
+                                                 })
                                                  ->count(),
-            'pacientes_nuevos_mes' => 0,
-            'citas_mes' => Appointment::whereMonth('appointment_date', now()->month)
-                                    ->whereYear('appointment_date', now()->year)
-                                    ->count()
+            'pacientes_nuevos_mes' => ClinicalRecord::when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                return $query->whereBetween('created_at', [$dateFrom, $dateTo]);
+            }, function($query) use ($useMonthFilter, $month, $year) {
+                if ($useMonthFilter) {
+                    return $query->whereMonth('created_at', $month)->whereYear('created_at', $year);
+                } else {
+                    return $query->whereYear('created_at', $year);
+                }
+            })->count(),
+            'citas_mes' => Appointment::when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                return $query->whereBetween('appointment_date', [$dateFrom, $dateTo]);
+            }, function($query) use ($useMonthFilter, $month, $year) {
+                if ($useMonthFilter) {
+                    return $query->whereMonth('appointment_date', $month)->whereYear('appointment_date', $year);
+                } else {
+                    return $query->whereYear('appointment_date', $year);
+                }
+            })->count(),
+            'pacientes_estables' => MedicalConsultation::where('final_status', 'estable')
+                                                     ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                         return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                     }, function($query) use ($useMonthFilter, $month, $year) {
+                                                         if ($useMonthFilter) {
+                                                             return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                         } else {
+                                                             return $query->whereYear('consultation_date', $year);
+                                                         }
+                                                     })
+                                                     ->count(),
+            'pacientes_delicados' => MedicalConsultation::where('final_status', 'delicado')
+                                                      ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                          return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                      }, function($query) use ($useMonthFilter, $month, $year) {
+                                                          if ($useMonthFilter) {
+                                                              return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                          } else {
+                                                              return $query->whereYear('consultation_date', $year);
+                                                          }
+                                                      })
+                                                      ->count(),
+            'pacientes_fallecidos' => MedicalConsultation::where('final_status', 'fallecido')
+                                                       ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                           return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                       }, function($query) use ($useMonthFilter, $month, $year) {
+                                                           if ($useMonthFilter) {
+                                                               return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                           } else {
+                                                               return $query->whereYear('consultation_date', $year);
+                                                           }
+                                                       })
+                                                       ->count(),
+            'pacientes_hospitalizados' => MedicalConsultation::where('final_status', 'hospitalizado')
+                                                            ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                                return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                            }, function($query) use ($useMonthFilter, $month, $year) {
+                                                                if ($useMonthFilter) {
+                                                                    return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                                } else {
+                                                                    return $query->whereYear('consultation_date', $year);
+                                                                }
+                                                            })
+                                                            ->count(),
+            'pacientes_referidos' => MedicalConsultation::where('final_status', 'referido')
+                                                       ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                           return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                       }, function($query) use ($useMonthFilter, $month, $year) {
+                                                           if ($useMonthFilter) {
+                                                               return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                           } else {
+                                                               return $query->whereYear('consultation_date', $year);
+                                                           }
+                                                       })
+                                                       ->count(),
+            'ninos' => MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                                         ->whereRaw('TIMESTAMPDIFF(YEAR, clinical_records.birth_date, CURDATE()) BETWEEN 0 AND 13')
+                                         ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                             return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                         }, function($query) use ($useMonthFilter, $month, $year) {
+                                             if ($useMonthFilter) {
+                                                 return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                             } else {
+                                                 return $query->whereYear('consultation_date', $year);
+                                             }
+                                         })
+                                         ->distinct('clinical_records.id')
+                                         ->count('clinical_records.id'),
+            'adolescentes' => MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                                               ->whereRaw('TIMESTAMPDIFF(YEAR, clinical_records.birth_date, CURDATE()) BETWEEN 14 AND 17')
+                                               ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                   return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                               }, function($query) use ($useMonthFilter, $month, $year) {
+                                                   if ($useMonthFilter) {
+                                                       return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                   } else {
+                                                       return $query->whereYear('consultation_date', $year);
+                                                   }
+                                               })
+                                               ->distinct('clinical_records.id')
+                                               ->count('clinical_records.id'),
+            'adultos' => MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                                         ->whereRaw('TIMESTAMPDIFF(YEAR, clinical_records.birth_date, CURDATE()) BETWEEN 18 AND 59')
+                                         ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                             return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                         }, function($query) use ($useMonthFilter, $month, $year) {
+                                             if ($useMonthFilter) {
+                                                 return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                             } else {
+                                                 return $query->whereYear('consultation_date', $year);
+                                             }
+                                         })
+                                         ->distinct('clinical_records.id')
+                                         ->count('clinical_records.id'),
+            'tercera_edad' => MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                                               ->whereRaw('TIMESTAMPDIFF(YEAR, clinical_records.birth_date, CURDATE()) >= 60')
+                                               ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                   return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                               }, function($query) use ($useMonthFilter, $month, $year) {
+                                                   if ($useMonthFilter) {
+                                                       return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                   } else {
+                                                       return $query->whereYear('consultation_date', $year);
+                                                   }
+                                               })
+                                               ->distinct('clinical_records.id')
+                                               ->count('clinical_records.id')
         ];
 
         // Consultas por especialidad (consulta externa)
@@ -248,26 +645,148 @@ class HomeController extends Controller
     /**
      * Dashboard para Emergencia
      */
-    private function getEmergencyDashboard()
+    private function getEmergencyDashboard($request = null)
     {
+        // Obtener filtros de fecha
+        $year = $request ? $request->get('year', date('Y')) : date('Y');
+        $month = $request ? $request->get('month') : date('n');
+        $dateFrom = $request ? $request->get('date_from') : null;
+        $dateTo = $request ? $request->get('date_to') : null;
+        
+        // Si month está vacío, significa "todos los meses" del año
+        $useMonthFilter = !empty($month);
+        
+        // Si hay filtros de rango de fechas, usar esos en lugar de mes/año
+        $useDateRangeFilter = !empty($dateFrom) && !empty($dateTo);
+        
         $stats = [
             'consultas_emergencia_hoy' => MedicalConsultation::where('attention_type', 'emergencia')
-                                                            ->whereDate('consultation_date', today())
+                                                            ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                                return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                            }, function($query) use ($useMonthFilter, $month, $year) {
+                                                                if ($useMonthFilter) {
+                                                                    return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                                } else {
+                                                                    return $query->whereYear('consultation_date', $year);
+                                                                }
+                                                            })
                                                             ->count(),
-            'consultas_emergencia_mes' => MedicalConsultation::where('attention_type', 'emergencia')
-                                                             ->whereMonth('consultation_date', now()->month)
-                                                             ->whereYear('consultation_date', now()->year)
+            'pacientes_estables' => MedicalConsultation::where('attention_type', 'emergencia')
+                                                      ->where('final_status', 'estable')
+                                                      ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                          return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                      }, function($query) use ($useMonthFilter, $month, $year) {
+                                                          if ($useMonthFilter) {
+                                                              return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                          } else {
+                                                              return $query->whereYear('consultation_date', $year);
+                                                          }
+                                                      })
+                                                      ->count(),
+            'pacientes_delicados' => MedicalConsultation::where('attention_type', 'emergencia')
+                                                       ->where('final_status', 'delicado')
+                                                       ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                           return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                       }, function($query) use ($useMonthFilter, $month, $year) {
+                                                           if ($useMonthFilter) {
+                                                               return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                           } else {
+                                                               return $query->whereYear('consultation_date', $year);
+                                                           }
+                                                       })
                                                              ->count(),
             'pacientes_hospitalizados' => MedicalConsultation::where('attention_type', 'emergencia')
                                                              ->where('final_status', 'hospitalizado')
-                                                             ->whereMonth('consultation_date', now()->month)
-                                                             ->whereYear('consultation_date', now()->year)
+                                                             ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                                 return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                             }, function($query) use ($useMonthFilter, $month, $year) {
+                                                                 if ($useMonthFilter) {
+                                                                     return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                                 } else {
+                                                                     return $query->whereYear('consultation_date', $year);
+                                                                 }
+                                                             })
                                                              ->count(),
             'pacientes_referidos' => MedicalConsultation::where('attention_type', 'emergencia')
                                                         ->where('final_status', 'referido')
-                                                        ->whereMonth('consultation_date', now()->month)
-                                                        ->whereYear('consultation_date', now()->year)
-                                                        ->count()
+                                                        ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                            return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                        }, function($query) use ($useMonthFilter, $month, $year) {
+                                                            if ($useMonthFilter) {
+                                                                return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                            } else {
+                                                                return $query->whereYear('consultation_date', $year);
+                                                            }
+                                                        })
+                                                        ->count(),
+            'pacientes_fallecidos' => MedicalConsultation::where('attention_type', 'emergencia')
+                                                         ->where('final_status', 'fallecido')
+                                                         ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                             return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                         }, function($query) use ($useMonthFilter, $month, $year) {
+                                                             if ($useMonthFilter) {
+                                                                 return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                             } else {
+                                                                 return $query->whereYear('consultation_date', $year);
+                                                             }
+                                                         })
+                                                         ->count(),
+            'ninos' => MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                                         ->where('attention_type', 'emergencia')
+                                         ->whereRaw('TIMESTAMPDIFF(YEAR, clinical_records.birth_date, CURDATE()) BETWEEN 0 AND 13')
+                                         ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                             return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                         }, function($query) use ($useMonthFilter, $month, $year) {
+                                             if ($useMonthFilter) {
+                                                 return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                             } else {
+                                                 return $query->whereYear('consultation_date', $year);
+                                             }
+                                         })
+                                         ->distinct('clinical_records.id')
+                                         ->count('clinical_records.id'),
+            'adolescentes' => MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                                               ->where('attention_type', 'emergencia')
+                                               ->whereRaw('TIMESTAMPDIFF(YEAR, clinical_records.birth_date, CURDATE()) BETWEEN 14 AND 17')
+                                               ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                   return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                               }, function($query) use ($useMonthFilter, $month, $year) {
+                                                   if ($useMonthFilter) {
+                                                       return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                   } else {
+                                                       return $query->whereYear('consultation_date', $year);
+                                                   }
+                                               })
+                                               ->distinct('clinical_records.id')
+                                               ->count('clinical_records.id'),
+            'adultos' => MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                                         ->where('attention_type', 'emergencia')
+                                         ->whereRaw('TIMESTAMPDIFF(YEAR, clinical_records.birth_date, CURDATE()) BETWEEN 18 AND 59')
+                                         ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                             return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                         }, function($query) use ($useMonthFilter, $month, $year) {
+                                             if ($useMonthFilter) {
+                                                 return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                             } else {
+                                                 return $query->whereYear('consultation_date', $year);
+                                             }
+                                         })
+                                         ->distinct('clinical_records.id')
+                                         ->count('clinical_records.id'),
+            'tercera_edad' => MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                                               ->where('attention_type', 'emergencia')
+                                               ->whereRaw('TIMESTAMPDIFF(YEAR, clinical_records.birth_date, CURDATE()) >= 60')
+                                               ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                   return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                               }, function($query) use ($useMonthFilter, $month, $year) {
+                                                   if ($useMonthFilter) {
+                                                       return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                   } else {
+                                                       return $query->whereYear('consultation_date', $year);
+                                                   }
+                                               })
+                                               ->distinct('clinical_records.id')
+                                               ->count('clinical_records.id')
         ];
 
         // Consultas de emergencia por día (última semana)
@@ -306,28 +825,57 @@ class HomeController extends Controller
     {
         // Obtener filtros de fecha
         $year = $request ? $request->get('year', date('Y')) : date('Y');
-        $month = $request ? $request->get('month') : null;
+        $month = $request ? $request->get('month') : date('n');
+        $dateFrom = $request ? $request->get('date_from') : null;
+        $dateTo = $request ? $request->get('date_to') : null;
+        
+        // Si month está vacío, significa "todos los meses" del año
+        $useMonthFilter = !empty($month);
+        
+        // Si hay filtros de rango de fechas, usar esos en lugar de mes/año
+        $useDateRangeFilter = !empty($dateFrom) && !empty($dateTo);
         
         // KPIs que SIEMPRE se mantienen (no se filtran por fecha)
         $stats = [
-            'total_expedientes' => ClinicalRecord::count(),
+            'expedientes_activos' => ClinicalRecord::count(),
             'expedientes_temporales' => TemporaryPatient::count(),
         ];
         
         // KPIs que SÍ se filtran por fecha
-        $stats['consultas_mes'] = MedicalConsultation::when($month, function($query) use ($month, $year) {
+        $stats['consultas_mes'] = MedicalConsultation::when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+            return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+        }, function($query) use ($useMonthFilter, $month, $year) {
+            if ($useMonthFilter) {
             return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
-        }, function($query) use ($year) {
+            } else {
             return $query->whereYear('consultation_date', $year);
+            }
         })->count();
         
-        // Pacientes por género - Verificar si hay consultas médicas en el mes actual
-        $hasConsultationsThisMonth = $month ? MedicalConsultation::whereMonth('consultation_date', $month)
-            ->whereYear('consultation_date', $year)
-            ->exists() : false;
-            
-        if ($month && $hasConsultationsThisMonth) {
-            // Si hay filtro de mes Y hay consultas en ese mes, contar solo pacientes con consultas en ese mes
+        // Pacientes por género - Usar filtro de fecha apropiado
+        if ($useDateRangeFilter) {
+            // Si hay filtro de rango de fechas, contar solo pacientes con consultas en ese rango
+            $stats['pacientes_hombres'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                ->join('sexes', 'clinical_records.sex_id', '=', 'sexes.id')
+                ->where(function($query) {
+                    $query->where('sexes.name', 'LIKE', '%masculino%')
+                          ->orWhere('sexes.name', 'LIKE', '%hombre%');
+                })
+                ->whereBetween('medical_consultations.consultation_date', [$dateFrom, $dateTo])
+                ->distinct('clinical_records.id')
+                ->count('clinical_records.id');
+                
+            $stats['pacientes_mujeres'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                ->join('sexes', 'clinical_records.sex_id', '=', 'sexes.id')
+                ->where(function($query) {
+                    $query->where('sexes.name', 'LIKE', '%femenino%')
+                          ->orWhere('sexes.name', 'LIKE', '%mujer%');
+                })
+                ->whereBetween('medical_consultations.consultation_date', [$dateFrom, $dateTo])
+                ->distinct('clinical_records.id')
+                ->count('clinical_records.id');
+        } elseif ($useMonthFilter) {
+            // Si hay filtro de mes, contar solo pacientes con consultas en ese mes
             $stats['pacientes_hombres'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
                 ->join('sexes', 'clinical_records.sex_id', '=', 'sexes.id')
                 ->where(function($query) {
@@ -350,7 +898,7 @@ class HomeController extends Controller
                 ->distinct('clinical_records.id')
                 ->count('clinical_records.id');
         } else {
-            // Si no hay filtro de mes O no hay consultas en el mes actual, contar todos los expedientes del año
+            // Si no hay filtro de mes, contar todos los expedientes del año
             $stats['pacientes_hombres'] = ClinicalRecord::join('sexes', 'clinical_records.sex_id', '=', 'sexes.id')
                 ->where(function($query) {
                     $query->where('sexes.name', 'LIKE', '%masculino%')
@@ -368,33 +916,137 @@ class HomeController extends Controller
                 ->count();
         }
         
-        $stats['pacientes_menores'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
-                                                     ->whereRaw('TIMESTAMPDIFF(YEAR, clinical_records.birth_date, CURDATE()) < 18')
-                                                     ->when($month, function($query) use ($month, $year) {
+        $stats['ninos'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                                            ->whereRaw('TIMESTAMPDIFF(YEAR, clinical_records.birth_date, CURDATE()) BETWEEN 0 AND 13')
+                                            ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                            }, function($query) use ($useMonthFilter, $month, $year) {
+                                                if ($useMonthFilter) {
                                                          return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
-                                                     }, function($query) use ($year) {
+                                                } else {
                                                          return $query->whereYear('consultation_date', $year);
+                                                }
                                                      })
                                                      ->distinct('clinical_records.id')
                                                      ->count('clinical_records.id');
                                                      
-        $stats['pacientes_adultos'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
-                                                     ->whereRaw('TIMESTAMPDIFF(YEAR, clinical_records.birth_date, CURDATE()) >= 18')
-                                                     ->when($month, function($query) use ($month, $year) {
+        $stats['adolescentes'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                                                  ->whereRaw('TIMESTAMPDIFF(YEAR, clinical_records.birth_date, CURDATE()) BETWEEN 14 AND 17')
+                                                  ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                      return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                  }, function($query) use ($useMonthFilter, $month, $year) {
+                                                      if ($useMonthFilter) {
                                                          return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
-                                                     }, function($query) use ($year) {
+                                                      } else {
                                                          return $query->whereYear('consultation_date', $year);
+                                                      }
                                                      })
                                                      ->distinct('clinical_records.id')
                                                      ->count('clinical_records.id');
+                                                  
+        $stats['adultos'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                                            ->whereRaw('TIMESTAMPDIFF(YEAR, clinical_records.birth_date, CURDATE()) BETWEEN 18 AND 59')
+                                            ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                            }, function($query) use ($useMonthFilter, $month, $year) {
+                                                if ($useMonthFilter) {
+                                                    return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                } else {
+                                                    return $query->whereYear('consultation_date', $year);
+                                                }
+                                            })
+                                            ->distinct('clinical_records.id')
+                                            ->count('clinical_records.id');
+                                            
+        $stats['tercera_edad'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
+                                                   ->whereRaw('TIMESTAMPDIFF(YEAR, clinical_records.birth_date, CURDATE()) >= 60')
+                                                   ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                       return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                   }, function($query) use ($useMonthFilter, $month, $year) {
+                                                       if ($useMonthFilter) {
+                                                           return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                       } else {
+                                                           return $query->whereYear('consultation_date', $year);
+                                                       }
+                                                   })
+                                                   ->distinct('clinical_records.id')
+                                                   ->count('clinical_records.id');
+
+        // Agregar métricas de estados finales para estadística
+        $stats['pacientes_estables'] = MedicalConsultation::join('patient_statuses', 'medical_consultations.patient_status_id', '=', 'patient_statuses.id')
+                                                         ->where('patient_statuses.name', 'Estable')
+                                                         ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                             return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                         }, function($query) use ($useMonthFilter, $month, $year) {
+                                                             if ($useMonthFilter) {
+                                                                 return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                             } else {
+                                                                 return $query->whereYear('consultation_date', $year);
+                                                             }
+                                                         })
+                                                         ->count();
+        
+        $stats['pacientes_delicados'] = MedicalConsultation::join('patient_statuses', 'medical_consultations.patient_status_id', '=', 'patient_statuses.id')
+                                                          ->where('patient_statuses.name', 'Delicado')
+                                                          ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                              return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                          }, function($query) use ($useMonthFilter, $month, $year) {
+                                                              if ($useMonthFilter) {
+                                                                  return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                              } else {
+                                                                  return $query->whereYear('consultation_date', $year);
+                                                              }
+                                                          })
+                                                          ->count();
+        
+        $stats['pacientes_fallecidos'] = MedicalConsultation::join('patient_statuses', 'medical_consultations.patient_status_id', '=', 'patient_statuses.id')
+                                                           ->where('patient_statuses.name', 'Fallecido')
+                                                           ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                               return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                           }, function($query) use ($useMonthFilter, $month, $year) {
+                                                               if ($useMonthFilter) {
+                                                                   return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                               } else {
+                                                                   return $query->whereYear('consultation_date', $year);
+                                                               }
+                                                           })
+                                                           ->count();
+        
+        $stats['pacientes_hospitalizados'] = MedicalConsultation::where('final_status', 'hospitalizado')
+                                                               ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                                   return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                               }, function($query) use ($useMonthFilter, $month, $year) {
+                                                                   if ($useMonthFilter) {
+                                                                       return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                                   } else {
+                                                                       return $query->whereYear('consultation_date', $year);
+                                                                   }
+                                                               })
+                                                               ->count();
+        
+        $stats['pacientes_referidos'] = MedicalConsultation::where('final_status', 'referido')
+                                                          ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                                                              return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+                                                          }, function($query) use ($useMonthFilter, $month, $year) {
+                                                              if ($useMonthFilter) {
+                                                                  return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                                                              } else {
+                                                                  return $query->whereYear('consultation_date', $year);
+                                                              }
+                                                          })
+                                                          ->count();
 
         // Distribución por sexo (con filtros)
         $distribucionSexo = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
             ->join('sexes', 'clinical_records.sex_id', '=', 'sexes.id')
-            ->when($month, function($query) use ($month, $year) {
+            ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+            }, function($query) use ($useMonthFilter, $month, $year) {
+                if ($useMonthFilter) {
                 return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
-            }, function($query) use ($year) {
+                } else {
                 return $query->whereYear('consultation_date', $year);
+                }
             })
             ->select('sexes.name', DB::raw('count(*) as total'))
             ->groupBy('sexes.id', 'sexes.name')
@@ -437,29 +1089,61 @@ class HomeController extends Controller
             'stats' => $stats,
             'distribucionSexo' => $distribucionSexo,
             'expedientesPorMes' => $expedientesPorMes,
-            'gruposEdad' => $gruposEdad,
-            'tiposControl' => $tiposControl
+            'gruposEdad' => $gruposEdad
         ];
     }
 
     /**
      * Dashboard básico para otros roles
      */
-    private function getBasicDashboard($user)
+    private function getBasicDashboard($user, $request = null)
     {
+        // Obtener filtros de fecha
+        $year = $request ? $request->get('year', date('Y')) : date('Y');
+        $month = $request ? $request->get('month') : date('n');
+        $dateFrom = $request ? $request->get('date_from') : null;
+        $dateTo = $request ? $request->get('date_to') : null;
+        
+        // Si month está vacío, significa "todos los meses" del año
+        $useMonthFilter = !empty($month);
+        
+        // Si hay filtros de rango de fechas, usar esos en lugar de mes/año
+        $useDateRangeFilter = !empty($dateFrom) && !empty($dateTo);
+        
+        // Obtener meses con datos reales para el año seleccionado
+        $monthsWithData = $this->getMonthsWithData($year);
+        
+        // Obtener años con datos reales
+        $yearsWithData = $this->getYearsWithData();
+        
         $stats = [
             'expedientes_activos' => ClinicalRecord::count(),
-            'citas_hoy' => Appointment::whereDate('appointment_date', today())
-                                    ->whereIn('status', ['pendiente', 'confirmada'])
+            'citas_hoy' => Appointment::when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                return $query->whereBetween('appointment_date', [$dateFrom, $dateTo]);
+            }, function($query) use ($useMonthFilter, $month, $year) {
+                if ($useMonthFilter) {
+                    return $query->whereMonth('appointment_date', $month)->whereYear('appointment_date', $year);
+                } else {
+                    return $query->whereYear('appointment_date', $year);
+                }
+            })
                                     ->count(),
-            'consultas_mes' => MedicalConsultation::whereMonth('consultation_date', now()->month)
-                                                 ->whereYear('consultation_date', now()->year)
-                                                 ->count()
+            'consultas_mes' => MedicalConsultation::when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                return $query->whereBetween('consultation_date', [$dateFrom, $dateTo]);
+            }, function($query) use ($useMonthFilter, $month, $year) {
+                if ($useMonthFilter) {
+                    return $query->whereMonth('consultation_date', $month)->whereYear('consultation_date', $year);
+                } else {
+                    return $query->whereYear('consultation_date', $year);
+                }
+            })->count()
         ];
 
         return [
             'role' => $user->getRoleName(),
-            'stats' => $stats
+            'stats' => $stats,
+            'monthsWithData' => $monthsWithData,
+            'yearsWithData' => $yearsWithData
         ];
     }
 

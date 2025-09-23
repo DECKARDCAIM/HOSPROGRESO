@@ -374,7 +374,6 @@ class AppointmentController extends Controller
                 'specialty_id' => $request->specialty_id,
                 'schedule_type_id' => $slot['schedule_type_id'],
                 'appointment_date' => $slot['date'],
-                'slot_number' => $slot['slot_number'],
                 'attention_type' => $request->attention_type,
                 'status' => 'pendiente',
                 'notes' => $request->notes,
@@ -394,7 +393,7 @@ class AppointmentController extends Controller
 
             Cache::tags(['citas', 'listados', 'dashboard'])->flush();
 
-            $message = 'Cita agendada correctamente para el ' . $slot['formatted_date'] . ' a las ' . $slot['formatted_time'];
+            $message = 'Cita agendada correctamente para el ' . $slot['formatted_date'];
             
             if ($request->ajax()) {
                 return response()->json([
@@ -533,7 +532,6 @@ class AppointmentController extends Controller
                 'specialty_id' => Doctor::find($request->doctor_id)->specialty_id,
                 'schedule_type_id' => $slot['schedule_type_id'],
                 'appointment_date' => $slot['date'],
-                'slot_number' => $slot['slot_number'],
                 'attention_type' => $appointment->attention_type,
                 'status' => 'pendiente',
                 'notes' => $request->notes,
@@ -547,7 +545,7 @@ class AppointmentController extends Controller
 
             Cache::tags(['citas', 'listados', 'dashboard'])->flush();
 
-            $message = 'Cita reagendada correctamente para el ' . $slot['formatted_date'] . ' a las ' . $slot['formatted_time'];
+            $message = 'Cita reagendada correctamente para el ' . $slot['formatted_date'];
             return redirect()
                 ->route('appointments.index')
                 ->with('success', $message)

@@ -24,6 +24,8 @@
     <link href="{{ asset('css/useroptions-fixes.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/style_card.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/notifications.css') }}" rel="stylesheet" />
+    
+    @stack('styles')
 </head>
 
 <body class="g-sidenav-show  bg-gray-100">
@@ -115,6 +117,7 @@
     <script src="{{ asset('js/toast-notifications.js') }}"></script>
     <script src="{{ asset('js/delete-confirmation.js') }}"></script>
     <script src="{{ asset('js/table-scroll.js') }}"></script>
+    <script src="{{ asset('js/dashboard.js') }}"></script>
 
     @stack('scripts')
 

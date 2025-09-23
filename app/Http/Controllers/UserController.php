@@ -226,7 +226,7 @@ class UserController extends Controller
         Cache::tags(['usuarios'])->flush();
 
         return redirect()->route('usuarios.index')->with('toast', [
-            'type'    => 'info',
+            'type'    => 'success',
             'title'   => 'Actualización Exitosa',
             'message' => 'El usuario ' . $user->name . ' se ha actualizado correctamente.'
         ]);

@@ -395,6 +395,9 @@ class ClinicalRecordController extends Controller
 
     public function show($id)
     {
+        // Verificar y marcar citas perdidas antes de mostrar el expediente
+        $this->checkAndMarkMissedAppointments();
+        
         $clinicalRecord = ClinicalRecord::with([
             'medicalConsultations.doctor.specialty',
             'medicalConsultations.laboratoryTests',
@@ -426,6 +429,40 @@ class ClinicalRecordController extends Controller
             );
 
             return view('modules.clinical_records.show', compact('clinicalRecord', 'doctors', 'specialties', 'companionRelationships'));
+    }
+
+    /**
+     * Verificar y marcar citas perdidas automáticamente
+     */
+    private function checkAndMarkMissedAppointments(): void
+    {
+        try {
+            $lock = Cache::lock('mark_missed_appointments_lock', 3600);
+            if (!$lock->get())
+                return;
+
+            try {
+                $cutoff = now()->startOfDay();
+
+                $missed = \App\Models\Appointment::where('status', 'pendiente')
+                    ->where('appointment_date', '<', $cutoff)
+                    ->get();
+
+                if ($missed->isNotEmpty()) {
+                    foreach ($missed as $ap) {
+                        $ap->markAsMissed(
+                            'Marcada automáticamente como perdida por el sistema - El paciente no se presentó (era estado: pendiente)'
+                        );
+                    }
+                    Cache::tags(['citas', 'listados', 'dashboard'])->flush();
+                    \Log::info("Sistema marcó automáticamente {$missed->count()} citas PENDIENTES como perdidas desde expediente clínico");
+                }
+            } finally {
+                optional($lock)->release();
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error al verificar citas perdidas desde expediente clínico: ' . $e->getMessage());
+        }
     }
 
     public function printPdf(ClinicalRecord $clinicalRecord)

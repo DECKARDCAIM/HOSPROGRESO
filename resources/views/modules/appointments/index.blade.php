@@ -282,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <td class="px-3 py-2">
                                             <div class="d-flex align-items-center">
                                                 <div class="avatar avatar-sm me-3 bg-brand-header rounded-circle">
-                                                    <span class="text-white font-weight-bold text-xs">{{ $appointment->slot_number ?? '1' }}</span>
+                                                    <span class="text-white font-weight-bold text-xs">C</span>
                                                 </div>
                                                 <div>
                                                     <h6 class="mb-0 text-sm">{{ $appointment->appointment_number }}</h6>
@@ -303,7 +303,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                         </td>
                                         <td class="px-3 py-2">
                                             <p class="text-sm font-weight-bold mb-0">{{ $appointment->appointment_date->format('d/m/Y') }}</p>
-                                            <p class="text-xs text-secondary mb-0">{{ $appointment->appointment_date->format('H:i') }}</p>
                                         </td>
                                         <td class="px-3 py-2">
                                             <span class="badge {{ $appointment->status_badge }}">{{ $appointment->status_text }}</span>

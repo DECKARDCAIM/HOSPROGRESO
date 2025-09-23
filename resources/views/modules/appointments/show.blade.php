@@ -38,8 +38,7 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <p class="mb-2"><strong>Número de Cita:</strong> {{ $appointment->appointment_number }}</p>
-                                            <p class="mb-2"><strong>Fecha y Hora:</strong> {{ $appointment->appointment_date->format('d/m/Y H:i') }}</p>
-                                            <p class="mb-2"><strong>Turno:</strong> {{ $appointment->slot_number ?? '1' }}</p>
+                                            <p class="mb-2"><strong>Fecha:</strong> {{ $appointment->appointment_date->format('d/m/Y') }}</p>
                                             <p class="mb-2"><strong>Tipo de Atención:</strong> 
                                                 <span class="badge bg-secondary">{{ ucfirst(str_replace('_', ' ', $appointment->attention_type)) }}</span>
                                             </p>
@@ -49,9 +48,9 @@
                                                 <span class="badge {{ $appointment->status_badge }}">{{ $appointment->status_text }}</span>
                                             </p>
                                             <p class="mb-2"><strong>Creada por:</strong> {{ $appointment->createdBy->name ?? '-' }}</p>
-                                            <p class="mb-2"><strong>Fecha de Creación:</strong> {{ $appointment->created_at->format('d/m/Y H:i') }}</p>
+                                            <p class="mb-2"><strong>Fecha de Creación:</strong> {{ $appointment->created_at->format('d/m/Y') }}</p>
                                             @if($appointment->confirmed_at)
-                                                <p class="mb-2"><strong>Confirmada:</strong> {{ $appointment->confirmed_at->format('d/m/Y H:i') }}</p>
+                                                <p class="mb-2"><strong>Confirmada:</strong> {{ $appointment->confirmed_at->format('d/m/Y') }}</p>
                                             @endif
                                         </div>
                                     </div>

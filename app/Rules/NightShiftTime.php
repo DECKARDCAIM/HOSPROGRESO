@@ -23,8 +23,39 @@ class NightShiftTime implements ValidationRule
             return;
         }
 
-        $startTime = \Carbon\Carbon::createFromFormat('H:i', $this->startTime);
-        $endTime = \Carbon\Carbon::createFromFormat('H:i', $value);
+        // Limpiar y normalizar los valores de tiempo
+        $startTimeStr = trim($this->startTime);
+        $endTimeStr = trim($value);
+        
+        // Validar que los valores no estén vacíos después del trim
+        if (empty($startTimeStr) || empty($endTimeStr)) {
+            return;
+        }
+        
+        // Intentar parsear con diferentes formatos posibles
+        try {
+            $startTime = \Carbon\Carbon::createFromFormat('H:i', $startTimeStr);
+        } catch (\Exception $e) {
+            // Si falla con H:i, intentar con H:i:s
+            try {
+                $startTime = \Carbon\Carbon::createFromFormat('H:i:s', $startTimeStr);
+            } catch (\Exception $e2) {
+                $fail('Formato de hora de inicio inválido. Use el formato HH:MM (ej: 14:30).');
+                return;
+            }
+        }
+        
+        try {
+            $endTime = \Carbon\Carbon::createFromFormat('H:i', $endTimeStr);
+        } catch (\Exception $e) {
+            // Si falla con H:i, intentar con H:i:s
+            try {
+                $endTime = \Carbon\Carbon::createFromFormat('H:i:s', $endTimeStr);
+            } catch (\Exception $e2) {
+                $fail('Formato de hora de fin inválido. Use el formato HH:MM (ej: 14:30).');
+                return;
+            }
+        }
 
         // Si el horario de inicio es mayor al de fin, asumimos que es un turno nocturno
         if ($startTime->greaterThan($endTime)) {
