@@ -311,7 +311,7 @@
             <!-- Header -->
             <div class="header">
                 <div class="logo">HOSPITAL NACIONAL DE PROGRESO</div>
-                <div class="subtitle">Sistema de Gestión Hospitalaria - Credenciales de Acceso</div>
+                <div class="subtitle">Sistema de Registro de Pacientes - HOSPROGRESO</div>
                 <div class="document-number">CREDENCIALES DE ACCESO</div>
             </div>
 

@@ -32,9 +32,9 @@ class MunicipalityController extends Controller
         $departments = collect();
         if ($countryId) {
             $departments = Cache::tags(['departamentos'])->remember(
-                "departamentos:select:v1:country={$countryId}",
-                now()->addHours(12),
-                fn() => Department::where('country_id', $countryId)->orderBy('name')->get(['id', 'name', 'country_id'])
+                "departamentos:select:v2:country={$countryId}",
+                now()->addMinutes(5),
+                fn() => Department::where('country_id', $countryId)->where('is_active', true)->orderBy('name')->get(['id', 'name', 'country_id'])
             );
         }
 
@@ -90,9 +90,9 @@ class MunicipalityController extends Controller
         if ($request->filled('country_id')) {
             $countryId = $request->country_id;
             $departments = Cache::tags(['departamentos'])->remember(
-                "departamentos:select:v1:country={$countryId}",
-                now()->addHours(12),
-                fn() => Department::where('country_id', $countryId)->orderBy('name')->get(['id', 'name', 'country_id'])
+                "departamentos:select:v2:country={$countryId}",
+                now()->addMinutes(5),
+                fn() => Department::where('country_id', $countryId)->where('is_active', true)->orderBy('name')->get(['id', 'name', 'country_id'])
             );
         }
 
@@ -153,9 +153,9 @@ class MunicipalityController extends Controller
         );
 
         $departments = Cache::tags(['departamentos'])->remember(
-            'departamentos:select:all:v1',
-            now()->addHours(12),
-            fn() => Department::orderBy('name')->get(['id', 'name', 'country_id'])
+            'departamentos:select:all:v2',
+            now()->addMinutes(5),
+            fn() => Department::where('is_active', true)->orderBy('name')->get(['id', 'name', 'country_id'])
         );
 
         return view('modules.ubication.municipalities.edit', compact('municipality', 'departments', 'countries'));

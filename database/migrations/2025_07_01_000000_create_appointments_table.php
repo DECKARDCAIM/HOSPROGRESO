@@ -15,8 +15,7 @@ return new class extends Migration
             $table->foreignId('doctor_id')->constrained('doctors');
             $table->foreignId('specialty_id')->constrained('specialties');
             $table->foreignId('schedule_type_id')->constrained('schedule_types');
-            $table->dateTime('appointment_date');
-            $table->integer('slot_number');
+            $table->date('appointment_date');
             $table->enum('attention_type', ['consulta_externa', 'urgencia', 'emergencia'])->default('consulta_externa');
             $table->enum('status', ['pendiente', 'confirmada', 'atendida', 'perdida', 'cancelada', 'reagendada'])->default('pendiente');
             $table->text('notes')->nullable();

@@ -31,6 +31,8 @@
         .content-wrapper {
             flex: 1;
             padding: 0 5mm;
+            margin-bottom: 30mm;
+            overflow: hidden;
         }
         
         .header {
@@ -68,12 +70,14 @@
         }
         
         .section {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             page-break-inside: avoid;
             border: 1px solid #e5e7eb;
             border-radius: 6px;
-            padding: 15px;
+            padding: 12px;
             background: #ffffff;
+            max-height: 200px;
+            overflow: hidden;
         }
         
         .section-title {
@@ -139,19 +143,26 @@
         
         .text-content {
             background-color: #f8fafc;
-            padding: 10px;
+            padding: 8px;
             border-radius: 4px;
             border-left: 3px solid #2563eb;
-            margin: 8px 0;
-            line-height: 1.5;
+            margin: 6px 0;
+            line-height: 1.4;
+            max-height: 100px;
+            overflow: hidden;
+            font-size: 11px;
         }
         
         .medication-list, .test-list {
-            background-color: #f0f9ff;
-            padding: 8px 12px;
+            background-color: #f8fafc;
+            padding: 8px;
             border-radius: 4px;
-            border: 1px solid #0ea5e9;
-            margin: 5px 0;
+            border-left: 3px solid #2563eb;
+            margin: 6px 0;
+            line-height: 1.4;
+            max-height: 100px;
+            overflow: hidden;
+            font-size: 11px;
         }
         
         .important-note {
@@ -229,7 +240,7 @@
             <!-- Header -->
     <div class="header">
                 <div class="logo">HOSPITAL NACIONAL DE PROGRESO</div>
-                <div class="subtitle">Sistema de Gestión de Historias Clínicas - Unidad 234</div>
+                <div class="subtitle">Sistema de Registro de Pacientes - HOSPROGRESO</div>
                 <div class="consultation-number">HISTORIA CLÍNICA #{{ $medicalConsultation->id }}</div>
             </div>
             <!-- Información del Paciente -->
@@ -604,12 +615,53 @@
         <div class="section-title">Notas de Enfermería</div>
                 <div class="info-grid">
                     @if($medicalConsultation->nursing_note)
-                    <div class="info-row">
-                        <div class="info-label">Nota de Enfermería:</div>
-                        <div class="info-value">
-                            <div class="text-content">{{ $medicalConsultation->nursing_note }}</div>
+                        @php
+                            $nursingData = json_decode($medicalConsultation->nursing_note, true);
+                        @endphp
+                        @if($nursingData && is_array($nursingData))
+                            @if(isset($nursingData['signos_vitales']) && is_array($nursingData['signos_vitales']))
+                            <div class="info-row">
+                                <div class="info-label">Signos Vitales:</div>
+                                <div class="info-value">
+                                    <div class="text-content">
+                                        @php
+                                            $vitalSigns = [];
+                                            if(isset($nursingData['signos_vitales']['presion_arterial'])) $vitalSigns[] = 'PA: ' . $nursingData['signos_vitales']['presion_arterial'];
+                                            if(isset($nursingData['signos_vitales']['frecuencia_cardiaca'])) $vitalSigns[] = 'FC: ' . $nursingData['signos_vitales']['frecuencia_cardiaca'];
+                                            if(isset($nursingData['signos_vitales']['temperatura'])) $vitalSigns[] = 'Temp: ' . $nursingData['signos_vitales']['temperatura'] . '°C';
+                                            if(isset($nursingData['signos_vitales']['frecuencia_respiratoria'])) $vitalSigns[] = 'FR: ' . $nursingData['signos_vitales']['frecuencia_respiratoria'];
+                                            if(isset($nursingData['signos_vitales']['peso'])) $vitalSigns[] = 'Peso: ' . $nursingData['signos_vitales']['peso'] . 'kg';
+                                            if(isset($nursingData['signos_vitales']['talla'])) $vitalSigns[] = 'Talla: ' . $nursingData['signos_vitales']['talla'] . 'cm';
+                                        @endphp
+                                        {{ implode(' | ', $vitalSigns) }}
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            @if(isset($nursingData['nursing_note']) && $nursingData['nursing_note'])
+                            <div class="info-row">
+                                <div class="info-label">Nota de Enfermería:</div>
+                                <div class="info-value">
+                                    <div class="text-content">{{ $nursingData['nursing_note'] }}</div>
+                                </div>
+                            </div>
+                            @endif
+                            @if(isset($nursingData['notas_adicionales']) && $nursingData['notas_adicionales'])
+                            <div class="info-row">
+                                <div class="info-label">Notas Adicionales:</div>
+                                <div class="info-value">
+                                    <div class="text-content">{{ $nursingData['notas_adicionales'] }}</div>
+                                </div>
+                            </div>
+                            @endif
+                        @else
+                        <div class="info-row">
+                            <div class="info-label">Nota de Enfermería:</div>
+                            <div class="info-value">
+                                <div class="text-content">{{ $medicalConsultation->nursing_note }}</div>
+                            </div>
                         </div>
-                    </div>
+                        @endif
                     @endif
                 </div>
             </div>
@@ -695,8 +747,8 @@
     <!-- Footer con numeración de páginas -->
     <div class="footer">
         <div class="footer-content">
-            <div>Hospital Nacional de Progreso - Sistema de Gestión de Historias Clínicas</div>
-            <div>Teléfono: (502) 0000-0000 | Email: consultas@hospitalprogreso.gt</div>
+            <div>Hospital Nacional de Progreso – Sistema de Registro de Pacientes</div>
+            <div>Teléfono: (502) 7867-0350</div>
             <div style="margin-top: 3px; font-size: 9px;">
                 Este documento es un registro oficial de historia clínica. Conserve este documento para sus registros médicos.
             </div>
