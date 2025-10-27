@@ -201,69 +201,38 @@ class HomeController extends Controller
         // DOCTORES ACTIVOS - Contar solo doctores activos actualmente
         $stats['doctores_activos'] = Doctor::where('is_active', true)->count();
         
-        // Pacientes por género - Usar filtro de fecha apropiado
-        if ($useDateRangeFilter) {
-            // Si hay filtro de rango de fechas, contar solo pacientes con consultas en ese rango
-            $stats['pacientes_hombres'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
-                ->join('sexes', 'clinical_records.sex_id', '=', 'sexes.id')
-                ->where(function($query) {
-                    $query->where('sexes.name', 'LIKE', '%masculino%')
-                          ->orWhere('sexes.name', 'LIKE', '%hombre%');
-                })
-                ->whereBetween('medical_consultations.consultation_date', [$dateFrom, $dateTo])
-                ->distinct('clinical_records.id')
-                ->count('clinical_records.id');
-                
-            $stats['pacientes_mujeres'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
-                ->join('sexes', 'clinical_records.sex_id', '=', 'sexes.id')
-                ->where(function($query) {
-                    $query->where('sexes.name', 'LIKE', '%femenino%')
-                          ->orWhere('sexes.name', 'LIKE', '%mujer%');
-                })
-                ->whereBetween('medical_consultations.consultation_date', [$dateFrom, $dateTo])
-                ->distinct('clinical_records.id')
-                ->count('clinical_records.id');
-        } elseif ($useMonthFilter) {
-            // Si hay filtro de mes, contar solo pacientes con consultas en ese mes
-            $stats['pacientes_hombres'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
-                ->join('sexes', 'clinical_records.sex_id', '=', 'sexes.id')
-                ->where(function($query) {
-                    $query->where('sexes.name', 'LIKE', '%masculino%')
-                          ->orWhere('sexes.name', 'LIKE', '%hombre%');
-                })
-                ->whereMonth('medical_consultations.consultation_date', $month)
-                ->whereYear('medical_consultations.consultation_date', $year)
-                ->distinct('clinical_records.id')
-                ->count('clinical_records.id');
-                
-            $stats['pacientes_mujeres'] = MedicalConsultation::join('clinical_records', 'medical_consultations.clinical_record_id', '=', 'clinical_records.id')
-                ->join('sexes', 'clinical_records.sex_id', '=', 'sexes.id')
-                ->where(function($query) {
-                    $query->where('sexes.name', 'LIKE', '%femenino%')
-                          ->orWhere('sexes.name', 'LIKE', '%mujer%');
-                })
-                ->whereMonth('medical_consultations.consultation_date', $month)
-                ->whereYear('medical_consultations.consultation_date', $year)
-                ->distinct('clinical_records.id')
-                ->count('clinical_records.id');
-        } else {
-            // Si no hay filtro de mes, contar todos los expedientes del año
-            $stats['pacientes_hombres'] = ClinicalRecord::join('sexes', 'clinical_records.sex_id', '=', 'sexes.id')
-                ->where(function($query) {
-                    $query->where('sexes.name', 'LIKE', '%masculino%')
-                          ->orWhere('sexes.name', 'LIKE', '%hombre%');
-                })
-                ->whereYear('clinical_records.created_at', $year)
-                ->count();
-                
-            $stats['pacientes_mujeres'] = ClinicalRecord::join('sexes', 'clinical_records.sex_id', '=', 'sexes.id')
-                ->where(function($query) {
-                    $query->where('sexes.name', 'LIKE', '%femenino%')
-                          ->orWhere('sexes.name', 'LIKE', '%mujer%');
-                })
-                ->whereYear('clinical_records.created_at', $year)
-                ->count();
-        }
+        // Pacientes por género - Siempre contar expedientes clínicos registrados según filtro de fecha
+        $stats['pacientes_hombres'] = ClinicalRecord::join('sexes', 'clinical_records.sex_id', '=', 'sexes.id')
+            ->where(function($query) {
+                $query->where('sexes.name', 'LIKE', '%masculino%')
+                      ->orWhere('sexes.name', 'LIKE', '%hombre%');
+            })
+            ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                return $query->whereBetween('clinical_records.created_at', [$dateFrom, $dateTo]);
+            }, function($query) use ($useMonthFilter, $month, $year) {
+                if ($useMonthFilter) {
+                    return $query->whereMonth('clinical_records.created_at', $month)->whereYear('clinical_records.created_at', $year);
+                } else {
+                    return $query->whereYear('clinical_records.created_at', $year);
+                }
+            })
+            ->count();
+            
+        $stats['pacientes_mujeres'] = ClinicalRecord::join('sexes', 'clinical_records.sex_id', '=', 'sexes.id')
+            ->where(function($query) {
+                $query->where('sexes.name', 'LIKE', '%femenino%')
+                      ->orWhere('sexes.name', 'LIKE', '%mujer%');
+            })
+            ->when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
+                return $query->whereBetween('clinical_records.created_at', [$dateFrom, $dateTo]);
+            }, function($query) use ($useMonthFilter, $month, $year) {
+                if ($useMonthFilter) {
+                    return $query->whereMonth('clinical_records.created_at', $month)->whereYear('clinical_records.created_at', $year);
+                } else {
+                    return $query->whereYear('clinical_records.created_at', $year);
+                }
+            })
+            ->count();
         
         $stats['nuevos_expedientes_mes'] = ClinicalRecord::when($useDateRangeFilter, function($query) use ($dateFrom, $dateTo) {
             return $query->whereBetween('created_at', [$dateFrom, $dateTo]);
