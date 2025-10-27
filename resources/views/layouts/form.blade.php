@@ -23,8 +23,7 @@
             <div class="col-lg-5 form-side">
                 <div class="login-form">
                     <div class="logo-container mb-3">
-                        <img src="{{ asset('img/logo-institucional.webp') }}" alt="{{ config('app.name') }} Logo"
-                            class="img-fluid">
+                        <img src="{{ asset('img/logo-institucional.webp') }}" alt="{{ config('app.name') }} Logo" class="img-fluid">
                     </div>
 
                     <h3 class="text-center">@yield('title')</h3>

@@ -1,79 +1,7 @@
 @extends('layouts.panel')
-
 @section('title', 'Editar Perfil')
 
 @section('content')
-@push('styles')
-<style>
-    .page-header {
-        background-image: url('{{ asset('img/carrusel/bk1.webp') }}');
-        background-size: cover;
-        background-position: center;
-    }
-
-    .form-control-static {
-        padding-top: .5rem;
-        padding-bottom: .5rem;
-        min-height: calc(1.5em + 1rem + 2px);
-    }
-    .form-control, .form-select {
-        border: 1px solid #d2d6da !important;
-    }
-    .form-control:focus, .form-select:focus {
-        border-color: #5e72e4 !important;
-        box-shadow: 0 0 0 2px rgba(94, 114, 228, 0.25) !important;
-    }
-
-    .card-body .form-control, .card-body .form-select {
-        border: 1px solid #d2d6da !important;
-        background-color: #fff !important;
-        padding: 0.5rem 0.75rem !important;
-    }
-    .card-body .form-control:focus, .card-body .form-select:focus {
-        border-color: #5e72e4 !important;
-        box-shadow: 0 0 0 2px rgba(94, 114, 228, 0.25) !important;
-    }
-
-    /* Estilos para las nuevas secciones de fotos */
-                    .card-header.bg-brand-header {
-        background: linear-gradient(135deg, #1e88e5 0%, #1976d2 100%) !important;
-    }
-
-    .form-control.border-2 {
-        border-width: 2px !important;
-        transition: all 0.3s ease;
-    }
-
-    .form-control.border-2:focus {
-        border-color: #1e88e5 !important;
-        box-shadow: 0 0 0 0.2rem rgba(30, 136, 229, 0.25) !important;
-    }
-
-    .nav-pills .nav-link:not(.active):hover {
-        background-color: rgba(30, 136, 229, 0.1) !important;
-        color: #1e88e5 !important;
-        transform: translateY(-1px);
-        transition: all 0.2s ease;
-    }
-
-                    .btn.bg-brand-header {
-        background: linear-gradient(135deg, #1e88e5 0%, #1976d2 100%) !important;
-        border: none;
-        transition: all 0.3s ease;
-    }
-
-                    .btn.bg-brand-header:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(30, 136, 229, 0.4) !important;
-    }
-
-                    .btn.bg-brand-header:disabled {
-        opacity: 0.7;
-        transform: none !important;
-    }
-</style>
-@endpush
-<!-- Header -->
 <div class="container-fluid px-2 px-md-4">
     <div class="page-header min-height-300 border-radius-xl mt-4" style="background-image: url('{{ $user->banner_photo_url }}');">
         <span class="mask bg-gradient-dark opacity-4"></span>
@@ -107,7 +35,6 @@
     </div>
 </div>
 
-<!-- Main Content -->
 <div class="container-fluid py-4">
      @if (session('success'))
         <div class="alert alert-success text-white alert-dismissible fade show" role="alert">

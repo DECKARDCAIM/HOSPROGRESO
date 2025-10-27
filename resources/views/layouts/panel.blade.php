@@ -29,16 +29,12 @@
 </head>
 
 <body class="g-sidenav-show  bg-gray-100">
-
     <div class="sidenav-overlay" id="sidenav-overlay"></div>
-    <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2 bg-white my-2"
-        id="sidenav-main" style="width: 280px !important; min-width: 280px !important;">
+    <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2 bg-white my-2" id="sidenav-main" style="width: 280px !important; min-width: 280px !important;">
         <div class="sidenav-header">
-            <i class="fas fa-times p-3 cursor-pointer text-dark opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
-                aria-hidden="true" id="iconSidenav"></i>
+            <i class="fas fa-times p-3 cursor-pointer text-dark opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
             <a class="navbar-brand px-4 py-3 m-0" href="{{ url('/panel') }}">
-                <img src="{{ asset('img/logo.png') }}" class="navbar-brand-img" width="26" height="26"
-                    alt="main_logo">
+                <img src="{{ asset('img/logo.png') }}" class="navbar-brand-img" width="26" height="26" alt="main_logo">
                 <span class="ms-1 text-sm text-dark">HOSPROGRESO</span>
             </a>
         </div>
@@ -46,8 +42,7 @@
         <div class="collapse navbar-collapse  w-auto h-auto" id="sidenav-collapse-main">
             <ul class="navbar-nav">
                 <li class="nav-item mb-2 mt-0">
-                    <a data-bs-toggle="collapse" href="#ProfileNav" class="nav-link text-dark"
-                        aria-controls="ProfileNav" role="button" aria-expanded="false">
+                    <a data-bs-toggle="collapse" href="#ProfileNav" class="nav-link text-dark" aria-controls="ProfileNav" role="button" aria-expanded="false">
                         <img src="{{ Auth::user()->profile_photo_url }}" class="avatar">
                         <span class="nav-link-text ms-2 ps-1">Mi Cuenta</span>
                     </a>
@@ -60,13 +55,11 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" href="{{ route('logout') }}"
-                                    onclick="event.preventDefault(); document.getElementById('formlogout').submit();">
+                                <a class="nav-link text-dark" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('formlogout').submit();">
                                     <span class="sidenav-mini-icon"></span>
                                     <span class="sidenav-normal ms-3 ps-1"> Cerrar Sesión </span>
                                 </a>
-                                <form method="POST" action="{{ route('logout') }}" style="display: none;"
-                                    id="formlogout">
+                                <form method="POST" action="{{ route('logout') }}" style="display: none;" id="formlogout">
                                     @csrf
                                 </form>
                             </li>
@@ -80,10 +73,8 @@
         </div>
     </aside>
 
-    <main class="main-content position-relative border-radius-lg d-flex flex-column"
-        style="height: 100vh;">
-        <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl" id="navbarBlur"
-            data-scroll="true">
+    <main class="main-content position-relative border-radius-lg d-flex flex-column" style="height: 100vh;">
+        <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl" id="navbarBlur" data-scroll="true">
             <div class="container-fluid py-1 px-3">
                 @include('includes.panel.userOptions')
             </div>
@@ -117,7 +108,7 @@
     <script src="{{ asset('js/toast-notifications.js') }}"></script>
     <script src="{{ asset('js/delete-confirmation.js') }}"></script>
     <script src="{{ asset('js/table-scroll.js') }}"></script>
-    <script src="{{ asset('js/dashboard.js') }}"></script>
+    
 
     @stack('scripts')
 

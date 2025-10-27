@@ -1,7 +1,7 @@
 // Dashboard JavaScript
 document.addEventListener('DOMContentLoaded', function() {
     // Función para cargar datos del dashboard
-    function loadDashboardData(year = null, month = null, dateFrom = null, dateTo = null) {
+    function loadDashboardData(year = null, month = null, dateFrom = null, dateTo = null, forceRefresh = false) {
         const params = new URLSearchParams();
         if (year) params.append('year', year);
         if (month) params.append('month', month);
@@ -26,7 +26,8 @@ document.addEventListener('DOMContentLoaded', function() {
             clearButton.style.display = hasFilters ? 'block' : 'none';
         }
         
-        fetch(`/home?ajax=1&${params.toString()}`, {
+        const refreshSuffix = forceRefresh ? '&refresh=true' : '';
+        fetch(`/home?ajax=1&${params.toString()}${refreshSuffix}`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -34,7 +35,6 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            console.log('Datos recibidos del servidor:', data);
             
             // Actualizar KPIs que SIEMPRE se mantienen (no se filtran)
             updateMetric('expedientes-activos', data.stats.expedientes_activos?.toLocaleString() || '0');
@@ -66,12 +66,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Función para cambiar vista de dashboard
     function switchDashboard(dashboardType) {
-        console.log(`Cambiando a dashboard: ${dashboardType}`);
         loadDashboardContent(dashboardType);
     }
     
     // Función para cargar contenido del dashboard
-    function loadDashboardContent(dashboardType, data = null) {
+    function loadDashboardContent(dashboardType, data = null, forceRefresh = false) {
         // Buscar el contenedor de métricas por ID
         const metricsContainer = document.getElementById('metrics-container');
         if (!metricsContainer) {
@@ -98,7 +97,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (dateFrom) params.append('date_from', dateFrom);
         if (dateTo) params.append('date_to', dateTo);
         
-        fetch(`/home?ajax=1&${params.toString()}`, {
+        const refreshSuffix = forceRefresh ? '&refresh=true' : '';
+        fetch(`/home?ajax=1&${params.toString()}${refreshSuffix}`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -106,7 +106,6 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            console.log('Datos del dashboard recibidos:', data);
             renderDashboardContent(data, metricsContainer);
         })
         .catch(error => {
@@ -235,7 +234,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
         // Actualizar contenedor de métricas
         metricsContainer.innerHTML = metricsHTML;
-        console.log('Dashboard renderizado:', data.role);
     }
     
     // Función para obtener el mes actual en español
@@ -261,10 +259,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const dashboardSelector = document.getElementById('dashboard-selector');
             if (dashboardSelector) {
                 const currentDashboard = dashboardSelector.value;
-                loadDashboardContent(currentDashboard);
+                loadDashboardContent(currentDashboard, null, true);
             } else {
                 // Para roles que no son administradores, cargar dashboard básico
-                loadDashboardContent('basic');
+                loadDashboardContent('basic', null, true);
             }
         });
     }
@@ -292,10 +290,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const dashboardSelector = document.getElementById('dashboard-selector');
             if (dashboardSelector) {
                 const currentDashboard = dashboardSelector.value;
-                loadDashboardContent(currentDashboard);
+                loadDashboardContent(currentDashboard, null, true);
             } else {
                 // Para roles que no son administradores, cargar dashboard básico
-                loadDashboardContent('basic');
+                loadDashboardContent('basic', null, true);
             }
         });
     }
@@ -336,15 +334,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cargar el dashboard inicial
     loadDashboardContent(initialDashboard);
     
-    // Función de testing para verificar datos
-    function testDashboardData() {
-        console.log('=== TESTING DASHBOARD DATA ===');
-        console.log('Rol actual:', currentRole);
-        console.log('=== END TESTING ===');
-    }
-    
-    // Ejecutar test
-    testDashboardData();
+    // Eliminado: función y ejecución de testing de depuración
     
     // Función para refrescar métricas
     function refreshMetrics() {
